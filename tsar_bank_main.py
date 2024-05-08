@@ -37,7 +37,7 @@ class TsarBank(ctk.CTk):
             'MainScreen': MainScreen(self)
         }
 
-        self.show_window('WelcomeScreen', None)  # show login screen at start
+        self.show_window('SignUpScreen', None)  # show login screen at start
 
     def show_window(self, window_to_show: str, window_to_clear: str=None):
         window_to_show = self.gui_instances[window_to_show]
@@ -48,7 +48,10 @@ class TsarBank(ctk.CTk):
             window_to_clear = self.gui_instances[window_to_clear]
             # Clear all entry fields
             for field in window_to_clear.entry_fields:
-                field.delete(0, len(field.get()))
+                if field.widgetName == 'TextBox':
+                    field.delete('0.0', 'end')
+                else:
+                    field.delete(0, 'end')
             # Clear warning label
             if window_to_clear.warning_label:
                 window_to_clear.warning_label.place_forget()

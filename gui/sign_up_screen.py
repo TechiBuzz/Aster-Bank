@@ -28,15 +28,19 @@ class SignUpScreen(ctk.CTkFrame):
 
         # Widgets
         self.back_button = BackButton(self, 'LoginScreen', 0.04, 0.04)
-        self.name_fields_frame = NameFieldsFrame(self.scroll_frame)
+        self.name_fields_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='First Name', right_label_text='Last Name', left_entry_validation=('alphabets_only', 20), right_entry_validation=('alphabets_only', 20))
         self.gender_selection_frame = GenderSelectionFrame(self.scroll_frame)
         self.dob_selection_frame = DateOfBirthSelectionFrame(self.scroll_frame)
         self.address_field_frame = AddressDetailsFrame(self.scroll_frame)
+        self.contact_info_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='Email', right_label_text='Phone', left_entry_validation=('email', 30), right_entry_validation=('numbers_only', 10))
 
         # All entry fields of this class and subclasses
         self.entry_fields = [
-            self.name_fields_frame.first_name_field,
-            self.name_fields_frame.last_name_field
+            self.name_fields_frame.left_field,
+            self.name_fields_frame.right_field,
+            self.address_field_frame.text_entry,
+            self.contact_info_frame.left_field,
+            self.contact_info_frame.right_field
         ]
 
         # Warning Label
@@ -46,8 +50,8 @@ class SignUpScreen(ctk.CTkFrame):
         return 'SignUpScreen'
 
 
-class NameFieldsFrame(ctk.CTkFrame):
-    def __init__(self, parent):
+class DoubleEntryFrame(ctk.CTkFrame):
+    def __init__(self, parent, left_label_text: str, right_label_text: str, left_entry_validation: tuple, right_entry_validation: tuple):
         super().__init__(parent, corner_radius=15)
 
         # Layout
@@ -55,37 +59,44 @@ class NameFieldsFrame(ctk.CTkFrame):
         self.columnconfigure((0, 1), weight=1, uniform='H')
 
         # Widgets
-        self.first_name_label = ctk.CTkLabel(self, text='First Name', font=SIGNUP_SCREEN_LABEL_FONT)
-        self.first_name_label.grid(row=0, column=0, sticky='nsew', padx=12, pady=12)
+        self.left_label = ctk.CTkLabel(self, text=left_label_text, font=SIGNUP_SCREEN_LABEL_FONT)
+        self.left_label.grid(row=0, column=0, sticky='nsew', padx=12, pady=12)
 
-        self.first_name_field_var = ctk.StringVar()
-        self.first_name_field_var.trace('w', lambda *args: self.validate_name_field('f_name'))
+        self.left_field_var = ctk.StringVar()
+        self.left_field = ctk.CTkEntry(self, width=450, height=70, textvariable=self.left_field_var,
+                                       corner_radius=COMMON_ENTRY_CORNER_RADIUS,
+                                       font=SIGNUP_SCREEN_FIELD_ENTRY_FONT, justify='center')
+        self.left_field.grid(row=1, column=0, padx=12, pady=12)
 
-        self.first_name_field = ctk.CTkEntry(self, width=450, height=70, textvariable=self.first_name_field_var,
-                                             corner_radius=COMMON_ENTRY_CORNER_RADIUS,
-                                             font=SIGNUP_SCREEN_FIELD_ENTRY_FONT, justify='center')
-        self.first_name_field.grid(row=1, column=0, padx=12, pady=12)
+        self.right_label = ctk.CTkLabel(self, text=right_label_text, font=SIGNUP_SCREEN_LABEL_FONT)
+        self.right_label.grid(row=0, column=1, sticky='nsew', padx=12, pady=12)
 
-        self.last_name_label = ctk.CTkLabel(self, text='Last Name', font=SIGNUP_SCREEN_LABEL_FONT)
-        self.last_name_label.grid(row=0, column=1, sticky='nsew', padx=12, pady=12)
+        self.right_field_var = ctk.StringVar()
+        self.right_field = ctk.CTkEntry(self, width=450, height=70, textvariable=self.right_field_var,
+                                        corner_radius=COMMON_ENTRY_CORNER_RADIUS,
+                                        font=SIGNUP_SCREEN_FIELD_ENTRY_FONT, justify='center')
+        self.right_field.grid(row=1, column=1, padx=12, pady=12)
 
-        self.last_name_field_var = ctk.StringVar()
-        self.last_name_field_var.trace('w', lambda *args: self.validate_name_field('l_name'))
-
-        self.last_name_field = ctk.CTkEntry(self, width=450, height=70, textvariable=self.last_name_field_var,
-                                            corner_radius=COMMON_ENTRY_CORNER_RADIUS,
-                                            font=SIGNUP_SCREEN_FIELD_ENTRY_FONT, justify='center')
-        self.last_name_field.grid(row=1, column=1, padx=12, pady=12)
+        # Entry Validation
+        if left_entry_validation:
+            self.left_field_var.trace('w', lambda *args: self.validate_field(self.left_field_var, left_entry_validation))
+        if right_entry_validation:
+            self.right_field_var.trace('w', lambda *args: self.validate_field(self.right_field_var, right_entry_validation))
 
         # Place
         self.pack(expand=True, fill='x', padx=12, pady=12)
 
-    def validate_name_field(self, field_type: str):
-        field_var = self.first_name_field_var if field_type == 'f_name' else self.last_name_field_var
+    def validate_field(self, field_var, key: tuple):
+        max_char_length = key[1]
 
-        max_char_length = 20
+        new_value = field_var.get()
+        if key[0] == 'numbers_only':
+            new_value = ''.join(char for char in field_var.get() if char.isdigit())[:max_char_length]
+        elif key[0] == 'alphabets_only':
+            new_value = ''.join(char for char in field_var.get() if char.isalpha())[:max_char_length]
+        elif key[0] == 'email':
+            new_value = ''.join(char for char in field_var.get() if (char.isalnum() or char == '@' or char == '.'))[:max_char_length]
 
-        new_value = ''.join(char for char in field_var.get() if char.isalpha())[:max_char_length]
         field_var.set(new_value)
 
 
@@ -132,8 +143,8 @@ class DateOfBirthSelectionFrame(ctk.CTkFrame):
         self.header_label = ctk.CTkLabel(self, text='Date of Birth', font=SIGNUP_SCREEN_LABEL_FONT)
         self.header_label.pack(expand=True, fill='both', side='top', padx=12, pady=12)
 
-        self.calendar_container = ctk.CTkFrame(self)
-        self.calendar_container.pack(expand=True, fill='both', side='bottom', ipady=125, padx=12, pady=12)
+        self.calendar_container = ctk.CTkFrame(self, corner_radius=15)
+        self.calendar_container.pack(expand=True, fill='both', side='bottom', ipady=125, padx=14, pady=14)
 
         self.cal = Calendar(
             self.calendar_container,
@@ -152,30 +163,23 @@ class DateOfBirthSelectionFrame(ctk.CTkFrame):
         # Place
         self.pack(expand=True, fill='x', padx=12, pady=12)
 
-    def validate_date(self, date_var, is_year=False, *args):
-        field_var = date_var
-        max_char_length = 4 if is_year else 2
-
-        new_value = ''.join(char for char in field_var.get() if char.isdigit())[:max_char_length]
-        field_var.set(new_value)
-
 
 class AddressDetailsFrame(ctk.CTkFrame):
     def __init__(self, parent):
-        super().__init__(parent)
+        super().__init__(parent, corner_radius=15)
 
         # Widgets
         self.header_label = ctk.CTkLabel(self, text='Address', font=SIGNUP_SCREEN_LABEL_FONT)
         self.header_label.pack(expand=True, fill='both', side='top', padx=12, pady=12)
 
-        self.text_container = ctk.CTkFrame(self)
-        self.text_container.pack(expand=True, fill='both', side='bottom', ipady=12, padx=12, pady=12)
+        self.text_entry_container = ctk.CTkFrame(self, corner_radius=15)
+        self.text_entry_container.pack(expand=True, fill='both', side='bottom', ipady=12, padx=12, pady=12)
 
-        self.text_entry_var = ctk.StringVar()
-        self.text_entry_var.trace('w', lambda *args: print(self.text_entry_var.get()))
+        self.text_entry = ctk.CTkTextbox(self.text_entry_container, font=SIGNUP_SCREEN_ADDRESS_FONT, border_spacing=15,
+                                         corner_radius=15)
+        self.text_entry.pack(expand=True, fill='both', padx=12, pady=12)
 
-        self.text_entry = ctk.CTkTextbox(self.text_container)
-        self.text_entry.pack(expand=True, fill='both', side='bottom', ipady=12, padx=12, pady=12)
+        self.text_entry.widgetName = 'TextBox'  # required to clear field in main instance
 
         # Place
         self.pack(expand=True, fill='x', padx=12, pady=12)
