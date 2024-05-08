@@ -1,38 +1,185 @@
-import datetime
-
 from settings import *
 from tkcalendar import Calendar
+from tkinter.messagebox import askokcancel, showwarning
 from gui.back_button import BackButton
 
+import datetime
+import re
+import random
 import customtkinter as ctk
+
+SIGNUP_SCREEN_INSTANCE = None
+
+
+def raise_warning(code):
+    showwarning('Invalid Info!', message=SIGN_UP_ERRORS[code])
+
+
+def update_db(first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str, phone: str):
+    db_connection = SIGNUP_SCREEN_INSTANCE.db_connection
+    cursor = db_connection.cursor()
+
+    # Generate a new account number
+    cursor.execute('SELECT ID FROM accounts')
+    current_ids = cursor.fetchall()
+
+    account_id = random.randint(10000, 99999)
+    while account_id in current_ids:
+        account_id = random.randint(10000, 99999)
+
+    # Generate a new username
+    '''
+    Generate a formatted username
+    Example:
+        First Name: Mickey
+        Last Name: Mouse
+        DOB: 1928-11-18
+        
+    -> Output: MickeyM111828
+    '''
+    split_dob = str(dob).split('-')
+    username = f'{first_name.lower().capitalize()}{last_name.upper()[0]}{split_dob[1]}{split_dob[2]}{split_dob[0][2:]}'
+
+    # Update
+    query = f'INSERT INTO accounts VALUES ({account_id}, \'{username}\', {password},\'{first_name.lower().capitalize()}\', \'{last_name.lower().capitalize()}\', \'{gender}\', \'{str(dob)}\', \'{address}\', \'{email}\', \'{phone}\')'
+
+    cursor.execute(query)
+    db_connection.commit()
+    cursor.close()
+
+
+def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str, phone: str) -> bool:
+    # Emptiness check
+    def no_empty_fields():
+        if first_name.isspace():
+            raise_warning(0)
+            return False
+        elif last_name.isspace():
+            raise_warning(1)
+            return False
+        elif address.isspace():
+            raise_warning(2)
+            return False
+        elif email.isspace():
+            raise_warning(3)
+            return False
+        elif phone.isspace():
+            raise_warning(4)
+            return False
+        else:
+            return True
+
+    # Length check
+    def valid_character_lengths():
+        if len(first_name) < 3:
+            raise_warning(5)
+            return False
+        elif len(last_name) < 1:
+            raise_warning(6)
+            return False
+        elif len(address) < 20:
+            raise_warning(7)
+            return False
+        elif len(phone) < 10:
+            raise_warning(8)
+            return False
+        else:
+            return True
+
+    # Gender check
+    def valid_gender():
+        if gender == 'NULL':
+            raise_warning(9)
+            return False
+        else:
+            return True
+
+    # Age check
+    def valid_age():
+        dob_year = int(dob[:4])
+        current_year = int(str(datetime.date.today())[:4])
+
+        if not dob_year < (current_year - 15):  # Min age = 15 (set current_year - {min_age})
+            raise_warning(10)
+            return False
+        else:
+            return True
+
+    # Email check
+    def valid_email():
+        regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'  # stole from https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
+        if not re.fullmatch(regex, email):
+            raise_warning(11)
+            return False
+        else:
+            return True
+
+    return True if no_empty_fields() and valid_character_lengths() and valid_gender() and valid_age() and valid_email() else False
+
+
+def submit_info():
+    user_decision = askokcancel('Submit Info', message='Submit all credentials? This cannot be undone!')
+
+    if user_decision:
+
+        first_name = SIGNUP_SCREEN_INSTANCE.name_fields_frame.left_field.get()
+        last_name = SIGNUP_SCREEN_INSTANCE.name_fields_frame.right_field.get()
+        gender = 'M' if SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.get() == 1 else 'F' if SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.get() == 2 else 'O' if SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.get() == 3 else 'NULL'
+        dob = SIGNUP_SCREEN_INSTANCE.dob_selection_frame.cal.get_date()
+        address = SIGNUP_SCREEN_INSTANCE.address_field_frame.text_entry.get('0.0', 'end').replace('\n', ' ')
+        print(address)
+        email = SIGNUP_SCREEN_INSTANCE.contact_info_frame.left_field.get()
+        phone = SIGNUP_SCREEN_INSTANCE.contact_info_frame.right_field.get()
+
+        if valid_credentials(first_name, last_name, gender, dob, address, email, phone):
+            if SIGNUP_SCREEN_INSTANCE.db_connection:  # database connected (this is just a 2nd level ensurance as database must already be connected in order to get to sign-up screen)
+                update_db(first_name, last_name, gender, dob, address, email, phone)
+                SIGNUP_SCREEN_INSTANCE.MAIN_WINDOW_INSTANCE.show_window('LoginScreen', 'SignUpScreen')
+            else:
+                raise_warning(12)
+
+
+def clear_info():
+    user_decision = askokcancel('Clear Info', message='Clear all entry fields? This cannot be undone!')
+
+    if user_decision:
+        for field in SIGNUP_SCREEN_INSTANCE.entry_fields:
+            if field.widgetName == 'TextBox':
+                field.delete('0.0', 'end')
+            else:
+                field.delete(0, 'end')
+        SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.set(-1)  # reset radio buttons
 
 
 class SignUpScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
 
+        global SIGNUP_SCREEN_INSTANCE
+        SIGNUP_SCREEN_INSTANCE = self
+
         # Get main window instance (used for back button)
         self.MAIN_WINDOW_INSTANCE = parent
 
-        # Existing Account Numbers
+        # Database connection
         self.db_connection = parent.db_connection
-        if self.db_connection:
-            cursor = self.db_connection.cursor()
-            cursor.execute('SELECT ID FROM accounts')
 
-            self.accounts_list = cursor.fetchall()
-            cursor.close()
-
+        # Widgets
         self.scroll_frame = ctk.CTkScrollableFrame(self, corner_radius=0)
         self.scroll_frame.place(relx=0.0, rely=0.0, relwidth=1, relheight=1)
 
-        # Widgets
         self.back_button = BackButton(self, 'LoginScreen', 0.04, 0.04)
-        self.name_fields_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='First Name', right_label_text='Last Name', left_entry_validation=('alphabets_only', 20), right_entry_validation=('alphabets_only', 20))
+        self.name_fields_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='First Name',
+                                                  right_label_text='Last Name',
+                                                  left_entry_validation=('alphabets_only', 20),
+                                                  right_entry_validation=('alphabets_only', 20))
         self.gender_selection_frame = GenderSelectionFrame(self.scroll_frame)
         self.dob_selection_frame = DateOfBirthSelectionFrame(self.scroll_frame)
         self.address_field_frame = AddressDetailsFrame(self.scroll_frame)
-        self.contact_info_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='Email', right_label_text='Phone', left_entry_validation=('email', 30), right_entry_validation=('numbers_only', 10))
+        self.contact_info_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='Email', right_label_text='Phone',
+                                                   left_entry_validation=('email', 30),
+                                                   right_entry_validation=('numbers_only', 10))
+        self.operation_buttons_frame = OperationButtonsFrame(self.scroll_frame)
 
         # All entry fields of this class and subclasses
         self.entry_fields = [
@@ -51,7 +198,8 @@ class SignUpScreen(ctk.CTkFrame):
 
 
 class DoubleEntryFrame(ctk.CTkFrame):
-    def __init__(self, parent, left_label_text: str, right_label_text: str, left_entry_validation: tuple, right_entry_validation: tuple):
+    def __init__(self, parent, left_label_text: str, right_label_text: str, left_entry_validation: tuple,
+                 right_entry_validation: tuple):
         super().__init__(parent, corner_radius=15)
 
         # Layout
@@ -79,9 +227,11 @@ class DoubleEntryFrame(ctk.CTkFrame):
 
         # Entry Validation
         if left_entry_validation:
-            self.left_field_var.trace('w', lambda *args: self.validate_field(self.left_field_var, left_entry_validation))
+            self.left_field_var.trace('w',
+                                      lambda *args: self.validate_field(self.left_field_var, left_entry_validation))
         if right_entry_validation:
-            self.right_field_var.trace('w', lambda *args: self.validate_field(self.right_field_var, right_entry_validation))
+            self.right_field_var.trace('w',
+                                       lambda *args: self.validate_field(self.right_field_var, right_entry_validation))
 
         # Place
         self.pack(expand=True, fill='x', padx=12, pady=12)
@@ -95,7 +245,8 @@ class DoubleEntryFrame(ctk.CTkFrame):
         elif key[0] == 'alphabets_only':
             new_value = ''.join(char for char in field_var.get() if char.isalpha())[:max_char_length]
         elif key[0] == 'email':
-            new_value = ''.join(char for char in field_var.get() if (char.isalnum() or char == '@' or char == '.'))[:max_char_length]
+            new_value = ''.join(char for char in field_var.get() if (char.isalnum() or char == '@' or char == '.'))[
+                        :max_char_length]
 
         field_var.set(new_value)
 
@@ -180,6 +331,37 @@ class AddressDetailsFrame(ctk.CTkFrame):
         self.text_entry.pack(expand=True, fill='both', padx=12, pady=12)
 
         self.text_entry.widgetName = 'TextBox'  # required to clear field in main instance
+
+        # Place
+        self.pack(expand=True, fill='x', padx=12, pady=12)
+
+
+class OperationButtonsFrame(ctk.CTkFrame):
+    def __init__(self, parent):
+        super().__init__(parent, corner_radius=15)
+
+        # # Layout
+        # self.rowconfigure(0, weight=1)
+        # self.columnconfigure((0, 1), weight=1, uniform='T')
+
+        # Widgets
+        self.submit_button = ctk.CTkButton(
+            self,
+            text='Submit',
+            font=SIGNUP_SCREEN_OPERATION_BUTTON_FONT,
+            corner_radius=100,
+            command=submit_info
+        )
+        self.submit_button.pack(expand=True, fill='both', ipady=10, padx=12, pady=12, side='left')
+
+        self.clear_button = ctk.CTkButton(
+            self,
+            text='Clear',
+            font=SIGNUP_SCREEN_OPERATION_BUTTON_FONT,
+            corner_radius=100,
+            command=clear_info
+        )
+        self.clear_button.pack(expand=True, fill='both', ipady=10, padx=12, pady=12, side='left')
 
         # Place
         self.pack(expand=True, fill='x', padx=12, pady=12)

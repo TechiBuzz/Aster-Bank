@@ -13,8 +13,7 @@ MAIN_WINDOW_INSTANCE = None
 def successful_login(user_data):
     # Update client details in main window
     MAIN_WINDOW_INSTANCE.logged_in = True
-    MAIN_WINDOW_INSTANCE.admin_user = True if user_data[
-        -1] else False  # user_data[-1] is admin column of accounts table
+    MAIN_WINDOW_INSTANCE.admin_user = True if user_data[-1] else False  # user_data[-1] is admin column of accounts table
 
     MAIN_WINDOW_INSTANCE.account = {
         'ACCOUNT_ID': user_data[0],
@@ -24,32 +23,23 @@ def successful_login(user_data):
         'DATE_OF_BIRTH': user_data[5],
         'GENDER': user_data[6],
         'ADDRESS': user_data[7],
-        'COUNTRY': user_data[8],
-        'STATE': user_data[9],
-        'EMAIL_ID': user_data[10],
-        'PHONE_NO': user_data[11],
-        'BALANCE': user_data[12]  # admin detail also omitted as it is previously stored in a var
+        'EMAIL_ID': user_data[8],
+        'PHONE_NO': user_data[9],
+        'BALANCE': user_data[10]  # admin detail also omitted as it is previously stored in a var
     }
 
     # Change window
     MAIN_WINDOW_INSTANCE.show_window(window_to_show='MainScreen', window_to_clear='LoginScreen')
 
+def raise_warning(code: int):
+    MAIN_WINDOW_INSTANCE.gui_instances['LoginScreen'].central_frame.warning_label_var.set(LOGIN_ERRORS[code])
+    MAIN_WINDOW_INSTANCE.gui_instances['LoginScreen'].central_frame.warning_label.place(relx=0.5, rely=0.65, relwidth=0.7, relheight=0.1, anchor='center')
 
 def login(central_frame) -> None:
     username: str = central_frame.entry_fields_frame.username_entry.get()
 
     password_field = central_frame.entry_fields_frame.password_entry
     password = hashlib.sha256(password_field.get().encode()).hexdigest()
-
-    warnings = {
-        0: '   Username or Password field cannot be empty!',
-        1: '   Unable to connect to the database!',
-        2: '   Invalid Username or Password! Please ensure valid credentials!'
-    }
-
-    def raise_warning(code: int):
-        central_frame.warning_label_var.set(warnings[code])
-        central_frame.warning_label.place(relx=0.5, rely=0.65, relwidth=0.7, relheight=0.1, anchor='center')
 
     if len(username) != 0 and len(password_field.get()) != 0:  # non-blank username and password
         db_cnx = MAIN_WINDOW_INSTANCE.db_connection
@@ -71,8 +61,10 @@ def login(central_frame) -> None:
 
 
 def signup() -> None:
-    MAIN_WINDOW_INSTANCE.show_window(window_to_show='SignUpScreen', window_to_clear='LoginScreen')
-
+    if MAIN_WINDOW_INSTANCE.db_connection:
+        MAIN_WINDOW_INSTANCE.show_window(window_to_show='SignUpScreen', window_to_clear='LoginScreen')
+    else:
+        raise_warning(1)
 
 class LoginScreen(ctk.CTkFrame):
     def __init__(self, parent):
