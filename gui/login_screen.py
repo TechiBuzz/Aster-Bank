@@ -1,8 +1,9 @@
-from settings import *
 from PIL import Image
+from settings import *
+from gui.util_widgets.obfuscate_entry_widget import ObfuscateEntryWidget
 
-import customtkinter as ctk
 import hashlib
+import customtkinter as ctk
 
 '''
 INSTANCE OF MAIN WINDOW
@@ -102,20 +103,14 @@ class CentralFrame(ctk.CTkFrame):
         self.rowconfigure(2, weight=2)
 
         # Widgets
-        img = Image.open(USER_ICON_PATH)
-        img = ctk.CTkImage(light_image=img, dark_image=img, size=(150, 150))
-        ctk.CTkLabel(master=self, text='', image=img).grid(column=0, row=0, pady=12)  # User Icon
+        user_icon = Image.open(USER_ICON_PATH)
+        user_icon = ctk.CTkImage(light_image=user_icon, dark_image=user_icon, size=(150, 150))
+        ctk.CTkLabel(master=self, text='', image=user_icon).grid(column=0, row=0, pady=12)  # User Icon
 
         self.entry_fields_frame = self.EntryFieldsFrame(self)  # Stored in var to access fields from buttons
 
-        self.show_pass_img = ctk.CTkImage(light_image=Image.open(SHOW_PASSWORD_ICON_PATH),
-                                          dark_image=Image.open(SHOW_PASSWORD_ICON_PATH))
-        self.hide_pass_img = ctk.CTkImage(light_image=Image.open(HIDE_PASSWORD_ICON_PATH),
-                                          dark_image=Image.open(HIDE_PASSWORD_ICON_PATH))
-
-        self.display_password = ctk.CTkButton(self, text='', image=self.hide_pass_img, width=40, height=40,
-                                              command=self.change_password_visibility)
-        self.display_password.place(relx=0.89, rely=0.493)
+        self.obfuscate_password = ObfuscateEntryWidget(parent=self, obfuscate_entry=self.entry_fields_frame.password_entry)
+        self.obfuscate_password.place(relx=0.89, rely=0.493)
 
         self.LoginButtonsFrame(self)
 
@@ -131,17 +126,6 @@ class CentralFrame(ctk.CTkFrame):
 
         # Place
         self.place(relx=0.5, rely=0.5, relheight=0.85, relwidth=0.90, anchor='center')
-
-    def change_password_visibility(self):
-        button = self.display_password
-        password_field = self.entry_fields_frame.password_entry
-
-        if button.cget('image') == self.hide_pass_img:
-            button.configure(image=self.show_pass_img)
-            password_field.configure(show='')
-        else:
-            button.configure(image=self.hide_pass_img)
-            password_field.configure(show='*')
 
     class EntryFieldsFrame(ctk.CTkFrame):
         def __init__(self, parent):

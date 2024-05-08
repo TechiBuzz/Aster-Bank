@@ -1,11 +1,14 @@
+import hashlib
+
 from settings import *
 from tkcalendar import Calendar
+from gui.util_widgets.back_button import BackButton
 from tkinter.messagebox import askokcancel, showwarning
-from gui.back_button import BackButton
+from gui.util_widgets.obfuscate_entry_widget import ObfuscateEntryWidget
 
-import datetime
 import re
 import random
+import datetime
 import customtkinter as ctk
 
 SIGNUP_SCREEN_INSTANCE = None
@@ -15,7 +18,7 @@ def raise_warning(code):
     showwarning('Invalid Info!', message=SIGN_UP_ERRORS[code])
 
 
-def update_db(first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str, phone: str):
+def update_db(first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str, phone: str, password: str):
     db_connection = SIGNUP_SCREEN_INSTANCE.db_connection
     cursor = db_connection.cursor()
 
@@ -41,14 +44,14 @@ def update_db(first_name: str, last_name: str, gender: str, dob: datetime.date, 
     username = f'{first_name.lower().capitalize()}{last_name.upper()[0]}{split_dob[1]}{split_dob[2]}{split_dob[0][2:]}'
 
     # Update
-    query = f'INSERT INTO accounts VALUES ({account_id}, \'{username}\', {password},\'{first_name.lower().capitalize()}\', \'{last_name.lower().capitalize()}\', \'{gender}\', \'{str(dob)}\', \'{address}\', \'{email}\', \'{phone}\')'
+    query = f'INSERT INTO accounts VALUES ({account_id}, \'{username}\', \'{password}\', \'{first_name.lower().capitalize()}\', \'{last_name.lower().capitalize()}\', \'{gender}\', \'{str(dob)}\', \'{address}\', \'{email}\', \'{phone}\')'
 
     cursor.execute(query)
     db_connection.commit()
     cursor.close()
 
 
-def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str, phone: str) -> bool:
+def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str, phone: str, password: str, cnf_password: str) -> bool:
     # Emptiness check
     def no_empty_fields():
         if first_name.isspace():
@@ -66,22 +69,31 @@ def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetim
         elif phone.isspace():
             raise_warning(4)
             return False
+        elif password.isspace():
+            raise_warning(5)
+            return False
+        elif cnf_password.isspace():
+            raise_warning(6)
+            return False
         else:
             return True
 
     # Length check
     def valid_character_lengths():
         if len(first_name) < 3:
-            raise_warning(5)
-            return False
-        elif len(last_name) < 1:
-            raise_warning(6)
-            return False
-        elif len(address) < 20:
             raise_warning(7)
             return False
-        elif len(phone) < 10:
+        elif len(last_name) < 1:
             raise_warning(8)
+            return False
+        elif len(address) < 20 or len(address) > 255:
+            raise_warning(9)
+            return False
+        elif len(phone) < 10:
+            raise_warning(10)
+            return False
+        elif len(password) < 8:
+            raise_warning(11)
             return False
         else:
             return True
@@ -89,7 +101,7 @@ def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetim
     # Gender check
     def valid_gender():
         if gender == 'NULL':
-            raise_warning(9)
+            raise_warning(12)
             return False
         else:
             return True
@@ -100,7 +112,7 @@ def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetim
         current_year = int(str(datetime.date.today())[:4])
 
         if not dob_year < (current_year - 15):  # Min age = 15 (set current_year - {min_age})
-            raise_warning(10)
+            raise_warning(13)
             return False
         else:
             return True
@@ -109,12 +121,38 @@ def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetim
     def valid_email():
         regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'  # stole from https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
         if not re.fullmatch(regex, email):
-            raise_warning(11)
+            raise_warning(14)
             return False
         else:
             return True
 
-    return True if no_empty_fields() and valid_character_lengths() and valid_gender() and valid_age() and valid_email() else False
+    # Password check
+    def valid_password():
+        special_chars = 0
+        uppercase = 0
+        numbers = 0
+        for char in password:
+            if not char.isalnum(): special_chars += 1
+            if char.isupper(): uppercase += 1
+            if char.isdigit(): numbers += 1
+
+        if special_chars < 2:
+            raise_warning(15)
+            return False
+        if uppercase < 2:
+            raise_warning(16)
+            return False
+        if numbers < 3:
+            raise_warning(17)
+            return False
+
+        if not password == cnf_password:
+            raise_warning(18)
+            return False
+
+        return True
+
+    return True if no_empty_fields() and valid_character_lengths() and valid_gender() and valid_age() and valid_email() and valid_password() else False
 
 
 def submit_info():
@@ -127,16 +165,19 @@ def submit_info():
         gender = 'M' if SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.get() == 1 else 'F' if SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.get() == 2 else 'O' if SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.get() == 3 else 'NULL'
         dob = SIGNUP_SCREEN_INSTANCE.dob_selection_frame.cal.get_date()
         address = SIGNUP_SCREEN_INSTANCE.address_field_frame.text_entry.get('0.0', 'end').replace('\n', ' ')
-        print(address)
         email = SIGNUP_SCREEN_INSTANCE.contact_info_frame.left_field.get()
         phone = SIGNUP_SCREEN_INSTANCE.contact_info_frame.right_field.get()
 
-        if valid_credentials(first_name, last_name, gender, dob, address, email, phone):
+        password = SIGNUP_SCREEN_INSTANCE.password_entry_frame.left_field.get()  # raw password
+        cnf_password = SIGNUP_SCREEN_INSTANCE.password_entry_frame.right_field.get()
+
+        if valid_credentials(first_name, last_name, gender, dob, address, email, phone, password, cnf_password):
             if SIGNUP_SCREEN_INSTANCE.db_connection:  # database connected (this is just a 2nd level ensurance as database must already be connected in order to get to sign-up screen)
-                update_db(first_name, last_name, gender, dob, address, email, phone)
+                hashed_password = hashlib.sha256(password.encode()).hexdigest()  # encrypt the password
+                update_db(first_name, last_name, gender, dob, address, email, phone, hashed_password)
                 SIGNUP_SCREEN_INSTANCE.MAIN_WINDOW_INSTANCE.show_window('LoginScreen', 'SignUpScreen')
             else:
-                raise_warning(12)
+                raise_warning(19)
 
 
 def clear_info():
@@ -179,6 +220,17 @@ class SignUpScreen(ctk.CTkFrame):
         self.contact_info_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='Email', right_label_text='Phone',
                                                    left_entry_validation=('email', 30),
                                                    right_entry_validation=('numbers_only', 10))
+        self.password_entry_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='Password', right_label_text='Confirm Password',
+                                                     left_entry_validation=('any', 15), right_entry_validation=('any', 15))
+        self.password_entry_frame.left_field.configure(show='*')
+        self.password_entry_frame.right_field.configure(show='*')
+
+        self.obfuscate_pass_entry = ObfuscateEntryWidget(parent=self.password_entry_frame.left_field, obfuscate_entry=self.password_entry_frame.left_field)
+        self.obfuscate_pass_entry.place(relx=0.87, rely=0.5, anchor='w')
+
+        self.obfuscate_cnf_pass_entry = ObfuscateEntryWidget(parent=self.password_entry_frame.right_field, obfuscate_entry=self.password_entry_frame.right_field)
+        self.obfuscate_cnf_pass_entry.place(relx=0.87, rely=0.5, anchor='w')
+
         self.operation_buttons_frame = OperationButtonsFrame(self.scroll_frame)
 
         # All entry fields of this class and subclasses
@@ -187,7 +239,9 @@ class SignUpScreen(ctk.CTkFrame):
             self.name_fields_frame.right_field,
             self.address_field_frame.text_entry,
             self.contact_info_frame.left_field,
-            self.contact_info_frame.right_field
+            self.contact_info_frame.right_field,
+            self.password_entry_frame.left_field,
+            self.password_entry_frame.right_field
         ]
 
         # Warning Label
@@ -198,8 +252,8 @@ class SignUpScreen(ctk.CTkFrame):
 
 
 class DoubleEntryFrame(ctk.CTkFrame):
-    def __init__(self, parent, left_label_text: str, right_label_text: str, left_entry_validation: tuple,
-                 right_entry_validation: tuple):
+    def __init__(self, parent, left_label_text: str, right_label_text: str, left_entry_validation: tuple = None,
+                 right_entry_validation: tuple = None):
         super().__init__(parent, corner_radius=15)
 
         # Layout
@@ -245,8 +299,9 @@ class DoubleEntryFrame(ctk.CTkFrame):
         elif key[0] == 'alphabets_only':
             new_value = ''.join(char for char in field_var.get() if char.isalpha())[:max_char_length]
         elif key[0] == 'email':
-            new_value = ''.join(char for char in field_var.get() if (char.isalnum() or char == '@' or char == '.'))[
-                        :max_char_length]
+            new_value = ''.join(char for char in field_var.get() if (char.isalnum() or char == '@' or char == '.'))[:max_char_length]
+        elif key[0] == 'any':
+            new_value = ''.join(char for char in field_var.get())[:max_char_length]  # only limit max chars
 
         field_var.set(new_value)
 

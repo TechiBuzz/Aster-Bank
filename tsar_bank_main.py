@@ -1,13 +1,11 @@
-import time
-
 from settings import *
 from gui.welcome_screen import WelcomeScreen
 from gui.main_screen import MainScreen
 from gui.login_screen import LoginScreen
 from gui.sign_up_screen import SignUpScreen
 
-import customtkinter as ctk
 import mysql.connector
+import customtkinter as ctk
 
 # Color Theme Of App
 try:
@@ -38,9 +36,9 @@ class TsarBank(ctk.CTk):
         }
 
         # TODO -> change this back to LoginScreen !!!!
-        self.show_window('SignUpScreen', None)  # show login screen at start
+        self.show_window('LoginScreen', None)  # show login screen at start
 
-    def show_window(self, window_to_show: str, window_to_clear: str=None):
+    def show_window(self, window_to_show: str, window_to_clear: str = None):
         window_to_show = self.gui_instances[window_to_show]
         window_to_show.place(relx=0.0, rely=0.0, relwidth=1, relheight=1)
         window_to_show.tkraise()
