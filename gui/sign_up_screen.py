@@ -3,7 +3,8 @@ import hashlib
 from settings import *
 from tkcalendar import Calendar
 from gui.util_widgets.back_button import BackButton
-from tkinter.messagebox import askokcancel, showwarning
+from tkinter.messagebox import askokcancel
+from gui.util_widgets.warning_label_widget import WarningLabel
 from gui.util_widgets.obfuscate_entry_widget import ObfuscateEntryWidget
 
 import re
@@ -12,10 +13,7 @@ import datetime
 import customtkinter as ctk
 
 SIGNUP_SCREEN_INSTANCE = None
-
-
-def raise_warning(code):
-    showwarning('Invalid Info!', message=SIGN_UP_ERRORS[code])
+WARNING_LABEL = None
 
 
 def update_db(first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str, phone: str, password: str):
@@ -38,15 +36,17 @@ def update_db(first_name: str, last_name: str, gender: str, dob: datetime.date, 
         Last Name: Mouse
         DOB: 1928-11-18
         
-    -> Output: MickeyM111828
+    -> Output: MickeyM111828 (format = first_name + last_name's first character + dob_month + dob_day + dob_year)
     '''
     split_dob = str(dob).split('-')
     username = f'{first_name.lower().capitalize()}{last_name.upper()[0]}{split_dob[1]}{split_dob[2]}{split_dob[0][2:]}'
 
     # Update
-    query = f'INSERT INTO accounts VALUES ({account_id}, \'{username}\', \'{password}\', \'{first_name.lower().capitalize()}\', \'{last_name.lower().capitalize()}\', \'{gender}\', \'{str(dob)}\', \'{address}\', \'{email}\', \'{phone}\')'
-
-    cursor.execute(query)
+    # query = f'INSERT INTO accounts VALUES ({account_id}, \'{username}\', \'{password}\', \'{first_name.lower().capitalize()}\', \'{last_name.lower().capitalize()}\', \'{gender}\', \'{str(dob)}\', \'{address}\', \'{email}\', \'{phone}\')'
+    query = 'INSERT INTO accounts (ID, USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+    values = (account_id, username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender, dob, address, email, phone)
+     
+    cursor.execute(query, values)
     db_connection.commit()
     cursor.close()
 
@@ -55,25 +55,25 @@ def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetim
     # Emptiness check
     def no_empty_fields():
         if first_name.isspace():
-            raise_warning(0)
+            WARNING_LABEL.raise_warning(0)
             return False
         elif last_name.isspace():
-            raise_warning(1)
+            WARNING_LABEL.raise_warning(1)
             return False
         elif address.isspace():
-            raise_warning(2)
+            WARNING_LABEL.raise_warning(2)
             return False
         elif email.isspace():
-            raise_warning(3)
+            WARNING_LABEL.raise_warning(3)
             return False
         elif phone.isspace():
-            raise_warning(4)
+            WARNING_LABEL.raise_warning(4)
             return False
         elif password.isspace():
-            raise_warning(5)
+            WARNING_LABEL.raise_warning(5)
             return False
         elif cnf_password.isspace():
-            raise_warning(6)
+            WARNING_LABEL.raise_warning(6)
             return False
         else:
             return True
@@ -81,19 +81,19 @@ def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetim
     # Length check
     def valid_character_lengths():
         if len(first_name) < 3:
-            raise_warning(7)
+            WARNING_LABEL.raise_warning(7)
             return False
         elif len(last_name) < 1:
-            raise_warning(8)
+            WARNING_LABEL.raise_warning(8)
             return False
         elif len(address) < 20 or len(address) > 255:
-            raise_warning(9)
+            WARNING_LABEL.raise_warning(9)
             return False
         elif len(phone) < 10:
-            raise_warning(10)
+            WARNING_LABEL.raise_warning(10)
             return False
         elif len(password) < 8:
-            raise_warning(11)
+            WARNING_LABEL.raise_warning(11)
             return False
         else:
             return True
@@ -101,7 +101,7 @@ def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetim
     # Gender check
     def valid_gender():
         if gender == 'NULL':
-            raise_warning(12)
+            WARNING_LABEL.raise_warning(12)
             return False
         else:
             return True
@@ -112,7 +112,7 @@ def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetim
         current_year = int(str(datetime.date.today())[:4])
 
         if not dob_year < (current_year - 15):  # Min age = 15 (set current_year - {min_age})
-            raise_warning(13)
+            WARNING_LABEL.raise_warning(13)
             return False
         else:
             return True
@@ -121,7 +121,7 @@ def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetim
     def valid_email():
         regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'  # stole from https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
         if not re.fullmatch(regex, email):
-            raise_warning(14)
+            WARNING_LABEL.raise_warning(14)
             return False
         else:
             return True
@@ -137,17 +137,17 @@ def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetim
             if char.isdigit(): numbers += 1
 
         if special_chars < 2:
-            raise_warning(15)
+            WARNING_LABEL.raise_warning(15)
             return False
         if uppercase < 2:
-            raise_warning(16)
+            WARNING_LABEL.raise_warning(16)
             return False
         if numbers < 3:
-            raise_warning(17)
+            WARNING_LABEL.raise_warning(17)
             return False
 
         if not password == cnf_password:
-            raise_warning(18)
+            WARNING_LABEL.raise_warning(18)
             return False
 
         return True
@@ -177,7 +177,7 @@ def submit_info():
                 update_db(first_name, last_name, gender, dob, address, email, phone, hashed_password)
                 SIGNUP_SCREEN_INSTANCE.MAIN_WINDOW_INSTANCE.show_window('LoginScreen', 'SignUpScreen')
             else:
-                raise_warning(19)
+                WARNING_LABEL.raise_warning(19)
 
 
 def clear_info():
@@ -190,7 +190,7 @@ def clear_info():
             else:
                 field.delete(0, 'end')
         SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.set(-1)  # reset radio buttons
-
+        WARNING_LABEL.clear_warning()
 
 class SignUpScreen(ctk.CTkFrame):
     def __init__(self, parent):
@@ -231,6 +231,12 @@ class SignUpScreen(ctk.CTkFrame):
         self.obfuscate_cnf_pass_entry = ObfuscateEntryWidget(parent=self.password_entry_frame.right_field, obfuscate_entry=self.password_entry_frame.right_field)
         self.obfuscate_cnf_pass_entry.place(relx=0.87, rely=0.5, anchor='w')
 
+        self.warning_label_container = ctk.CTkFrame(self.scroll_frame, corner_radius=15)
+        self.warning_label_container.pack(expand=True, fill='x', ipady=12, padx=12, pady=12)
+
+        self.warning_label = WarningLabel(self.warning_label_container, SIGN_UP_ERRORS)
+        self.warning_label.pack(expand=True, fill='both', padx=12, pady=12)
+
         self.operation_buttons_frame = OperationButtonsFrame(self.scroll_frame)
 
         # All entry fields of this class and subclasses
@@ -244,8 +250,9 @@ class SignUpScreen(ctk.CTkFrame):
             self.password_entry_frame.right_field
         ]
 
-        # Warning Label
-        self.warning_label = None
+        # Make warning label global
+        global WARNING_LABEL
+        WARNING_LABEL = self.warning_label
 
     def get_window_name(self) -> str:
         return 'SignUpScreen'

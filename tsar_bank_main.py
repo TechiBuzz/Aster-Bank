@@ -55,7 +55,7 @@ class TsarBank(ctk.CTk):
 
             # Clear warning label
             if window_to_clear.warning_label:
-                window_to_clear.warning_label.place_forget()
+                window_to_clear.warning_label.clear_warning()
 
             # Place forget frame
             window_to_clear.place_forget()

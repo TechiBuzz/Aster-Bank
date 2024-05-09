@@ -1,5 +1,6 @@
 from PIL import Image
 from settings import *
+from gui.util_widgets.warning_label_widget import WarningLabel
 from gui.util_widgets.obfuscate_entry_widget import ObfuscateEntryWidget
 
 import hashlib
@@ -9,6 +10,7 @@ import customtkinter as ctk
 INSTANCE OF MAIN WINDOW
 '''
 MAIN_WINDOW_INSTANCE = None
+WARNING_LABEL = None
 
 
 def successful_login(user_data):
@@ -32,9 +34,6 @@ def successful_login(user_data):
     # Change window
     MAIN_WINDOW_INSTANCE.show_window(window_to_show='MainScreen', window_to_clear='LoginScreen')
 
-def raise_warning(code: int):
-    MAIN_WINDOW_INSTANCE.gui_instances['LoginScreen'].central_frame.warning_label_var.set(LOGIN_ERRORS[code])
-    MAIN_WINDOW_INSTANCE.gui_instances['LoginScreen'].central_frame.warning_label.place(relx=0.5, rely=0.65, relwidth=0.7, relheight=0.1, anchor='center')
 
 def login(central_frame) -> None:
     username: str = central_frame.entry_fields_frame.username_entry.get()
@@ -53,19 +52,20 @@ def login(central_frame) -> None:
             result = cursor.fetchone()
             cursor.close()
 
-            successful_login(result) if result else raise_warning(2)  # credentials match
+            successful_login(result) if result else WARNING_LABEL.raise_warning(2)  # credentials match
         else:
-            raise_warning(1)
+            WARNING_LABEL.raise_warning(1)
 
     else:
-        raise_warning(0)
+        WARNING_LABEL.raise_warning(0)
 
 
 def signup() -> None:
     if MAIN_WINDOW_INSTANCE.db_connection:
         MAIN_WINDOW_INSTANCE.show_window(window_to_show='SignUpScreen', window_to_clear='LoginScreen')
     else:
-        raise_warning(1)
+        WARNING_LABEL.raise_warning(1)
+
 
 class LoginScreen(ctk.CTkFrame):
     def __init__(self, parent):
@@ -89,8 +89,11 @@ class LoginScreen(ctk.CTkFrame):
         ]
 
         # Warning Label
-        self.warning_label = self.central_frame.warning_label
+        self.warning_label = WarningLabel(self.central_frame, LOGIN_ERRORS)
+        self.warning_label.place(relx=0.5, rely=0.65, relwidth=0.7, relheight=0.1, anchor='center')
 
+        global WARNING_LABEL
+        WARNING_LABEL = self.warning_label
 
 class CentralFrame(ctk.CTkFrame):
     def __init__(self, parent):
@@ -113,16 +116,6 @@ class CentralFrame(ctk.CTkFrame):
         self.obfuscate_password.place(relx=0.89, rely=0.493)
 
         self.LoginButtonsFrame(self)
-
-        self.warning_label_var = ctk.StringVar()
-        self.warning_label = ctk.CTkLabel(
-            master=self,
-            text='',
-            textvariable=self.warning_label_var,
-            font=LOGIN_SCREEN_WARNING_LABEL_FONT,
-            image=ctk.CTkImage(Image.open(WARNING_ICON_PATH), Image.open(WARNING_ICON_PATH)),
-            compound='left'
-        )
 
         # Place
         self.place(relx=0.5, rely=0.5, relheight=0.85, relwidth=0.90, anchor='center')
