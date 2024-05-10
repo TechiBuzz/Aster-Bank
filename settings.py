@@ -1,6 +1,5 @@
 # APP
 WINDOW_TITLE = 'Tsar Bank 2.0'
-
 WINDOW_HEIGHT = 700
 WINDOW_WIDTH = 1100
 
@@ -10,12 +9,12 @@ WINDOW_BITMAP_ICON_PATH = 'assets\\icon\\tsar_bank.ico'
 SMALL_DB_ICON_PATH = 'assets\\ui\\login_screen\\db_icon.png'
 USER_ICON_PATH = 'assets\\ui\\login_screen\\user_icon.png'
 
-SHOW_PASSWORD_ICON_PATH = 'assets\\ui\\login_screen\\show_password.png'
-HIDE_PASSWORD_ICON_PATH = 'assets\\ui\\login_screen\\hide_password.png'
+SHOW_PASSWORD_ICON_PATH = 'assets/ui/obfuscate_widget/show_password.png'
+HIDE_PASSWORD_ICON_PATH = 'assets/ui/obfuscate_widget/hide_password.png'
 
-WARNING_ICON_PATH = 'assets\\ui\\login_screen\\warning.png'
+WARNING_ICON_PATH = 'assets/ui/warning_icon.png'
 
-BACK_ARROW_ICON_PATH = 'assets\\ui\\back_arrow.png'
+BACK_ARROW_ICON_PATH = 'assets/ui/back_button.png'
 
 # FONT
 WELCOME_SCREEN_WELCOME_LABEL_FONT = ('Congenial Black', 70, 'bold')
@@ -43,16 +42,17 @@ COMMON_ENTRY_CORNER_RADIUS = 40
 
 LOGIN_SCREEN_BOTTOM_BUTTON_WIDTH = 380
 LOGIN_SCREEN_BOTTOM_BUTTON_HEIGHT = 80
-LOGIN_SCREEN_BOTTOM_BUTTON_CORNER_RADIUS = 100
+LOGIN_SCREEN_BOTTOM_BUTTON_CORNER_RADIUS = 99999
 
 # COLORS
 APP_COLOR_THEME = 'green'  # Available -> ['blue', 'dark-blue', 'green']
 
 # ERRORS
 LOGIN_ERRORS = {
-    0: '   Username or Password field cannot be empty!',
-    1: '   Unable to connect to the database!',
-    2: '   Invalid Username or Password! Please ensure valid credentials!'
+    0: '   Username field cannot be empty!',
+    1: '   Password field cannot be empty!',
+    2: '   Unable to connect to the database!',
+    3: '   Invalid Username or Password! Please ensure valid credentials!'
 }
 
 SIGN_UP_ERRORS = {
@@ -73,7 +73,7 @@ SIGN_UP_ERRORS = {
     14: '   Invalid Email! Please provide a valid email address!',
     15: '   Password must contain a minimum of 2 special characters!',
     16: '   Password must contain a minimum of 2 uppercase characters!',
-    17: '   Password must contain a minimum of 3 numeric characters!',
+    17: '   Password must contain a minimum of 2 numeric characters!',
     18: '   Password fields must match!',
     19: '   Unable to connect to database!',
 }

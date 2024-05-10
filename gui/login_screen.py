@@ -10,14 +10,12 @@ import customtkinter as ctk
 INSTANCE OF MAIN WINDOW
 '''
 MAIN_WINDOW_INSTANCE = None
+LOGIN_SCREEN_INSTANCE = None
 WARNING_LABEL = None
 
 
 def successful_login(user_data):
-    # Update client details in main window
-    MAIN_WINDOW_INSTANCE.logged_in = True
-    MAIN_WINDOW_INSTANCE.admin_user = True if user_data[-1] else False  # user_data[-1] is admin column of accounts table
-
+    # Update account details
     MAIN_WINDOW_INSTANCE.account = {
         'ACCOUNT_ID': user_data[0],
         'USERNAME': user_data[1],  # password details omitted for safety
@@ -28,43 +26,63 @@ def successful_login(user_data):
         'ADDRESS': user_data[7],
         'EMAIL_ID': user_data[8],
         'PHONE_NO': user_data[9],
-        'BALANCE': user_data[10]  # admin detail also omitted as it is previously stored in a var
+        'BALANCE': user_data[10],
+        'ADMIN': user_data[11]
     }
 
     # Change window
     MAIN_WINDOW_INSTANCE.show_window(window_to_show='MainScreen', window_to_clear='LoginScreen')
 
 
-def login(central_frame) -> None:
-    username: str = central_frame.entry_fields_frame.username_entry.get()
+def login() -> None:
+    username: str = LOGIN_SCREEN_INSTANCE.username_entry.entry.get()
 
-    password_field = central_frame.entry_fields_frame.password_entry
+    password_field = LOGIN_SCREEN_INSTANCE.password_entry.entry
     password = hashlib.sha256(password_field.get().encode()).hexdigest()
 
-    if len(username) != 0 and len(password_field.get()) != 0:  # non-blank username and password
-        db_cnx = MAIN_WINDOW_INSTANCE.db_connection
-
-        if db_cnx:  # database connected
-            cursor = db_cnx.cursor()
-
-            validation_query = "SELECT * FROM accounts WHERE USERNAME = %s AND PASSWORD = %s"
-            cursor.execute(validation_query, (username, password))
-            result = cursor.fetchone()
-            cursor.close()
-
-            successful_login(result) if result else WARNING_LABEL.raise_warning(2)  # credentials match
-        else:
+    def non_empty_fields():
+        if len(username) == 0:
+            WARNING_LABEL.raise_warning(0)
+            return
+        if len(password_field.get()) == 0:
             WARNING_LABEL.raise_warning(1)
+            return
 
-    else:
-        WARNING_LABEL.raise_warning(0)
+        # All checks passed
+        return True
+
+    def database_connected():
+        db_cnx = MAIN_WINDOW_INSTANCE.db_connection
+        if not db_cnx:
+            WARNING_LABEL.raise_warning(2)
+            return False
+        return True
+
+    def fetch_login_result():
+        cursor = MAIN_WINDOW_INSTANCE.db_connection.cursor()
+
+        validation_query = "SELECT * FROM accounts WHERE USERNAME = %s AND PASSWORD = %s"
+        cursor.execute(validation_query, (username, password))
+        result = cursor.fetchone()
+
+        cursor.close()
+
+        return result
+
+    if non_empty_fields() and database_connected():
+        login_result = fetch_login_result()
+
+        if login_result:
+            successful_login(login_result)
+        else:
+            WARNING_LABEL.raise_warning(3)
 
 
 def signup() -> None:
     if MAIN_WINDOW_INSTANCE.db_connection:
         MAIN_WINDOW_INSTANCE.show_window(window_to_show='SignUpScreen', window_to_clear='LoginScreen')
     else:
-        WARNING_LABEL.raise_warning(1)
+        WARNING_LABEL.raise_warning(2)
 
 
 class LoginScreen(ctk.CTkFrame):
@@ -79,154 +97,109 @@ class LoginScreen(ctk.CTkFrame):
         self.db_connection = parent.db_connection
 
         # Widgets
-        self.central_frame = CentralFrame(self)
+        self.central_frame = ctk.CTkFrame(self, corner_radius=15)
+        self.central_frame.place(relx=0.5, rely=0.05, relheight=0.85, relwidth=0.935, anchor='n')
+
+        user_icon_img = ctk.CTkImage(light_image=Image.open(USER_ICON_PATH), dark_image=Image.open(USER_ICON_PATH),
+                                     size=(140, 140))
+        self.user_icon = ctk.CTkLabel(self.central_frame, text='', image=user_icon_img)
+        self.user_icon.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.3, anchor='w')
+
+        self.username_entry = LabelledEntry(self.central_frame, 0.4,'Username', ('alphanumeric', 25), False)
+        self.password_entry = LabelledEntry(self.central_frame, 0.6,'Password', ('any', 15), True)
+
+        self.warning_label = WarningLabel(self.central_frame, LOGIN_ERRORS)
+        self.warning_label.place(relx=0, rely=0.75, relwidth=1, relheight=0.1, anchor='w')
+
+        self.login_buttons = LoginButtonsFrame(self.central_frame)
+
         self.db_connection_frame = DBConnectionFrame(self, self.db_connection)
 
         # All entry fields of this class and subclasses
         self.entry_fields = [
-            self.central_frame.entry_fields_frame.username_entry,
-            self.central_frame.entry_fields_frame.password_entry
+            self.username_entry.entry,
+            self.password_entry.entry
         ]
-
-        # Warning Label
-        self.warning_label = WarningLabel(self.central_frame, LOGIN_ERRORS)
-        self.warning_label.place(relx=0.5, rely=0.65, relwidth=0.7, relheight=0.1, anchor='center')
 
         global WARNING_LABEL
         WARNING_LABEL = self.warning_label
 
-class CentralFrame(ctk.CTkFrame):
-    def __init__(self, parent):
-        super().__init__(master=parent, corner_radius=15)
+        global LOGIN_SCREEN_INSTANCE
+        LOGIN_SCREEN_INSTANCE = self
 
-        # Layout
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=2)
-        self.rowconfigure(1, weight=3)
-        self.rowconfigure(2, weight=2)
 
-        # Widgets
-        user_icon = Image.open(USER_ICON_PATH)
-        user_icon = ctk.CTkImage(light_image=user_icon, dark_image=user_icon, size=(150, 150))
-        ctk.CTkLabel(master=self, text='', image=user_icon).grid(column=0, row=0, pady=12)  # User Icon
+class LabelledEntry(ctk.CTkFrame):
+    def __init__(self, parent, place_rely,label_text: str, entry_validation: tuple, obfuscated_entry: bool = None):
+        super().__init__(master=parent, fg_color='transparent')
 
-        self.entry_fields_frame = self.EntryFieldsFrame(self)  # Stored in var to access fields from buttons
+        self.label = ctk.CTkLabel(self, text=label_text, font=LOGIN_SCREEN_FIELD_LABEl_FONT, justify='left')
+        self.label.place(relx=0.06, rely=0.5, relheight=1, relwidth=0.34, anchor='w')
 
-        self.obfuscate_password = ObfuscateEntryWidget(parent=self, obfuscate_entry=self.entry_fields_frame.password_entry)
-        self.obfuscate_password.place(relx=0.89, rely=0.493)
+        self.entry_var = ctk.StringVar()
+        self.entry_var.trace('w', lambda *args: self.validate_entry(entry_validation))
 
-        self.LoginButtonsFrame(self)
+        self.entry = ctk.CTkEntry(
+            master=self,
+            height=70,
+            corner_radius=COMMON_ENTRY_CORNER_RADIUS,
+            font=LOGIN_SCREEN_FIELD_ENTRY_FONT,
+            textvariable=self.entry_var
+        )
+        self.entry.place(relx=0.43, rely=0.5, relheight=0.7, relwidth=0.5, anchor='w')
+
+        if obfuscated_entry:
+            self.entry.configure(show='*')
+            self.obfuscator = ObfuscateEntryWidget(self.entry)
 
         # Place
-        self.place(relx=0.5, rely=0.5, relheight=0.85, relwidth=0.90, anchor='center')
+        self.place(relx=0, rely=place_rely, relwidth=1, relheight=0.2, anchor='w')
 
-    class EntryFieldsFrame(ctk.CTkFrame):
-        def __init__(self, parent):
-            super().__init__(master=parent, fg_color='transparent')
+    def validate_entry(self, key: tuple):
+        max_char_length = key[1]
+        entry_var = self.entry_var
 
-            # Layout
-            self.rowconfigure((0, 1), weight=1, uniform='Z')
-            self.columnconfigure(0, weight=1)
-            self.columnconfigure(1, weight=2)
+        new_value = entry_var.get()
+        if key[0] == 'alphanumeric':
+            new_value = ''.join(char for char in self.entry_var.get() if (char.isalnum()))[:max_char_length]
+        elif key[0] == 'any':
+            new_value = ''.join(char for char in self.entry_var.get())[:max_char_length]  # only limit max chars
 
-            # Widgets
-            self.username_label = ctk.CTkLabel(self, text=' Username',
-                                               font=LOGIN_SCREEN_FIELD_LABEl_FONT, justify='left')
-            self.username_label.grid(row=0, column=0, sticky='nsew')
+        self.entry_var.set(new_value)
 
-            self.username_entry_var = ctk.StringVar()
-            self.username_entry_var.trace('w', lambda *args: self.validate_entry(is_password_entry=False))
 
-            self.username_entry = ctk.CTkEntry(
-                master=self,
-                height=70,
-                corner_radius=COMMON_ENTRY_CORNER_RADIUS,
-                font=LOGIN_SCREEN_FIELD_ENTRY_FONT,
-                textvariable=self.username_entry_var
-            )
-            self.username_entry.grid(row=0, column=1, sticky='ew', padx=40)
+class LoginButtonsFrame(ctk.CTkFrame):
+    def __init__(self, parent):
+        super().__init__(master=parent, fg_color='transparent')
 
-            self.password_label = ctk.CTkLabel(self, text='Password',
-                                               font=LOGIN_SCREEN_FIELD_LABEl_FONT, justify='left')
-            self.password_label.grid(row=1, column=0, sticky='nsew')
+        # Widgets
+        self.login_button = ctk.CTkButton(  # Login Button
+            master=self,
+            width=LOGIN_SCREEN_BOTTOM_BUTTON_WIDTH,
+            height=LOGIN_SCREEN_BOTTOM_BUTTON_HEIGHT,
+            text='Login',
+            font=LOGIN_SCREEN_BOTTOM_BUTTON_FONT,
+            corner_radius=LOGIN_SCREEN_BOTTOM_BUTTON_CORNER_RADIUS,
+            command=login
+        )
+        self.login_button.place(relx=0.067, rely=0.4, relheight=0.65, relwidth=0.40, anchor='w')
 
-            self.password_entry_var = ctk.StringVar()
-            self.password_entry_var.trace('w', lambda *args: self.validate_entry(is_password_entry=True))
+        self.signup_button = ctk.CTkButton(  # Sign-Up Button
+            master=self,
+            width=LOGIN_SCREEN_BOTTOM_BUTTON_WIDTH,
+            height=LOGIN_SCREEN_BOTTOM_BUTTON_HEIGHT,
+            text='Sign-Up',
+            font=LOGIN_SCREEN_BOTTOM_BUTTON_FONT,
+            corner_radius=LOGIN_SCREEN_BOTTOM_BUTTON_CORNER_RADIUS,
+            command=signup
+        )
+        self.signup_button.place(relx=0.534, rely=0.4, relheight=0.65, relwidth=0.40, anchor='w')
 
-            self.password_entry = ctk.CTkEntry(
-                master=self,
-                height=70,
-                corner_radius=COMMON_ENTRY_CORNER_RADIUS,
-                font=LOGIN_SCREEN_FIELD_ENTRY_FONT,
-                textvariable=self.password_entry_var,
-                show='*'
-            )
-            self.password_entry.grid(row=1, column=1, sticky='ew', padx=40)
-
-            # Execute login on pressing 'Enter' on keyboard
-            self.username_entry.bind('<Return>', lambda *args: login(parent))
-            self.password_entry.bind('<Return>', lambda *args: login(parent))
-
-            # Place
-            self.grid(column=0, row=1, sticky='nsew', padx=10, pady=10)
-
-        def validate_entry(self, is_password_entry: bool, *args):
-            max_char_length = 20
-
-            if is_password_entry:
-                current_value = self.password_entry_var.get()
-                new_value = ''.join(char for char in current_value if char != ' ')[:max_char_length]  # Remove numbers
-                self.password_entry_var.set(new_value)
-            else:
-                current_value = self.username_entry_var.get()
-                new_value = ''.join(char for char in current_value if char.isalnum())[
-                            :max_char_length]  # Remove spaces and numbers
-                self.username_entry_var.set(new_value)  # Update variable with modified value
-
-    class LoginButtonsFrame(ctk.CTkFrame):
-        def __init__(self, parent):
-            super().__init__(master=parent, fg_color='transparent')
-
-            # Widgets
-            self.login_button = ctk.CTkButton(  # Login Button
-                master=self,
-                width=LOGIN_SCREEN_BOTTOM_BUTTON_WIDTH,
-                height=LOGIN_SCREEN_BOTTOM_BUTTON_HEIGHT,
-                text='Login',
-                font=LOGIN_SCREEN_BOTTOM_BUTTON_FONT,
-                corner_radius=LOGIN_SCREEN_BOTTOM_BUTTON_CORNER_RADIUS,
-                command=lambda: login(parent)
-            )
-            self.login_button.place(relx=0.08, rely=0.5, anchor='w')
-
-            self.signup_button = ctk.CTkButton(  # Sign-Up Button
-                master=self,
-                width=LOGIN_SCREEN_BOTTOM_BUTTON_WIDTH,
-                height=LOGIN_SCREEN_BOTTOM_BUTTON_HEIGHT,
-                text='Sign-Up',
-                font=LOGIN_SCREEN_BOTTOM_BUTTON_FONT,
-                corner_radius=LOGIN_SCREEN_BOTTOM_BUTTON_CORNER_RADIUS,
-                command=signup
-            )
-            self.signup_button.place(relx=0.56, rely=0.5, anchor='w')
-
-            # Place
-            self.grid(column=0, row=2, sticky='nsew', padx=10, pady=10)
-
+        # Place
+        self.place(relx=0.01, rely=0.9, relwidth=0.98, relheight=0.2, anchor='w')
 
 class DBConnectionFrame(ctk.CTkFrame):
     def __init__(self, parent, db_connection):
-        super().__init__(master=parent)
-
-        # Configuration
-        self.configure(
-            corner_radius=15,
-            bg_color='transparent'
-        )
-
-        # Layout
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure((0, 1, 2, 3, 4), weight=1, uniform='A')
+        super().__init__(master=parent, corner_radius=15, bg_color='transparent')
 
         # Small DB Icon
         db_icon = Image.open(SMALL_DB_ICON_PATH)
@@ -240,7 +213,8 @@ class DBConnectionFrame(ctk.CTkFrame):
             text_color='#d7dddd',
             font=db_status_font
         )
-        self.db_icon.grid(row=0, column=0, columnspan=2, padx=4, pady=4)
+        # self.db_icon.grid(row=0, column=0, columnspan=2, padx=4, pady=4)
+        self.db_icon.pack(expand=True, pady=12, side='left')
 
         # Connection Status Text
         self.connection_status_var = ctk.StringVar(value='')
@@ -254,10 +228,11 @@ class DBConnectionFrame(ctk.CTkFrame):
             font=db_status_font,
             justify='left'
         )
-        self.status_text.grid(row=0, column=2, columnspan=3, padx=4, pady=4, sticky='w')
+        # self.status_text.grid(row=0, column=2, columnspan=3, padx=4, pady=4, sticky='w')
+        self.status_text.pack(expand=True, fill='both', pady=12, side='left')
 
         # Place
-        self.place(relx=0.5, rely=0.96, anchor='center', relwidth=0.3, relheight=0.05)
+        self.place(relx=0.5, rely=0.947, anchor='center', relwidth=0.3, relheight=0.07)
 
     def set_db_status(self, db_connection) -> None:
         if db_connection:

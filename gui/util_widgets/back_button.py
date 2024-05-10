@@ -6,8 +6,12 @@ import customtkinter as ctk
 MAIN_WINDOW_INSTANCE = None
 
 
+def go_back(from_page, to_page):
+    MAIN_WINDOW_INSTANCE.show_window(window_to_show=to_page, window_to_clear=from_page)
+
+
 class BackButton(ctk.CTkButton):
-    def __init__(self, parent, go_back_to, relx, rely):
+    def __init__(self, parent, from_page, to_page, relx, rely):
         super().__init__(parent)
 
         global MAIN_WINDOW_INSTANCE
@@ -20,12 +24,7 @@ class BackButton(ctk.CTkButton):
             height=50,
             corner_radius=25,
             text='',
-            bg_color='transparent',
             image=ctk.CTkImage(dark_image=img, light_image=img),
-            command=lambda: self.go_back(parent, go_back_to)
+            command=lambda: go_back(from_page, to_page)
         )
         self.place(relx=relx, rely=rely, anchor='nw')
-
-    def go_back(self, parent, page_to_go):
-        from_page = parent.get_window_name()
-        MAIN_WINDOW_INSTANCE.show_window(page_to_go, from_page)

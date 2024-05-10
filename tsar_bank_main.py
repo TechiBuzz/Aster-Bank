@@ -22,9 +22,6 @@ class TsarBank(ctk.CTk):
         self.db_connection = get_db_connection()
 
         # User Data
-        self.logged_in = False
-        self.admin_user = False
-
         self.account = None
 
         # Screens
@@ -35,7 +32,6 @@ class TsarBank(ctk.CTk):
             'MainScreen': MainScreen(self)
         }
 
-        # TODO -> change this back to LoginScreen !!!!
         self.show_window('LoginScreen', None)  # show login screen at start
 
     def show_window(self, window_to_show: str, window_to_clear: str = None):
@@ -70,7 +66,7 @@ def get_db_connection():
             user=DB['USER'],
             password=DB['PASSWORD']
         )
-    except mysql.connector.errors:
+    except:
         connection = None
         print("Unable to connect to database!")
     return connection
@@ -82,7 +78,7 @@ def main():
     # Window Config
     app.title(WINDOW_TITLE)
     app.geometry(f'{WINDOW_WIDTH}x{WINDOW_HEIGHT}')
-    app.resizable(False, False)
+    # app.resizable(False, False)
 
     app.iconbitmap(WINDOW_BITMAP_ICON_PATH)
 
