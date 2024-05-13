@@ -15,8 +15,7 @@ WARNING_LABEL = None
 
 
 def successful_login(user_data):
-    # Update account details
-    MAIN_WINDOW_INSTANCE.account = {
+    account = {
         'ACCOUNT_ID': user_data[0],
         'USERNAME': user_data[1],  # password details omitted for safety
         'FIRST_NAME': user_data[3],
@@ -29,6 +28,9 @@ def successful_login(user_data):
         'BALANCE': user_data[10],
         'ADMIN': user_data[11]
     }
+
+    # Update account details
+    MAIN_WINDOW_INSTANCE.gui_instances['MainScreen'].update_user_data(account)
 
     # Change window
     MAIN_WINDOW_INSTANCE.show_window(window_to_show='MainScreen', window_to_clear='LoginScreen')
@@ -100,13 +102,13 @@ class LoginScreen(ctk.CTkFrame):
         self.central_frame = ctk.CTkFrame(self, corner_radius=15)
         self.central_frame.place(relx=0.5, rely=0.05, relheight=0.85, relwidth=0.935, anchor='n')
 
-        user_icon_img = ctk.CTkImage(light_image=Image.open(USER_ICON_PATH), dark_image=Image.open(USER_ICON_PATH),
+        user_icon_img = ctk.CTkImage(light_image=Image.open(LOGIN_SCREEN_USER_ICON_PATH), dark_image=Image.open(LOGIN_SCREEN_USER_ICON_PATH),
                                      size=(140, 140))
         self.user_icon = ctk.CTkLabel(self.central_frame, text='', image=user_icon_img)
         self.user_icon.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.3, anchor='w')
 
-        self.username_entry = LabelledEntry(self.central_frame, 0.4,'Username', ('alphanumeric', 25), False)
-        self.password_entry = LabelledEntry(self.central_frame, 0.6,'Password', ('any', 15), True)
+        self.username_entry = LabelledEntry(self.central_frame, 0.4, 'Username', ('alphanumeric', 25), False)
+        self.password_entry = LabelledEntry(self.central_frame, 0.6, 'Password', ('any', 15), True)
 
         self.warning_label = WarningLabel(self.central_frame, LOGIN_ERRORS)
         self.warning_label.place(relx=0, rely=0.75, relwidth=1, relheight=0.1, anchor='w')
@@ -129,7 +131,7 @@ class LoginScreen(ctk.CTkFrame):
 
 
 class LabelledEntry(ctk.CTkFrame):
-    def __init__(self, parent, place_rely,label_text: str, entry_validation: tuple, obfuscated_entry: bool = None):
+    def __init__(self, parent, place_rely, label_text: str, entry_validation: tuple, obfuscated_entry: bool = None):
         super().__init__(master=parent, fg_color='transparent')
 
         self.label = ctk.CTkLabel(self, text=label_text, font=LOGIN_SCREEN_FIELD_LABEl_FONT, justify='left')
@@ -196,6 +198,7 @@ class LoginButtonsFrame(ctk.CTkFrame):
 
         # Place
         self.place(relx=0.01, rely=0.9, relwidth=0.98, relheight=0.2, anchor='w')
+
 
 class DBConnectionFrame(ctk.CTkFrame):
     def __init__(self, parent, db_connection):

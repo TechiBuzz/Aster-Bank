@@ -1,8 +1,15 @@
 from settings import *
-from gui.welcome_screen import WelcomeScreen
-from gui.main_screen import MainScreen
-from gui.login_screen import LoginScreen
-from gui.sign_up_screen import SignUpScreen
+from gui.screens.welcome_screen import WelcomeScreen
+from gui.screens.main_screen import MainScreen
+from gui.screens.login_screen import LoginScreen
+from gui.screens.sign_up_screen import SignUpScreen
+from gui.screens.account_management.profile_management import ProfileManagementScreen
+from gui.screens.account_management.fund_management_screen import FundManagementScreen
+from gui.screens.account_management.transfer_screen import TransferMoneyScreen
+from gui.screens.account_management.request_money_screen import RequestMoneyScreen
+from gui.screens.account_management.bills_screen import BillManagementScreen
+from gui.screens.account_management.fd_calculator_screen import FDCalculatorScreen
+from gui.screens.account_management.transaction_history_screen import TransactionHistoryScreen
 
 import mysql.connector
 import customtkinter as ctk
@@ -21,18 +28,23 @@ class TsarBank(ctk.CTk):
         # Database Connection
         self.db_connection = get_db_connection()
 
-        # User Data
-        self.account = None
-
         # Screens
         self.gui_instances = {
             'WelcomeScreen': WelcomeScreen(self),
             'LoginScreen': LoginScreen(self),
             'SignUpScreen': SignUpScreen(self),
-            'MainScreen': MainScreen(self)
+            'MainScreen': MainScreen(self),
+            'ProfileManagementScreen': ProfileManagementScreen(self),
+            'FundManagementScreen': FundManagementScreen(self),
+            'TransferMoneyScreen': TransferMoneyScreen(self),
+            'RequestMoneyScreen': RequestMoneyScreen(self),
+            'BillManagementScreen': BillManagementScreen(self),
+            'FDCalculatorScreen': FDCalculatorScreen(self),
+            'TransactionHistoryScreen': TransactionHistoryScreen(self)
         }
 
-        self.show_window('LoginScreen', None)  # show login screen at start
+        # TODO -> change back to WelcomeScreen after testing!!!!!!!!!!!!
+        self.show_window('MainScreen')  # show login screen at start
 
     def show_window(self, window_to_show: str, window_to_clear: str = None):
         window_to_show = self.gui_instances[window_to_show]
@@ -77,8 +89,9 @@ def main():
 
     # Window Config
     app.title(WINDOW_TITLE)
+
     app.geometry(f'{WINDOW_WIDTH}x{WINDOW_HEIGHT}')
-    # app.resizable(False, False)
+    app.minsize(1100, 700)
 
     app.iconbitmap(WINDOW_BITMAP_ICON_PATH)
 

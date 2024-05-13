@@ -4,17 +4,17 @@ WINDOW_HEIGHT = 700
 WINDOW_WIDTH = 1100
 
 # ASSETS
-WINDOW_BITMAP_ICON_PATH = 'assets\\icon\\tsar_bank.ico'
+WINDOW_BITMAP_ICON_PATH = 'assets\\icon\\tsar_bank_icon.ico'
 
 SMALL_DB_ICON_PATH = 'assets\\ui\\login_screen\\db_icon.png'
-USER_ICON_PATH = 'assets\\ui\\login_screen\\user_icon.png'
+LOGIN_SCREEN_USER_ICON_PATH = 'assets\\ui\\login_screen\\user_icon.png'
+MAIN_SCREEN_USER_ICON_PATH = 'assets\\ui\\main_screen\\user_icon.png'
 
+BACK_ARROW_ICON_PATH = 'assets/ui/back_button.png'
+WARNING_ICON_PATH = 'assets/ui/warning_icon.png'
 SHOW_PASSWORD_ICON_PATH = 'assets/ui/obfuscate_widget/show_password.png'
 HIDE_PASSWORD_ICON_PATH = 'assets/ui/obfuscate_widget/hide_password.png'
 
-WARNING_ICON_PATH = 'assets/ui/warning_icon.png'
-
-BACK_ARROW_ICON_PATH = 'assets/ui/back_button.png'
 
 # FONT
 WELCOME_SCREEN_WELCOME_LABEL_FONT = ('Congenial Black', 70, 'bold')
@@ -34,6 +34,9 @@ SIGNUP_SCREEN_RADIO_BUTTON_FONT = ('Calibri', 25, 'bold')
 SIGNUP_SCREEN_ADDRESS_FONT = ('Calibri', 32)
 SIGNUP_SCREEN_OPERATION_BUTTON_FONT =('Calibri', 30, 'bold')
 
+MAIN_SCREEN_HEADER_FONT = ('Calibri', 50, 'bold')
+MAIN_SCREEN_PANEL_FONT = ('Calibri', 40, 'bold')
+
 # DIMENSIONS
 SIDE_PANEL_BUTTON_DIMENSION = 100
 SIDE_PANEL_BUTTON_CORNER_RADIUS = 18
@@ -42,7 +45,7 @@ COMMON_ENTRY_CORNER_RADIUS = 40
 
 LOGIN_SCREEN_BOTTOM_BUTTON_WIDTH = 380
 LOGIN_SCREEN_BOTTOM_BUTTON_HEIGHT = 80
-LOGIN_SCREEN_BOTTOM_BUTTON_CORNER_RADIUS = 99999
+LOGIN_SCREEN_BOTTOM_BUTTON_CORNER_RADIUS = 100
 
 # COLORS
 APP_COLOR_THEME = 'green'  # Available -> ['blue', 'dark-blue', 'green']

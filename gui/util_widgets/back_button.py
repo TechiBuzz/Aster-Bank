@@ -27,4 +27,9 @@ class BackButton(ctk.CTkButton):
             image=ctk.CTkImage(dark_image=img, light_image=img),
             command=lambda: go_back(from_page, to_page)
         )
+
+        # Mouse back
+        self.bind()
+
+        # Place
         self.place(relx=relx, rely=rely, anchor='nw')

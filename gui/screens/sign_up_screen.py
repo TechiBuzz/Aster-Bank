@@ -2,8 +2,8 @@ import hashlib
 
 from settings import *
 from tkcalendar import Calendar
-from gui.util_widgets.back_button import BackButton
 from tkinter.messagebox import askokcancel
+from gui.util_widgets.back_button import BackButton
 from gui.util_widgets.warning_label_widget import WarningLabel
 from gui.util_widgets.obfuscate_entry_widget import ObfuscateEntryWidget
 
@@ -16,7 +16,8 @@ SIGNUP_SCREEN_INSTANCE = None
 WARNING_LABEL = None
 
 
-def update_db(first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str, phone: str, password: str):
+def update_db(first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str, phone: str,
+              password: str):
     db_connection = SIGNUP_SCREEN_INSTANCE.db_connection
     cursor = db_connection.cursor()
 
@@ -43,14 +44,17 @@ def update_db(first_name: str, last_name: str, gender: str, dob: datetime.date, 
 
     # Update
     query = 'INSERT INTO accounts (ID, USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-    values = (account_id, username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender, dob, address, email, phone)
-     
+    values = (
+    account_id, username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender, dob,
+    address, email, phone)
+
     cursor.execute(query, values)
     db_connection.commit()
     cursor.close()
 
 
-def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str, phone: str, password: str, cnf_password: str) -> bool:
+def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str,
+                      phone: str, password: str, cnf_password: str) -> bool:
     # Emptiness check
     def no_empty_fields():
         if first_name.isspace():
@@ -167,7 +171,7 @@ def submit_info():
 
         first_name = SIGNUP_SCREEN_INSTANCE.name_fields_frame.left_field.get()
         last_name = SIGNUP_SCREEN_INSTANCE.name_fields_frame.right_field.get()
-        gender = 'M' if SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.get() == 1 else 'F' if SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.get() == 2 else 'O' if SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.get() == 3 else 'NULL'
+        gender = 'M' if SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.get() == 1 else 'F' if SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.get() == 2 else 'NULL'
         dob = SIGNUP_SCREEN_INSTANCE.dob_selection_frame.cal.get_date()
         address = SIGNUP_SCREEN_INSTANCE.address_field_frame.text_entry.get('0.0', 'end').replace('\n', ' ')
         email = SIGNUP_SCREEN_INSTANCE.contact_info_frame.left_field.get()
@@ -225,15 +229,16 @@ class SignUpScreen(ctk.CTkFrame):
         self.contact_info_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='Email', right_label_text='Phone',
                                                    left_entry_validation=('email', 30),
                                                    right_entry_validation=('numbers_only', 10))
-        self.password_entry_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='Password', right_label_text='Confirm Password',
-                                                     left_entry_validation=('any', 15), right_entry_validation=('any', 15))
+        self.password_entry_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='Password',
+                                                     right_label_text='Confirm Password',
+                                                     left_entry_validation=('any', 15),
+                                                     right_entry_validation=('any', 15))
         self.password_entry_frame.left_field.configure(show='*')
         self.password_entry_frame.right_field.configure(show='*')
 
         self.obfuscate_pass_entry = ObfuscateEntryWidget(parent=self.password_entry_frame.left_field)
 
         self.obfuscate_cnf_pass_entry = ObfuscateEntryWidget(parent=self.password_entry_frame.right_field)
-
         self.warning_label_container = ctk.CTkFrame(self.scroll_frame, corner_radius=15)
         self.warning_label_container.pack(expand=True, fill='x', ipady=12, padx=12, pady=12)
 
@@ -256,6 +261,7 @@ class SignUpScreen(ctk.CTkFrame):
         # Make warning label global
         global WARNING_LABEL
         WARNING_LABEL = self.warning_label
+
 
 class DoubleEntryFrame(ctk.CTkFrame):
     def __init__(self, parent, left_label_text: str, right_label_text: str, left_entry_validation: tuple = None,
@@ -305,7 +311,8 @@ class DoubleEntryFrame(ctk.CTkFrame):
         elif key[0] == 'alphabets_only':
             new_value = ''.join(char for char in field_var.get() if char.isalpha())[:max_char_length]
         elif key[0] == 'email':
-            new_value = ''.join(char for char in field_var.get() if (char.isalnum() or char == '@' or char == '.'))[:max_char_length]
+            new_value = ''.join(char for char in field_var.get() if (char.isalnum() or char == '@' or char == '.'))[
+                        :max_char_length]
         elif key[0] == 'any':
             new_value = ''.join(char for char in field_var.get())[:max_char_length]  # only limit max chars
 
@@ -323,7 +330,7 @@ class GenderSelectionFrame(ctk.CTkFrame):
         self.radio_container = ctk.CTkFrame(self)
 
         self.radio_container.rowconfigure(0, weight=1)
-        self.radio_container.columnconfigure((0, 1, 2), weight=1, uniform='G')
+        self.radio_container.columnconfigure((0, 1), weight=1, uniform='G')
 
         self.radio_container.pack(expand=True, fill='both', side='bottom', ipady=12, padx=12, pady=12)
 
@@ -337,11 +344,6 @@ class GenderSelectionFrame(ctk.CTkFrame):
                                                       font=SIGNUP_SCREEN_RADIO_BUTTON_FONT, variable=self.radio_var,
                                                       value=2)
         self.radio_button_female.grid(row=0, column=1)
-
-        self.radio_button_other = ctk.CTkRadioButton(self.radio_container, text='Other',
-                                                     font=SIGNUP_SCREEN_RADIO_BUTTON_FONT, variable=self.radio_var,
-                                                     value=3)
-        self.radio_button_other.grid(row=0, column=2)
 
         # Place
         self.pack(expand=True, fill='x', padx=12, pady=12)
