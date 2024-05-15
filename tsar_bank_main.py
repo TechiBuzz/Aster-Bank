@@ -93,7 +93,7 @@ def main():
     app.geometry(f'{WINDOW_WIDTH}x{WINDOW_HEIGHT}')
     app.minsize(1100, 700)
 
-    app.iconbitmap(WINDOW_BITMAP_ICON_PATH)
+    app.iconbitmap(WINDOW_BITMAP_ICON)
 
     app.mainloop()
 

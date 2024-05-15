@@ -4,17 +4,18 @@ WINDOW_HEIGHT = 700
 WINDOW_WIDTH = 1100
 
 # ASSETS
-WINDOW_BITMAP_ICON_PATH = 'assets\\icon\\tsar_bank_icon.ico'
+WINDOW_BITMAP_ICON = 'assets\\icon\\tsar_bank_icon.ico'
 
-SMALL_DB_ICON_PATH = 'assets\\ui\\login_screen\\db_icon.png'
-LOGIN_SCREEN_USER_ICON_PATH = 'assets\\ui\\login_screen\\user_icon.png'
-MAIN_SCREEN_USER_ICON_PATH = 'assets\\ui\\main_screen\\user_icon.png'
+SMALL_DB_ICON = 'assets\\ui\\login_screen\\db_icon.png'
+LOGIN_SCREEN_USER_ICON = 'assets\\ui\\login_screen\\user_icon.png'
+MAIN_SCREEN_USER_ICON = 'assets\\ui\\main_screen\\user_icon.png'
 
-BACK_ARROW_ICON_PATH = 'assets/ui/back_button.png'
-WARNING_ICON_PATH = 'assets/ui/warning_icon.png'
-SHOW_PASSWORD_ICON_PATH = 'assets/ui/obfuscate_widget/show_password.png'
-HIDE_PASSWORD_ICON_PATH = 'assets/ui/obfuscate_widget/hide_password.png'
+BACK_ARROW_ICON = 'assets/ui/back_button.png'
+WARNING_ICON = 'assets/ui/warning_icon.png'
+SHOW_PASSWORD_ICON = 'assets/ui/obfuscate_widget/show_password.png'
+HIDE_PASSWORD_ICON = 'assets/ui/obfuscate_widget/hide_password.png'
 
+TRANSITION_CHECKMARK_ICON = 'assets/ui/transition_screen/check.png'
 
 # FONT
 WELCOME_SCREEN_WELCOME_LABEL_FONT = ('Congenial Black', 70, 'bold')
@@ -27,6 +28,8 @@ LOGIN_SCREEN_FIELD_ENTRY_FONT = ('Calibri', 40)
 LOGIN_SCREEN_BOTTOM_BUTTON_FONT = ('Calibri', 45, 'bold')
 
 LOGIN_SCREEN_WARNING_LABEL_FONT = ('Calibri', 22, 'bold')
+
+TRANSITION_SCREEN_FONT = ('Congenial Black', 80, 'bold')
 
 SIGNUP_SCREEN_LABEL_FONT = ('Calibri', 50, 'bold')
 SIGNUP_SCREEN_FIELD_ENTRY_FONT = ('Calibri', 38)

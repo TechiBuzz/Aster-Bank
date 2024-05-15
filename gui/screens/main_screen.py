@@ -31,7 +31,7 @@ class UserInfoFrame(ctk.CTkFrame):
         self.user_icon = ctk.CTkButton(
             master=self,
             text='',
-            image=ctk.CTkImage(light_image=Image.open(MAIN_SCREEN_USER_ICON_PATH), dark_image=Image.open(MAIN_SCREEN_USER_ICON_PATH), size=(60, 60)),
+            image=ctk.CTkImage(light_image=Image.open(MAIN_SCREEN_USER_ICON), dark_image=Image.open(MAIN_SCREEN_USER_ICON), size=(60, 60)),
             fg_color='transparent',
             hover_color='#2B2B2B',
             corner_radius=100,

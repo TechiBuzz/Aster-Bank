@@ -3,6 +3,7 @@ import bcrypt
 from settings import *
 from tkcalendar import Calendar
 from tkinter.messagebox import askokcancel
+from gui.screens.transition_screen import TransitionScreen
 from gui.util_widgets.back_button import BackButton
 from gui.util_widgets.warning_label_widget import WarningLabel
 from gui.util_widgets.obfuscate_entry_widget import ObfuscateEntryWidget
@@ -239,10 +240,13 @@ class SignUpScreen(ctk.CTkFrame):
 
                     # Hash password
                     pass_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-                    print(pass_hash)
 
                     self.update_db(first_name, last_name, gender, dob, address, email, phone, pass_hash)
-                    self.app_instance.show_window('LoginScreen', 'SignUpScreen')
+
+                    # Change from transition screen after 3.5 seconds
+                    self.after(3500, lambda: self.app_instance.show_window('LoginScreen', 'SignUpScreen'))
+                    TransitionScreen(self, 'Signing Up...', 'Signed Up!', 3500, 2000)
+
                 else:
                     self.warning_label.raise_warning(19)
 
