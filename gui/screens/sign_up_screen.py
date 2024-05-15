@@ -1,4 +1,4 @@
-import hashlib
+import bcrypt
 
 from settings import *
 from tkcalendar import Calendar
@@ -12,216 +12,28 @@ import random
 import datetime
 import customtkinter as ctk
 
-SIGNUP_SCREEN_INSTANCE = None
-WARNING_LABEL = None
-
-
-def update_db(first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str, phone: str,
-              password: str):
-    db_connection = SIGNUP_SCREEN_INSTANCE.db_connection
-    cursor = db_connection.cursor()
-
-    # Generate a new account number
-    cursor.execute('SELECT ID FROM accounts')
-    current_ids = cursor.fetchall()
-
-    account_id = random.randint(10000, 99999)
-    while account_id in current_ids:
-        account_id = random.randint(10000, 99999)
-
-    # Generate a new username
-    '''
-    Generate a formatted username
-    Example:
-        First Name: Mickey
-        Last Name: Mouse
-        DOB: 1928-11-18
-        
-    -> Output: MickeyM111828 (format = first_name + last_name's first character + dob_month + dob_day + dob_year)
-    '''
-    split_dob = str(dob).split('-')
-    username = f'{first_name.lower().capitalize()}{last_name.upper()[0]}{split_dob[1]}{split_dob[2]}{split_dob[0][2:]}'
-
-    # Update
-    query = 'INSERT INTO accounts (ID, USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-    values = (
-    account_id, username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender, dob,
-    address, email, phone)
-
-    cursor.execute(query, values)
-    db_connection.commit()
-    cursor.close()
-
-
-def valid_credentials(first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str,
-                      phone: str, password: str, cnf_password: str) -> bool:
-    # Emptiness check
-    def no_empty_fields():
-        if first_name.isspace():
-            WARNING_LABEL.raise_warning(0)
-            return
-        if last_name.isspace():
-            WARNING_LABEL.raise_warning(1)
-            return
-        if address.isspace():
-            WARNING_LABEL.raise_warning(2)
-            return
-        if email.isspace():
-            WARNING_LABEL.raise_warning(3)
-            return
-        if phone.isspace():
-            WARNING_LABEL.raise_warning(4)
-            return
-        if password.isspace():
-            WARNING_LABEL.raise_warning(5)
-            return
-        if cnf_password.isspace():
-            WARNING_LABEL.raise_warning(6)
-            return
-
-        # All checks passed
-        return True
-
-    # Length check
-    def valid_character_lengths():
-        if len(first_name) < 3:
-            WARNING_LABEL.raise_warning(7)
-            return
-        if len(last_name) < 1:
-            WARNING_LABEL.raise_warning(8)
-            return
-        if len(address) < 20 or len(address) > 255:
-            WARNING_LABEL.raise_warning(9)
-            return
-        if len(phone) < 10:
-            WARNING_LABEL.raise_warning(10)
-            return
-        if len(password) < 8:
-            WARNING_LABEL.raise_warning(11)
-            return
-
-        # All checks passed
-        return True
-
-    # Gender check
-    def valid_gender():
-        if gender == 'NULL':
-            WARNING_LABEL.raise_warning(12)
-            return
-
-        # Check passed
-        return True
-
-    # Age check
-    def valid_age():
-        dob_year = int(dob[:4])
-        current_year = int(str(datetime.date.today())[:4])
-
-        if not dob_year < (current_year - 15):  # Min age = 15 (set current_year - {min_age})
-            WARNING_LABEL.raise_warning(13)
-            return
-
-        # Check passed
-        return True
-
-    # Email check
-    def valid_email():
-        regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'  # stole from https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
-        if not re.fullmatch(regex, email):
-            WARNING_LABEL.raise_warning(14)
-            return
-
-        # Check passed
-        return True
-
-    # Password check
-    def valid_password():
-        special_chars = 0
-        uppercase = 0
-        numbers = 0
-        for char in password:
-            if not char.isalnum(): special_chars += 1
-            if char.isupper(): uppercase += 1
-            if char.isdigit(): numbers += 1
-
-        if special_chars < 2:
-            WARNING_LABEL.raise_warning(15)
-            return
-        if uppercase < 2:
-            WARNING_LABEL.raise_warning(16)
-            return
-        if numbers < 2:
-            WARNING_LABEL.raise_warning(17)
-            return
-
-        if not password == cnf_password:
-            WARNING_LABEL.raise_warning(18)
-            return
-
-        # All checks passed
-        return True
-
-    return True if no_empty_fields() and valid_character_lengths() and valid_gender() and valid_email() and valid_password() and valid_age() else False
-
-
-def submit_info():
-    user_decision = askokcancel('Submit Info', message='Submit all credentials? This cannot be undone!')
-
-    if user_decision:
-
-        first_name = SIGNUP_SCREEN_INSTANCE.name_fields_frame.left_field.get()
-        last_name = SIGNUP_SCREEN_INSTANCE.name_fields_frame.right_field.get()
-        gender = 'M' if SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.get() == 1 else 'F' if SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.get() == 2 else 'NULL'
-        dob = SIGNUP_SCREEN_INSTANCE.dob_selection_frame.cal.get_date()
-        address = SIGNUP_SCREEN_INSTANCE.address_field_frame.text_entry.get('0.0', 'end').replace('\n', ' ')
-        email = SIGNUP_SCREEN_INSTANCE.contact_info_frame.left_field.get()
-        phone = SIGNUP_SCREEN_INSTANCE.contact_info_frame.right_field.get()
-
-        password = SIGNUP_SCREEN_INSTANCE.password_entry_frame.left_field.get()  # raw password
-        cnf_password = SIGNUP_SCREEN_INSTANCE.password_entry_frame.right_field.get()
-
-        if valid_credentials(first_name, last_name, gender, dob, address, email, phone, password, cnf_password):
-            if SIGNUP_SCREEN_INSTANCE.db_connection:  # database connected (this is just a 2nd level ensurance as database must already be connected in order to get to sign-up screen)
-                hashed_password = hashlib.sha256(password.encode()).hexdigest()  # encrypt the password
-                update_db(first_name, last_name, gender, dob, address, email, phone, hashed_password)
-                SIGNUP_SCREEN_INSTANCE.MAIN_WINDOW_INSTANCE.show_window('LoginScreen', 'SignUpScreen')
-            else:
-                WARNING_LABEL.raise_warning(19)
-
-
-def clear_info():
-    user_decision = askokcancel('Clear Info', message='Clear all entry fields? This cannot be undone!')
-
-    if user_decision:
-        for field in SIGNUP_SCREEN_INSTANCE.entry_fields:
-            if field.widgetName == 'TextBox':
-                field.delete('0.0', 'end')
-            else:
-                field.delete(0, 'end')
-        SIGNUP_SCREEN_INSTANCE.gender_selection_frame.radio_var.set(-1)  # reset radio buttons
-        WARNING_LABEL.clear_warning()
-
 
 class SignUpScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
 
-        global SIGNUP_SCREEN_INSTANCE
-        SIGNUP_SCREEN_INSTANCE = self
+        # App instance
+        self.app_instance = parent
 
         # Database connection
         self.db_connection = parent.db_connection
 
         # Widgets
         self.scroll_frame = ctk.CTkScrollableFrame(self)
+        self.scroll_frame.signup_screen_instance = self
         self.scroll_frame.place(relx=0.0, rely=0.0, relwidth=1, relheight=1)
 
         self.name_fields_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='First Name',
                                                   right_label_text='Last Name',
                                                   left_entry_validation=('alphabets_only', 20),
                                                   right_entry_validation=('alphabets_only', 20))
-        self.name_fields_frame.MAIN_WINDOW_INSTANCE = parent  # Get main window instance (used for back button)
-        self.back_button = BackButton(self.name_fields_frame, 'SignUpScreen', 'LoginScreen', 0.04, 0.15)  # clunky but works
+        self.back_button = (BackButton(self.name_fields_frame, 'SignUpScreen', 'LoginScreen', self.app_instance))
+        self.back_button.place(relx=0.04, rely=0.15, anchor='nw')  # clunky but works
 
         self.gender_selection_frame = GenderSelectionFrame(self.scroll_frame)
         self.dob_selection_frame = DateOfBirthSelectionFrame(self.scroll_frame)
@@ -258,9 +70,193 @@ class SignUpScreen(ctk.CTkFrame):
             self.password_entry_frame.right_field
         ]
 
-        # Make warning label global
-        global WARNING_LABEL
-        WARNING_LABEL = self.warning_label
+    def update_db(self, first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str,
+                  phone: str,
+                  password: bytes):
+        db_connection = self.db_connection
+        cursor = db_connection.cursor()
+
+        # Generate a new account number
+        cursor.execute('SELECT ID FROM accounts')
+        current_ids = cursor.fetchall()
+
+        account_id = random.randint(10000, 99999)
+        while account_id in current_ids:
+            account_id = random.randint(10000, 99999)
+
+        # Generate a new username
+        '''
+        Generate a formatted username
+        Example:
+            First Name: Mickey
+            Last Name: Mouse
+            DOB: 1928-11-18
+
+        -> Output: MickeyM111828 (format = first_name + last_name's first character + dob_month + dob_day + dob_year)
+        '''
+        split_dob = str(dob).split('-')
+        username = f'{first_name.lower().capitalize()}{last_name.upper()[0]}{split_dob[1]}{split_dob[2]}{split_dob[0][2:]}'
+
+        # Update
+        query = 'INSERT INTO accounts (ID, USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        values = (
+            account_id, username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender,
+            dob,
+            address, email, phone)
+
+        cursor.execute(query, values)
+        db_connection.commit()
+        cursor.close()
+
+    def valid_credentials(self, first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str,
+                          phone: str, password: str, cnf_password: str) -> bool:
+        # Emptiness check
+        def no_empty_fields():
+            if first_name.isspace():
+                self.warning_label.raise_warning(0)
+                return
+            if last_name.isspace():
+                self.warning_label.raise_warning(1)
+                return
+            if address.isspace():
+                self.warning_label.raise_warning(2)
+                return
+            if email.isspace():
+                self.warning_label.raise_warning(3)
+                return
+            if phone.isspace():
+                self.warning_label.raise_warning(4)
+                return
+            if password.isspace():
+                self.warning_label.raise_warning(5)
+                return
+            if cnf_password.isspace():
+                self.warning_label.raise_warning(6)
+                return
+
+            # All checks passed
+            return True
+
+        # Length check
+        def valid_character_lengths():
+            if len(first_name) < 3:
+                self.warning_label.raise_warning(7)
+                return
+            if len(last_name) < 1:
+                self.warning_label.raise_warning(8)
+                return
+            if len(address) < 20 or len(address) > 255:
+                self.warning_label.raise_warning(9)
+                return
+            if len(phone) < 10:
+                self.warning_label.raise_warning(10)
+                return
+            if len(password) < 8:
+                self.warning_label.raise_warning(11)
+                return
+
+            # All checks passed
+            return True
+
+        # Gender check
+        def valid_gender():
+            if gender == 'NULL':
+                self.warning_label.raise_warning(12)
+                return
+
+            # Check passed
+            return True
+
+        # Age check
+        def valid_age():
+            dob_year = int(dob[:4])
+            current_year = int(str(datetime.date.today())[:4])
+
+            if not dob_year < (current_year - 15):  # Min age = 15 (set current_year - {min_age})
+                self.warning_label.raise_warning(13)
+                return
+
+            # Check passed
+            return True
+
+        # Email check
+        def valid_email():
+            regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'  # stole from https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
+            if not re.fullmatch(regex, email):
+                self.warning_label.raise_warning(14)
+                return
+
+            # Check passed
+            return True
+
+        # Password check
+        def valid_password():
+            special_chars = 0
+            uppercase = 0
+            numbers = 0
+            for char in password:
+                if not char.isalnum(): special_chars += 1
+                if char.isupper(): uppercase += 1
+                if char.isdigit(): numbers += 1
+
+            if special_chars < 2:
+                self.warning_label.raise_warning(15)
+                return
+            if uppercase < 2:
+                self.warning_label.raise_warning(16)
+                return
+            if numbers < 2:
+                self.warning_label.raise_warning(17)
+                return
+
+            if not password == cnf_password:
+                self.warning_label.raise_warning(18)
+                return
+
+            # All checks passed
+            return True
+
+        return True if no_empty_fields() and valid_character_lengths() and valid_gender() and valid_email() and valid_password() and valid_age() else False
+
+    def submit_info(self):
+        user_decision = askokcancel('Submit Info', message='Submit all credentials? This cannot be undone!')
+
+        if user_decision:
+
+            first_name = self.name_fields_frame.left_field.get()
+            last_name = self.name_fields_frame.right_field.get()
+            gender = 'M' if self.gender_selection_frame.radio_var.get() == 1 else 'F' if self.gender_selection_frame.radio_var.get() == 2 else 'NULL'
+            dob = self.dob_selection_frame.cal.get_date()
+            address = self.address_field_frame.text_entry.get('0.0', 'end').replace('\n', ' ')
+            email = self.contact_info_frame.left_field.get()
+            phone = self.contact_info_frame.right_field.get()
+
+            password = self.password_entry_frame.left_field.get()  # raw password
+            cnf_password = self.password_entry_frame.right_field.get()
+
+            if self.valid_credentials(first_name, last_name, gender, dob, address, email, phone, password, cnf_password):
+                if self.db_connection:  # database connected
+
+                    # Hash password
+                    pass_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+                    print(pass_hash)
+
+                    self.update_db(first_name, last_name, gender, dob, address, email, phone, pass_hash)
+                    self.app_instance.show_window('LoginScreen', 'SignUpScreen')
+                else:
+                    self.warning_label.raise_warning(19)
+
+    def clear_info(self):
+        user_decision = askokcancel('Clear Info', message='Clear all entry fields? This cannot be undone!')
+
+        if user_decision:
+            for field in self.entry_fields:
+                if field.widgetName == 'TextBox':
+                    field.delete('0.0', 'end')
+                else:
+                    field.delete(0, 'end')
+            self.gender_selection_frame.radio_var.set(-1)  # reset radio buttons
+            self.warning_label.clear_warning()
 
 
 class DoubleEntryFrame(ctk.CTkFrame):
@@ -409,7 +405,7 @@ class OperationButtonsFrame(ctk.CTkFrame):
             text='Submit',
             font=SIGNUP_SCREEN_OPERATION_BUTTON_FONT,
             corner_radius=100,
-            command=submit_info
+            command=parent.signup_screen_instance.submit_info
         )
         self.submit_button.pack(expand=True, fill='both', ipady=10, padx=12, pady=12, side='left')
 
@@ -418,7 +414,7 @@ class OperationButtonsFrame(ctk.CTkFrame):
             text='Clear',
             font=SIGNUP_SCREEN_OPERATION_BUTTON_FONT,
             corner_radius=100,
-            command=clear_info
+            command=parent.signup_screen_instance.clear_info
         )
         self.clear_button.pack(expand=True, fill='both', ipady=10, padx=12, pady=12, side='left')
 

@@ -83,3 +83,4 @@ SIGN_UP_ERRORS = {
 
 # DATABASE
 DB = {"HOST": "sql6.freesqldatabase.com", "DATABASE": "sql6698638", "PORT": 3306, "USER": "sql6698638", "PASSWORD": "fMqmcIIyBu"}
+# FOR cmd line mysql -h sql6.freesqldatabase.com -u sql6698638 -p

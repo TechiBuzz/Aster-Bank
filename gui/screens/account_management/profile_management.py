@@ -1,13 +1,19 @@
+from gui.util_widgets.back_button import BackButton
+
 import customtkinter as ctk
 
-MAIN_WINDOW_INSTANCE = None
+APP_INSTANCE = None
+
 
 class ProfileManagementScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
 
-        global MAIN_WINDOW_INSTANCE
+        global APP_INSTANCE
         MAIN_WINDOW_INSTANCE = parent
+
+        self.db_connection = parent.db_connection
+        self.account = None
 
         # Widgets
         self.central_frame = ctk.CTkFrame(self, corner_radius=15)

@@ -3,19 +3,14 @@ from PIL import Image
 
 import customtkinter as ctk
 
-MAIN_WINDOW_INSTANCE = None
 
-
-def go_back(from_page, to_page):
-    MAIN_WINDOW_INSTANCE.show_window(window_to_show=to_page, window_to_clear=from_page)
+def go_back(app_instance, to_page: str, from_page: str = None):
+    app_instance.show_window(window_to_show=to_page, window_to_clear=from_page)
 
 
 class BackButton(ctk.CTkButton):
-    def __init__(self, parent, from_page, to_page, relx, rely):
+    def __init__(self, parent, from_page, to_page, app_instance):
         super().__init__(parent)
-
-        global MAIN_WINDOW_INSTANCE
-        MAIN_WINDOW_INSTANCE = parent.MAIN_WINDOW_INSTANCE  # make sure caller has main instance
 
         img = Image.open(BACK_ARROW_ICON_PATH)
 
@@ -25,11 +20,5 @@ class BackButton(ctk.CTkButton):
             corner_radius=25,
             text='',
             image=ctk.CTkImage(dark_image=img, light_image=img),
-            command=lambda: go_back(from_page, to_page)
+            command=lambda: go_back(app_instance, to_page, from_page)
         )
-
-        # Mouse back
-        self.bind()
-
-        # Place
-        self.place(relx=relx, rely=rely, anchor='nw')

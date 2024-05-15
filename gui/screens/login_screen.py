@@ -3,106 +3,27 @@ from settings import *
 from gui.util_widgets.warning_label_widget import WarningLabel
 from gui.util_widgets.obfuscate_entry_widget import ObfuscateEntryWidget
 
-import hashlib
+import bcrypt
 import customtkinter as ctk
-
-'''
-INSTANCE OF MAIN WINDOW
-'''
-MAIN_WINDOW_INSTANCE = None
-LOGIN_SCREEN_INSTANCE = None
-WARNING_LABEL = None
-
-
-def successful_login(user_data):
-    account = {
-        'ACCOUNT_ID': user_data[0],
-        'USERNAME': user_data[1],  # password details omitted for safety
-        'FIRST_NAME': user_data[3],
-        'LAST_NAME': user_data[4],
-        'DATE_OF_BIRTH': user_data[5],
-        'GENDER': user_data[6],
-        'ADDRESS': user_data[7],
-        'EMAIL_ID': user_data[8],
-        'PHONE_NO': user_data[9],
-        'BALANCE': user_data[10],
-        'ADMIN': user_data[11]
-    }
-
-    # Update account details
-    MAIN_WINDOW_INSTANCE.gui_instances['MainScreen'].update_user_data(account)
-
-    # Change window
-    MAIN_WINDOW_INSTANCE.show_window(window_to_show='MainScreen', window_to_clear='LoginScreen')
-
-
-def login() -> None:
-    username: str = LOGIN_SCREEN_INSTANCE.username_entry.entry.get()
-
-    password_field = LOGIN_SCREEN_INSTANCE.password_entry.entry
-    password = hashlib.sha256(password_field.get().encode()).hexdigest()
-
-    def non_empty_fields():
-        if len(username) == 0:
-            WARNING_LABEL.raise_warning(0)
-            return
-        if len(password_field.get()) == 0:
-            WARNING_LABEL.raise_warning(1)
-            return
-
-        # All checks passed
-        return True
-
-    def database_connected():
-        db_cnx = MAIN_WINDOW_INSTANCE.db_connection
-        if not db_cnx:
-            WARNING_LABEL.raise_warning(2)
-            return False
-        return True
-
-    def fetch_login_result():
-        cursor = MAIN_WINDOW_INSTANCE.db_connection.cursor()
-
-        validation_query = "SELECT * FROM accounts WHERE USERNAME = %s AND PASSWORD = %s"
-        cursor.execute(validation_query, (username, password))
-        result = cursor.fetchone()
-
-        cursor.close()
-
-        return result
-
-    if non_empty_fields() and database_connected():
-        login_result = fetch_login_result()
-
-        if login_result:
-            successful_login(login_result)
-        else:
-            WARNING_LABEL.raise_warning(3)
-
-
-def signup() -> None:
-    if MAIN_WINDOW_INSTANCE.db_connection:
-        MAIN_WINDOW_INSTANCE.show_window(window_to_show='SignUpScreen', window_to_clear='LoginScreen')
-    else:
-        WARNING_LABEL.raise_warning(2)
 
 
 class LoginScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
 
-        # Get main window instance
-        global MAIN_WINDOW_INSTANCE
-        MAIN_WINDOW_INSTANCE = parent
+        # App instance
+        self.app_instance = parent
 
         # Database
         self.db_connection = parent.db_connection
 
         # Widgets
         self.central_frame = ctk.CTkFrame(self, corner_radius=15)
+        self.central_frame.login_screen_instance = self
         self.central_frame.place(relx=0.5, rely=0.05, relheight=0.85, relwidth=0.935, anchor='n')
 
-        user_icon_img = ctk.CTkImage(light_image=Image.open(LOGIN_SCREEN_USER_ICON_PATH), dark_image=Image.open(LOGIN_SCREEN_USER_ICON_PATH),
+        user_icon_img = ctk.CTkImage(light_image=Image.open(LOGIN_SCREEN_USER_ICON_PATH),
+                                     dark_image=Image.open(LOGIN_SCREEN_USER_ICON_PATH),
                                      size=(140, 140))
         self.user_icon = ctk.CTkLabel(self.central_frame, text='', image=user_icon_img)
         self.user_icon.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.3, anchor='w')
@@ -123,11 +44,90 @@ class LoginScreen(ctk.CTkFrame):
             self.password_entry.entry
         ]
 
-        global WARNING_LABEL
-        WARNING_LABEL = self.warning_label
+    def successful_login(self, user_data):
+        account = {
+            'ACCOUNT_ID': user_data[0],
+            'USERNAME': user_data[1],  # password details omitted for safety
+            'FIRST_NAME': user_data[3],
+            'LAST_NAME': user_data[4],
+            'DATE_OF_BIRTH': user_data[5],
+            'GENDER': user_data[6],
+            'ADDRESS': user_data[7],
+            'EMAIL_ID': user_data[8],
+            'PHONE_NO': user_data[9],
+            'BALANCE': user_data[10],
+            'ADMIN': user_data[11]
+        }
 
-        global LOGIN_SCREEN_INSTANCE
-        LOGIN_SCREEN_INSTANCE = self
+        # Update account details
+        self.app_instance.gui_instances['MainScreen'].user_details_frame.name_var.set(
+            f'{account['FIRST_NAME']} {account['LAST_NAME']}')
+
+        for screen in ('ProfileManagementScreen', 'FundManagementScreen', 'TransferMoneyScreen', 'RequestMoneyScreen',
+                       'BillManagementScreen', 'FDCalculatorScreen', 'TransactionHistoryScreen'):
+            self.app_instance.gui_instances[screen].account = account
+
+        # Change window
+        self.app_instance.show_window(window_to_show='MainScreen', window_to_clear='LoginScreen')
+
+    def login(self) -> None:
+        username: str = self.username_entry.entry.get()
+        password_field = self.password_entry.entry
+
+        def non_empty_fields():
+            if len(username) == 0:
+                self.warning_label.raise_warning(0)
+                return
+            if len(password_field.get()) == 0:
+                self.warning_label.raise_warning(1)
+                return
+
+            # All checks passed
+            return True
+
+        def database_connected():
+            db_cnx = self.app_instance.db_connection
+            if not db_cnx:
+                self.warning_label.raise_warning(2)
+                return False
+            return True
+
+        def fetch_login_result():
+            result = None
+
+            cursor = self.app_instance.db_connection.cursor()
+
+            validation_query = 'SELECT PASSWORD FROM accounts WHERE USERNAME = %s'
+            cursor.execute(validation_query, (username,))
+
+            # Retrieve stored password from database
+            stored_pass = cursor.fetchone()[0]
+
+            # Check if password valid
+            pass_good = bcrypt.checkpw(password_field.get().encode('utf-8'), stored_pass.encode('utf-8'))
+
+            if pass_good:
+                # Retrieve entire account if valid password
+                cursor.execute('SELECT * FROM accounts WHERE USERNAME = %s', (username,))
+                result = cursor.fetchone()
+
+            cursor.close()
+
+            return result
+
+        if non_empty_fields() and database_connected():
+            login_result = fetch_login_result()
+
+            if login_result:
+                self.successful_login(login_result)
+            else:
+                self.warning_label.raise_warning(3)
+
+    def signup(self) -> None:
+        if self.app_instance.db_connection:
+            self.app_instance.show_window(window_to_show='SignUpScreen', window_to_clear='LoginScreen')
+        else:
+            self.warning_label.raise_warning(2)
 
 
 class LabelledEntry(ctk.CTkFrame):
@@ -181,7 +181,7 @@ class LoginButtonsFrame(ctk.CTkFrame):
             text='Login',
             font=LOGIN_SCREEN_BOTTOM_BUTTON_FONT,
             corner_radius=LOGIN_SCREEN_BOTTOM_BUTTON_CORNER_RADIUS,
-            command=login
+            command=parent.login_screen_instance.login
         )
         self.login_button.place(relx=0.067, rely=0.4, relheight=0.65, relwidth=0.40, anchor='w')
 
@@ -192,7 +192,7 @@ class LoginButtonsFrame(ctk.CTkFrame):
             text='Sign-Up',
             font=LOGIN_SCREEN_BOTTOM_BUTTON_FONT,
             corner_radius=LOGIN_SCREEN_BOTTOM_BUTTON_CORNER_RADIUS,
-            command=signup
+            command=parent.login_screen_instance.signup
         )
         self.signup_button.place(relx=0.534, rely=0.4, relheight=0.65, relwidth=0.40, anchor='w')
 

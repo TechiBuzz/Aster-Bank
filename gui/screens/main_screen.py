@@ -3,7 +3,7 @@ from settings import *
 
 import customtkinter as ctk
 
-MAIN_WINDOW_INSTANCE = None
+APP_INSTANCE = None
 
 
 class MainScreen(ctk.CTkFrame):
@@ -11,11 +11,10 @@ class MainScreen(ctk.CTkFrame):
         super().__init__(master=parent)
 
         # Update main window instance
-        global MAIN_WINDOW_INSTANCE
+        global APP_INSTANCE
         MAIN_WINDOW_INSTANCE = parent
 
-        # User data
-        self.account = None
+        self.db_connection = parent.db_connection
 
         # Widgets
         self.central_frame = ctk.CTkFrame(self, corner_radius=15)
@@ -23,9 +22,6 @@ class MainScreen(ctk.CTkFrame):
 
         self.user_details_frame = UserInfoFrame(self.central_frame)
         self.feature_panels_frame = FeaturePanelsFrame(self.central_frame)
-
-    def update_user_data(self, userdata):
-        self.account = userdata
 
 
 class UserInfoFrame(ctk.CTkFrame):
@@ -37,16 +33,18 @@ class UserInfoFrame(ctk.CTkFrame):
             text='',
             image=ctk.CTkImage(light_image=Image.open(MAIN_SCREEN_USER_ICON_PATH), dark_image=Image.open(MAIN_SCREEN_USER_ICON_PATH), size=(60, 60)),
             fg_color='transparent',
-            hover_color='#FFFFFF',
+            hover_color='#2B2B2B',
             corner_radius=100,
             width=0,
-            command=lambda: MAIN_WINDOW_INSTANCE.show_window('ProfileManagementScreen')
+            command=lambda: APP_INSTANCE.show_window('ProfileManagementScreen')
         )
         self.user_icon.pack(padx=12, pady=12, side='left')
 
+        self.name_var = ctk.StringVar()
         self.name = ctk.CTkLabel(
             master=self,
-            text='Aditya Kumar',
+            text='',
+            textvariable=self.name_var,
             font=MAIN_SCREEN_HEADER_FONT
         )
         self.name.pack(pady=12, side='left')
@@ -71,7 +69,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: MAIN_WINDOW_INSTANCE.show_window('FundManagementScreen')
+            command=lambda: APP_INSTANCE.show_window('FundManagementScreen')
         )
         self.atm_panel.grid(row=0, column=0, padx=12, pady=12, sticky='nsew')
 
@@ -81,7 +79,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: MAIN_WINDOW_INSTANCE.show_window('TransferMoneyScreen')
+            command=lambda: APP_INSTANCE.show_window('TransferMoneyScreen')
         )
         self.transfer_panel.grid(row=0, column=1, padx=12, pady=12, sticky='nsew')
 
@@ -91,7 +89,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: MAIN_WINDOW_INSTANCE.show_window('RequestMoneyScreen')
+            command=lambda: APP_INSTANCE.show_window('RequestMoneyScreen')
         )
         self.request_panel.grid(row=0, column=2, padx=12, pady=12, sticky='nsew')
 
@@ -101,7 +99,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: MAIN_WINDOW_INSTANCE.show_window('FDCalculatorScreen')
+            command=lambda: APP_INSTANCE.show_window('FDCalculatorScreen')
         )
         self.fd_calculator_panel.grid(row=1, column=0, padx=12, pady=12, sticky='nsew')
 
@@ -111,7 +109,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: MAIN_WINDOW_INSTANCE.show_window('BillManagementScreen')
+            command=lambda: APP_INSTANCE.show_window('BillManagementScreen')
         )
         self.bills_panel.grid(row=1, column=1, padx=12, pady=12, sticky='nsew')
 
@@ -121,7 +119,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: MAIN_WINDOW_INSTANCE.show_window('TransactionHistoryScreen')
+            command=lambda: APP_INSTANCE.show_window('TransactionHistoryScreen')
         ))
         self.transaction_history_panel.grid(row=1, column=2, padx=12, pady=12, sticky='nsew')
 
