@@ -44,7 +44,7 @@ class TsarBank(ctk.CTk):
         }
 
         # TODO -> change back to WelcomeScreen after testing!!!!!!!!!!!!
-        self.show_window('LoginScreen')  # show login screen at start
+        self.show_window('WelcomeScreen')  # show login screen at start
 
     def show_window(self, window_to_show: str, window_to_clear: str = None):
         window_to_show = self.gui_instances[window_to_show]
@@ -60,6 +60,17 @@ class TsarBank(ctk.CTk):
                     field.delete('0.0', 'end')
                 else:
                     field.delete(0, 'end')
+
+            try:
+                for button in window_to_clear.radio_buttons:
+                    button.cget('variable').set(-1)
+            except AttributeError:
+                pass
+
+            try:
+                window_to_clear.scroll_frame._parent_canvas.yview_moveto(0.0)
+            except AttributeError:
+                pass
 
             # Clear warning label
             if window_to_clear.warning_label:

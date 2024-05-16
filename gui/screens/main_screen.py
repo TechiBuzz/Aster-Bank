@@ -3,21 +3,18 @@ from settings import *
 
 import customtkinter as ctk
 
-APP_INSTANCE = None
-
 
 class MainScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
 
-        # Update main window instance
-        global APP_INSTANCE
-        MAIN_WINDOW_INSTANCE = parent
+        self.app_instance = parent
 
         self.db_connection = parent.db_connection
 
         # Widgets
         self.central_frame = ctk.CTkFrame(self, corner_radius=15)
+        self.central_frame.main_screen_instance = self
         self.central_frame.place(relx=0.5, rely=0.5, relheight=0.93, relwidth=0.95, anchor='center')
 
         self.user_details_frame = UserInfoFrame(self.central_frame)
@@ -36,7 +33,7 @@ class UserInfoFrame(ctk.CTkFrame):
             hover_color='#2B2B2B',
             corner_radius=100,
             width=0,
-            command=lambda: APP_INSTANCE.show_window('ProfileManagementScreen')
+            command=lambda: parent.main_screen_instance.app_instance.show_window('ProfileManagementScreen')
         )
         self.user_icon.pack(padx=12, pady=12, side='left')
 
@@ -69,7 +66,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: APP_INSTANCE.show_window('FundManagementScreen')
+            command=lambda: parent.main_screen_instance.show_window('FundManagementScreen')
         )
         self.atm_panel.grid(row=0, column=0, padx=12, pady=12, sticky='nsew')
 
@@ -79,7 +76,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: APP_INSTANCE.show_window('TransferMoneyScreen')
+            command=lambda: parent.main_screen_instance.show_window('TransferMoneyScreen')
         )
         self.transfer_panel.grid(row=0, column=1, padx=12, pady=12, sticky='nsew')
 
@@ -89,7 +86,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: APP_INSTANCE.show_window('RequestMoneyScreen')
+            command=lambda: parent.main_screen_instance.show_window('RequestMoneyScreen')
         )
         self.request_panel.grid(row=0, column=2, padx=12, pady=12, sticky='nsew')
 
@@ -99,7 +96,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: APP_INSTANCE.show_window('FDCalculatorScreen')
+            command=lambda: parent.main_screen_instance.show_window('FDCalculatorScreen')
         )
         self.fd_calculator_panel.grid(row=1, column=0, padx=12, pady=12, sticky='nsew')
 
@@ -109,7 +106,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: APP_INSTANCE.show_window('BillManagementScreen')
+            command=lambda: parent.main_screen_instance.show_window('BillManagementScreen')
         )
         self.bills_panel.grid(row=1, column=1, padx=12, pady=12, sticky='nsew')
 
@@ -119,7 +116,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: APP_INSTANCE.show_window('TransactionHistoryScreen')
+            command=lambda: parent.main_screen_instance.show_window('TransactionHistoryScreen')
         ))
         self.transaction_history_panel.grid(row=1, column=2, padx=12, pady=12, sticky='nsew')
 

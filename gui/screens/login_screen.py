@@ -39,7 +39,7 @@ class LoginScreen(ctk.CTkFrame):
 
         self.db_connection_frame = DBConnectionFrame(self, self.db_connection)
 
-        # All entry fields of this class and subclasses
+        # All entry fields of this page
         self.entry_fields = [
             self.username_entry.entry,
             self.password_entry.entry

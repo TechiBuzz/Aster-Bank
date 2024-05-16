@@ -2,6 +2,7 @@ import bcrypt
 
 from settings import *
 from tkcalendar import Calendar
+from random import randint, choice
 from tkinter.messagebox import askokcancel
 from gui.screens.transition_screen import TransitionScreen
 from gui.util_widgets.back_button import BackButton
@@ -9,7 +10,7 @@ from gui.util_widgets.warning_label_widget import WarningLabel
 from gui.util_widgets.obfuscate_entry_widget import ObfuscateEntryWidget
 
 import re
-import random
+import string
 import datetime
 import customtkinter as ctk
 
@@ -60,7 +61,7 @@ class SignUpScreen(ctk.CTkFrame):
 
         self.operation_buttons_frame = OperationButtonsFrame(self.scroll_frame)
 
-        # All entry fields of this class and subclasses
+        # All entry fields of this page
         self.entry_fields = [
             self.name_fields_frame.left_field,
             self.name_fields_frame.right_field,
@@ -69,6 +70,12 @@ class SignUpScreen(ctk.CTkFrame):
             self.contact_info_frame.right_field,
             self.password_entry_frame.left_field,
             self.password_entry_frame.right_field
+        ]
+
+        # All radio buttons of this page
+        self.radio_buttons = [
+            self.gender_selection_frame.radio_button_male,
+            self.gender_selection_frame.radio_button_female
         ]
 
     def update_db(self, first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str,
@@ -81,35 +88,36 @@ class SignUpScreen(ctk.CTkFrame):
         cursor.execute('SELECT ID FROM accounts')
         current_ids = cursor.fetchall()
 
-        account_id = random.randint(10000, 99999)
+        account_id = randint(10000, 99999)
         while account_id in current_ids:
-            account_id = random.randint(10000, 99999)
+            account_id = randint(10000, 99999)
 
         # Generate a new username
-        '''
-        Generate a formatted username
-        Example:
-            First Name: Mickey
-            Last Name: Mouse
-            DOB: 1928-11-18
+        cursor.execute('SELECT USERNAME FROM accounts')
+        current_usernames = cursor.fetchall()
 
-        -> Output: MickeyM111828 (format = first_name + last_name's first character + dob_month + dob_day + dob_year)
-        '''
-        split_dob = str(dob).split('-')
-        username = f'{first_name.lower().capitalize()}{last_name.upper()[0]}{split_dob[1]}{split_dob[2]}{split_dob[0][2:]}'
+        chars = string.digits
+        random_number_suffix = ''.join(choice(chars) for _ in range(4))
 
-        # Update
-        query = 'INSERT INTO accounts (ID, USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-        values = (
-            account_id, username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender,
-            dob,
-            address, email, phone)
+        username = f'{first_name.lower().capitalize()}{last_name.upper()[0]}{random_number_suffix}'
+        while username in current_usernames:
+            random_number_suffix = ''.join(choice(chars) for _ in range(4))
+            username = f'{first_name.lower().capitalize()}{last_name.upper()[0]}{random_number_suffix}'
 
-        cursor.execute(query, values)
-        db_connection.commit()
-        cursor.close()
+        print("SUCK SEXXS")
+        # # Update
+        # query = 'INSERT INTO accounts (ID, USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        # values = (
+        #     account_id, username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender,
+        #     dob,
+        #     address, email, phone)
+        #
+        # cursor.execute(query, values)
+        # db_connection.commit()
+        # cursor.close()
 
-    def valid_credentials(self, first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str,
+    def valid_credentials(self, first_name: str, last_name: str, gender: str, dob: datetime.date, address: str,
+                          email: str,
                           phone: str, password: str, cnf_password: str) -> bool:
         # Emptiness check
         def no_empty_fields():
@@ -196,7 +204,7 @@ class SignUpScreen(ctk.CTkFrame):
             uppercase = 0
             numbers = 0
             for char in password:
-                if not char.isalnum(): special_chars += 1
+                if char in string.punctuation: special_chars += 1
                 if char.isupper(): uppercase += 1
                 if char.isdigit(): numbers += 1
 
@@ -235,7 +243,8 @@ class SignUpScreen(ctk.CTkFrame):
             password = self.password_entry_frame.left_field.get()  # raw password
             cnf_password = self.password_entry_frame.right_field.get()
 
-            if self.valid_credentials(first_name, last_name, gender, dob, address, email, phone, password, cnf_password):
+            if self.valid_credentials(first_name, last_name, gender, dob, address, email, phone, password,
+                                      cnf_password):
                 if self.db_connection:  # database connected
 
                     # Hash password
@@ -367,6 +376,9 @@ class DateOfBirthSelectionFrame(ctk.CTkFrame):
             disabledforeground='red',
             cursor="hand2",
             date_pattern='yyyy-mm-dd',
+            year=2000,
+            month=1,
+            day=1,
             mindate=datetime.date(year=1947, month=1, day=1),
             maxdate=datetime.date.today(),
             background=ctk.ThemeManager.theme["CTkFrame"]["fg_color"][1],
