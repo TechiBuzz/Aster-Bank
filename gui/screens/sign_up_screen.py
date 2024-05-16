@@ -104,17 +104,16 @@ class SignUpScreen(ctk.CTkFrame):
             random_number_suffix = ''.join(choice(chars) for _ in range(4))
             username = f'{first_name.lower().capitalize()}{last_name.upper()[0]}{random_number_suffix}'
 
-        print("SUCK SEXXS")
-        # # Update
-        # query = 'INSERT INTO accounts (ID, USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-        # values = (
-        #     account_id, username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender,
-        #     dob,
-        #     address, email, phone)
-        #
-        # cursor.execute(query, values)
-        # db_connection.commit()
-        # cursor.close()
+        # Update
+        query = 'INSERT INTO accounts (ID, USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        values = (
+            account_id, username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender,
+            dob,
+            address, email, phone)
+
+        cursor.execute(query, values)
+        db_connection.commit()
+        cursor.close()
 
     def valid_credentials(self, first_name: str, last_name: str, gender: str, dob: datetime.date, address: str,
                           email: str,
