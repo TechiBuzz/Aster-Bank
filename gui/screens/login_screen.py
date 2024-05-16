@@ -1,5 +1,6 @@
 from PIL import Image
 from settings import *
+from gui.screens.transition_screen import TransitionScreen
 from gui.util_widgets.warning_label_widget import WarningLabel
 from gui.util_widgets.obfuscate_entry_widget import ObfuscateEntryWidget
 
@@ -22,8 +23,8 @@ class LoginScreen(ctk.CTkFrame):
         self.central_frame.login_screen_instance = self
         self.central_frame.place(relx=0.5, rely=0.05, relheight=0.85, relwidth=0.935, anchor='n')
 
-        user_icon_img = ctk.CTkImage(light_image=Image.open(LOGIN_SCREEN_USER_ICON_PATH),
-                                     dark_image=Image.open(LOGIN_SCREEN_USER_ICON_PATH),
+        user_icon_img = ctk.CTkImage(light_image=Image.open(LOGIN_SCREEN_USER_ICON),
+                                     dark_image=Image.open(LOGIN_SCREEN_USER_ICON),
                                      size=(140, 140))
         self.user_icon = ctk.CTkLabel(self.central_frame, text='', image=user_icon_img)
         self.user_icon.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.3, anchor='w')
@@ -38,13 +39,13 @@ class LoginScreen(ctk.CTkFrame):
 
         self.db_connection_frame = DBConnectionFrame(self, self.db_connection)
 
-        # All entry fields of this class and subclasses
+        # All entry fields of this page
         self.entry_fields = [
             self.username_entry.entry,
             self.password_entry.entry
         ]
 
-    def successful_login(self, user_data):
+    def successful_login(self, user_data) -> None:
         account = {
             'ACCOUNT_ID': user_data[0],
             'USERNAME': user_data[1],  # password details omitted for safety
@@ -67,8 +68,9 @@ class LoginScreen(ctk.CTkFrame):
                        'BillManagementScreen', 'FDCalculatorScreen', 'TransactionHistoryScreen'):
             self.app_instance.gui_instances[screen].account = account
 
-        # Change window
-        self.app_instance.show_window(window_to_show='MainScreen', window_to_clear='LoginScreen')
+        # Change from transition screen after 3.5 seconds
+        self.after(4000, lambda: self.app_instance.show_window('MainScreen', 'LoginScreen'))
+        TransitionScreen(self, 'Logging In...', 'Logged In!', 4000, 2500)
 
     def login(self) -> None:
         username: str = self.username_entry.entry.get()
@@ -205,7 +207,7 @@ class DBConnectionFrame(ctk.CTkFrame):
         super().__init__(master=parent, corner_radius=15, bg_color='transparent')
 
         # Small DB Icon
-        db_icon = Image.open(SMALL_DB_ICON_PATH)
+        db_icon = Image.open(SMALL_DB_ICON)
         db_status_font = LOGIN_SCREEN_DB_STATUS_FONT
 
         self.db_icon = ctk.CTkLabel(

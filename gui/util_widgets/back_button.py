@@ -12,7 +12,7 @@ class BackButton(ctk.CTkButton):
     def __init__(self, parent, from_page, to_page, app_instance):
         super().__init__(parent)
 
-        img = Image.open(BACK_ARROW_ICON_PATH)
+        img = Image.open(BACK_ARROW_ICON)
 
         self.configure(
             width=50,

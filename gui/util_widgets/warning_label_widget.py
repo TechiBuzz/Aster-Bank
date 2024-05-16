@@ -19,7 +19,7 @@ class WarningLabel(ctk.CTkLabel):
 
     def raise_warning(self, code):
         self.configure(
-            image=ctk.CTkImage(Image.open(WARNING_ICON_PATH), Image.open(WARNING_ICON_PATH)),
+            image=ctk.CTkImage(Image.open(WARNING_ICON), Image.open(WARNING_ICON)),
             compound='left'
         )
         self.info_text_var.set(self.warnings[code])

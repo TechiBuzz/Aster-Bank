@@ -9,10 +9,10 @@ class ObfuscateEntryWidget(ctk.CTkButton):
         super().__init__(parent)
 
         # Images
-        self.show_pass_img = ctk.CTkImage(light_image=Image.open(SHOW_PASSWORD_ICON_PATH),
-                                          dark_image=Image.open(SHOW_PASSWORD_ICON_PATH))
-        self.hide_pass_img = ctk.CTkImage(light_image=Image.open(HIDE_PASSWORD_ICON_PATH),
-                                          dark_image=Image.open(HIDE_PASSWORD_ICON_PATH))
+        self.show_pass_img = ctk.CTkImage(light_image=Image.open(SHOW_PASSWORD_ICON),
+                                          dark_image=Image.open(SHOW_PASSWORD_ICON))
+        self.hide_pass_img = ctk.CTkImage(light_image=Image.open(HIDE_PASSWORD_ICON),
+                                          dark_image=Image.open(HIDE_PASSWORD_ICON))
 
         # Configuration
         self.configure(
