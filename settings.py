@@ -8,14 +8,16 @@ WINDOW_BITMAP_ICON = 'assets\\icon\\tsar_bank_icon.ico'
 
 SMALL_DB_ICON = 'assets\\ui\\login_screen\\db_icon.png'
 LOGIN_SCREEN_USER_ICON = 'assets\\ui\\login_screen\\user_icon.png'
+
 MAIN_SCREEN_USER_ICON = 'assets\\ui\\main_screen\\user_icon.png'
+MAIN_SCREEN_RUPEE_ICON = 'assets\\ui\\main_screen\\rupee.png'
 
-BACK_ARROW_ICON = 'assets/ui/back_button.png'
-WARNING_ICON = 'assets/ui/warning_icon.png'
-SHOW_PASSWORD_ICON = 'assets/ui/obfuscate_widget/show_password.png'
-HIDE_PASSWORD_ICON = 'assets/ui/obfuscate_widget/hide_password.png'
+BACK_ARROW_ICON = 'assets\\ui\\back_button.png'
+WARNING_ICON = 'assets\\ui\\warning_icon.png'
+SHOW_PASSWORD_ICON = 'assets\\ui\\obfuscate_widget\\show_password.png'
+HIDE_PASSWORD_ICON = 'assets\\ui\\obfuscate_widget\\hide_password.png'
 
-TRANSITION_CHECKMARK_ICON = 'assets/ui/transition_screen/check.png'
+TRANSITION_CHECKMARK_ICON = 'assets\\ui\\transition_screen\\check.png'
 
 # FONT
 WELCOME_SCREEN_WELCOME_LABEL_FONT = ('Congenial Black', 70, 'bold')
@@ -37,7 +39,7 @@ SIGNUP_SCREEN_RADIO_BUTTON_FONT = ('Calibri', 25, 'bold')
 SIGNUP_SCREEN_ADDRESS_FONT = ('Calibri', 32)
 SIGNUP_SCREEN_OPERATION_BUTTON_FONT =('Calibri', 30, 'bold')
 
-MAIN_SCREEN_HEADER_FONT = ('Calibri', 50, 'bold')
+MAIN_SCREEN_HEADER_FONT = ('Calibri', 46, 'bold')
 MAIN_SCREEN_PANEL_FONT = ('Calibri', 40, 'bold')
 
 # DIMENSIONS

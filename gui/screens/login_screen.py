@@ -61,8 +61,9 @@ class LoginScreen(ctk.CTkFrame):
         }
 
         # Update account details
-        self.app_instance.gui_instances['MainScreen'].user_details_frame.name_var.set(
-            f'{account['FIRST_NAME']} {account['LAST_NAME']}')
+        main_screen = self.app_instance.gui_instances['MainScreen']
+        main_screen.user_details_frame.name.configure(text=f'{account['FIRST_NAME']}')
+        main_screen.user_details_frame.balance_var.set(str(account['BALANCE']))
 
         for screen in ('ProfileManagementScreen', 'FundManagementScreen', 'TransferMoneyScreen', 'RequestMoneyScreen',
                        'BillManagementScreen', 'FDCalculatorScreen', 'TransactionHistoryScreen'):
@@ -103,7 +104,10 @@ class LoginScreen(ctk.CTkFrame):
             cursor.execute(validation_query, (username,))
 
             # Retrieve stored password from database
-            stored_pass = cursor.fetchone()[0]
+            try:
+                stored_pass = cursor.fetchone()[0]
+            except TypeError:
+                return None
 
             # Check if password valid
             pass_good = bcrypt.checkpw(password_field.get().encode('utf-8'), stored_pass.encode('utf-8'))

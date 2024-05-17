@@ -32,8 +32,8 @@ class SignUpScreen(ctk.CTkFrame):
 
         self.name_fields_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='First Name',
                                                   right_label_text='Last Name',
-                                                  left_entry_validation=('alphabets_only', 20),
-                                                  right_entry_validation=('alphabets_only', 20))
+                                                  left_entry_validation=('alphabets_only', 12),
+                                                  right_entry_validation=('alphabets_only', 12))
         self.back_button = (BackButton(self.name_fields_frame, 'SignUpScreen', 'LoginScreen', self.app_instance))
         self.back_button.place(relx=0.04, rely=0.15, anchor='nw')  # clunky but works
 
@@ -260,7 +260,8 @@ class SignUpScreen(ctk.CTkFrame):
                 else:
                     field.delete(0, 'end')
             self.gender_selection_frame.radio_var.set(-1)  # reset radio buttons
-            self.warning_label.clear_warning()
+            self.dob_selection_frame.cal.selection_set('2000-01-01')  # reset calendar
+            self.warning_label.clear_warning()  # reset warnings
 
 
 class DoubleEntryFrame(ctk.CTkFrame):

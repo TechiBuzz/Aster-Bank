@@ -28,23 +28,53 @@ class UserInfoFrame(ctk.CTkFrame):
         self.user_icon = ctk.CTkButton(
             master=self,
             text='',
-            image=ctk.CTkImage(light_image=Image.open(MAIN_SCREEN_USER_ICON), dark_image=Image.open(MAIN_SCREEN_USER_ICON), size=(60, 60)),
+            image=ctk.CTkImage(
+                light_image=Image.open(MAIN_SCREEN_USER_ICON),
+                dark_image=Image.open(MAIN_SCREEN_USER_ICON),
+                size=(55, 55)
+            ),
             fg_color='transparent',
             hover_color='#2B2B2B',
+            bg_color='transparent',
             corner_radius=100,
             width=0,
             command=lambda: parent.main_screen_instance.app_instance.show_window('ProfileManagementScreen')
         )
-        self.user_icon.pack(padx=12, pady=12, side='left')
+        self.user_icon.pack(pady=12, side='left')
 
-        self.name_var = ctk.StringVar()
         self.name = ctk.CTkLabel(
             master=self,
             text='',
-            textvariable=self.name_var,
             font=MAIN_SCREEN_HEADER_FONT
         )
         self.name.pack(pady=12, side='left')
+
+        self.rupee_icon = ctk.CTkLabel(
+            master=self,
+            text='',
+            image=ctk.CTkImage(
+                light_image=Image.open(MAIN_SCREEN_RUPEE_ICON),
+                dark_image=Image.open(MAIN_SCREEN_RUPEE_ICON),
+                size=(55, 55)
+            )
+        )
+        self.rupee_icon.pack(padx=5, pady=12, side='right')
+
+        self.balance = ctk.CTkLabel(
+            master=self,
+            text='Balance: ₹',
+            font=MAIN_SCREEN_HEADER_FONT
+        )
+        self.balance.pack(padx=10, pady=12, side='right', before=self.rupee_icon)
+
+        self.balance_var = ctk.StringVar(value='0.00')
+        self.balance_value = ctk.CTkLabel(
+            master=self,
+            text='',
+            textvariable=self.balance_var,
+            font=MAIN_SCREEN_HEADER_FONT
+        )
+        self.balance_value.pack(padx=(0, 16), pady=12, side='right', before=self.balance)
 
         # Place
         self.pack(fill='x', padx=12, pady=12)
