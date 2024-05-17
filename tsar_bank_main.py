@@ -61,6 +61,10 @@ class TsarBank(ctk.CTk):
                 else:
                     field.delete(0, 'end')
 
+            '''
+            MAKESHIFT THING FOR SIGNUP SCREEN
+            will have to change this later to a better system
+            '''
             try:
                 for button in window_to_clear.radio_buttons:
                     button.cget('variable').set(-1)
@@ -69,6 +73,11 @@ class TsarBank(ctk.CTk):
 
             try:
                 window_to_clear.scroll_frame._parent_canvas.yview_moveto(0.0)
+            except AttributeError:
+                pass
+
+            try:
+                window_to_clear.dob_selection_frame.cal.selection_set('2000-01-01')
             except AttributeError:
                 pass
 

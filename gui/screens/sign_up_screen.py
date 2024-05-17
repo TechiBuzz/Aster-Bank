@@ -84,14 +84,6 @@ class SignUpScreen(ctk.CTkFrame):
         db_connection = self.db_connection
         cursor = db_connection.cursor()
 
-        # Generate a new account number
-        cursor.execute('SELECT ID FROM accounts')
-        current_ids = cursor.fetchall()
-
-        account_id = randint(10000, 99999)
-        while account_id in current_ids:
-            account_id = randint(10000, 99999)
-
         # Generate a new username
         cursor.execute('SELECT USERNAME FROM accounts')
         current_usernames = cursor.fetchall()
@@ -105,9 +97,9 @@ class SignUpScreen(ctk.CTkFrame):
             username = f'{first_name.lower().capitalize()}{last_name.upper()[0]}{random_number_suffix}'
 
         # Update
-        query = 'INSERT INTO accounts (ID, USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        query = 'INSERT INTO accounts (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'
         values = (
-            account_id, username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender,
+            username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender,
             dob,
             address, email, phone)
 
@@ -251,9 +243,9 @@ class SignUpScreen(ctk.CTkFrame):
 
                     self.update_db(first_name, last_name, gender, dob, address, email, phone, pass_hash)
 
-                    # Change from transition screen after 3.5 seconds
-                    self.after(3500, lambda: self.app_instance.show_window('LoginScreen', 'SignUpScreen'))
-                    TransitionScreen(self, 'Signing Up...', 'Signed Up!', 3500, 2000)
+                    # Change from transition screen after 4 seconds
+                    self.after(4000, lambda: self.app_instance.show_window('LoginScreen', 'SignUpScreen'))
+                    TransitionScreen(self, 'Signing Up...', 'Signed Up!', 3500, 2500)
 
                 else:
                     self.warning_label.raise_warning(19)
