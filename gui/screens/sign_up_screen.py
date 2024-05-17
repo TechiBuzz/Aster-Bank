@@ -32,8 +32,8 @@ class SignUpScreen(ctk.CTkFrame):
 
         self.name_fields_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='First Name',
                                                   right_label_text='Last Name',
-                                                  left_entry_validation=('alphabets_only', 12),
-                                                  right_entry_validation=('alphabets_only', 12))
+                                                  left_entry_validation=('alphabets_only', 16),
+                                                  right_entry_validation=('alphabets_only', 16))
         self.back_button = (BackButton(self.name_fields_frame, 'SignUpScreen', 'LoginScreen', self.app_instance))
         self.back_button.place(relx=0.04, rely=0.15, anchor='nw')  # clunky but works
 
