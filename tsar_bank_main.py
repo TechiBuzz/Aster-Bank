@@ -44,50 +44,16 @@ class TsarBank(ctk.CTk):
         }
 
         # TODO -> change back to WelcomeScreen after testing!!!!!!!!!!!!
-        self.show_window('LoginScreen')  # show login screen at start
+        self.show_window('MainScreen')
 
     def show_window(self, window_to_show: str, window_to_clear: str = None):
         window_to_show = self.gui_instances[window_to_show]
-        window_to_show.place(relx=0.0, rely=0.0, relwidth=1, relheight=1)
         window_to_show.tkraise()
+        window_to_show.place(relx=0.0, rely=0.0, relwidth=1, relheight=1)
 
         if window_to_clear:
             window_to_clear = self.gui_instances[window_to_clear]
-
-            # Clear all entry fields
-            for field in window_to_clear.entry_fields:
-                if field.widgetName == 'TextBox':
-                    field.delete('0.0', 'end')
-                else:
-                    field.delete(0, 'end')
-
-            '''
-            MAKESHIFT THING FOR SIGNUP SCREEN
-            will have to change this later to a better system
-            '''
-            try:
-                for button in window_to_clear.radio_buttons:
-                    button.cget('variable').set(-1)
-            except AttributeError:
-                pass
-
-            try:
-                window_to_clear.scroll_frame._parent_canvas.yview_moveto(0.0)
-            except AttributeError:
-                pass
-
-            try:
-                window_to_clear.dob_selection_frame.cal.selection_set('2000-01-01')
-            except AttributeError:
-                pass
-
-            # Clear warning label
-            if window_to_clear.warning_label:
-                window_to_clear.warning_label.clear_warning()
-
-            # Place forget frame
-            window_to_clear.place_forget()
-
+            window_to_clear.clear_screen()
 
 def get_db_connection():
     try:

@@ -61,23 +61,6 @@ class SignUpScreen(ctk.CTkFrame):
 
         self.operation_buttons_frame = OperationButtonsFrame(self.scroll_frame)
 
-        # All entry fields of this page
-        self.entry_fields = [
-            self.name_fields_frame.left_field,
-            self.name_fields_frame.right_field,
-            self.address_field_frame.text_entry,
-            self.contact_info_frame.left_field,
-            self.contact_info_frame.right_field,
-            self.password_entry_frame.left_field,
-            self.password_entry_frame.right_field
-        ]
-
-        # All radio buttons of this page
-        self.radio_buttons = [
-            self.gender_selection_frame.radio_button_male,
-            self.gender_selection_frame.radio_button_female
-        ]
-
     def update_db(self, first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str,
                   phone: str,
                   password: bytes):
@@ -245,7 +228,7 @@ class SignUpScreen(ctk.CTkFrame):
 
                     # Change from transition screen after 4 seconds
                     self.after(4000, lambda: self.app_instance.show_window('LoginScreen', 'SignUpScreen'))
-                    TransitionScreen(self, 'Signing Up...', 'Signed Up!', 3500, 2500)
+                    TransitionScreen(self, 'Signing Up...', 'Signed Up!', 4000, 2500)
 
                 else:
                     self.warning_label.raise_warning(19)
@@ -254,14 +237,31 @@ class SignUpScreen(ctk.CTkFrame):
         user_decision = askokcancel('Clear Info', message='Clear all entry fields? This cannot be undone!')
 
         if user_decision:
-            for field in self.entry_fields:
-                if field.widgetName == 'TextBox':
-                    field.delete('0.0', 'end')
-                else:
-                    field.delete(0, 'end')
-            self.gender_selection_frame.radio_var.set(-1)  # reset radio buttons
-            self.dob_selection_frame.cal.selection_set('2000-01-01')  # reset calendar
-            self.warning_label.clear_warning()  # reset warnings
+            self.clear_screen(place_forget=False)
+            
+    def clear_screen(self, place_forget=True) -> None:
+        # Reset entry fields
+        for field in [self.name_fields_frame.left_field, self.name_fields_frame.right_field, self.contact_info_frame.left_field,
+                      self.contact_info_frame.right_field, self.password_entry_frame.left_field, self.password_entry_frame.right_field]:
+            field.delete(0, 'end')
+
+        # Reset address field
+        self.address_field_frame.text_entry.delete('0.0', 'end')
+
+        # Reset radio buttons
+        self.gender_selection_frame.radio_var.set(-1)
+
+        # Reset scroll level
+        self.scroll_frame._parent_canvas.yview_moveto(0.0)
+
+        # Reset calendar
+        self.dob_selection_frame.cal.selection_set('2000-01-01')
+
+        # Reset warnings
+        self.warning_label.clear_warning()
+
+        if place_forget:
+            self.place_forget()
 
 
 class DoubleEntryFrame(ctk.CTkFrame):

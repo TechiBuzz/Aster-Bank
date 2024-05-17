@@ -39,12 +39,6 @@ class LoginScreen(ctk.CTkFrame):
 
         self.db_connection_frame = DBConnectionFrame(self, self.db_connection)
 
-        # All entry fields of this page
-        self.entry_fields = [
-            self.username_entry.entry,
-            self.password_entry.entry
-        ]
-
     def successful_login(self, user_data) -> None:
         account = {
             'ACCOUNT_ID': user_data[0],
@@ -134,6 +128,16 @@ class LoginScreen(ctk.CTkFrame):
             self.app_instance.show_window(window_to_show='SignUpScreen', window_to_clear='LoginScreen')
         else:
             self.warning_label.raise_warning(2)
+
+    def clear_screen(self) -> None:
+        # Reset entry fields
+        for field in [self.username_entry.entry, self.password_entry.entry]:
+            field.delete(0, 'end')
+
+        # Reset warnings
+        self.warning_label.clear_warning()
+
+        self.place_forget()
 
 
 class LabelledEntry(ctk.CTkFrame):
