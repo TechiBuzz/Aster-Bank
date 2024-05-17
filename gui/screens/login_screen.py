@@ -62,8 +62,8 @@ class LoginScreen(ctk.CTkFrame):
 
         # Update account details
         main_screen = self.app_instance.gui_instances['MainScreen']
-        main_screen.user_details_frame.name.configure(text=f'{account['FIRST_NAME']}')
-        main_screen.user_details_frame.balance_var.set(str(account['BALANCE']))
+        main_screen.user_details_frame.name.configure(text=f'{account['FIRST_NAME']} {account['LAST_NAME']}')
+        main_screen.balance_details_frame.balance_var.set(str(account['BALANCE']))
 
         for screen in ('ProfileManagementScreen', 'FundManagementScreen', 'TransferMoneyScreen', 'RequestMoneyScreen',
                        'BillManagementScreen', 'FDCalculatorScreen', 'TransactionHistoryScreen'):
@@ -149,7 +149,7 @@ class LabelledEntry(ctk.CTkFrame):
         self.entry = ctk.CTkEntry(
             master=self,
             height=70,
-            corner_radius=COMMON_ENTRY_CORNER_RADIUS,
+            corner_radius=40,
             font=LOGIN_SCREEN_FIELD_ENTRY_FONT,
             textvariable=self.entry_var
         )
@@ -182,22 +182,22 @@ class LoginButtonsFrame(ctk.CTkFrame):
         # Widgets
         self.login_button = ctk.CTkButton(  # Login Button
             master=self,
-            width=LOGIN_SCREEN_BOTTOM_BUTTON_WIDTH,
-            height=LOGIN_SCREEN_BOTTOM_BUTTON_HEIGHT,
+            width=380,
+            height=80,
             text='Login',
             font=LOGIN_SCREEN_BOTTOM_BUTTON_FONT,
-            corner_radius=LOGIN_SCREEN_BOTTOM_BUTTON_CORNER_RADIUS,
+            corner_radius=100,
             command=parent.login_screen_instance.login
         )
         self.login_button.place(relx=0.067, rely=0.4, relheight=0.65, relwidth=0.40, anchor='w')
 
         self.signup_button = ctk.CTkButton(  # Sign-Up Button
             master=self,
-            width=LOGIN_SCREEN_BOTTOM_BUTTON_WIDTH,
-            height=LOGIN_SCREEN_BOTTOM_BUTTON_HEIGHT,
+            width=380,
+            height=80,
             text='Sign-Up',
             font=LOGIN_SCREEN_BOTTOM_BUTTON_FONT,
-            corner_radius=LOGIN_SCREEN_BOTTOM_BUTTON_CORNER_RADIUS,
+            corner_radius=100,
             command=parent.login_screen_instance.signup
         )
         self.signup_button.place(relx=0.534, rely=0.4, relheight=0.65, relwidth=0.40, anchor='w')
@@ -216,13 +216,12 @@ class DBConnectionFrame(ctk.CTkFrame):
 
         self.db_icon = ctk.CTkLabel(
             master=self,
-            image=ctk.CTkImage(light_image=db_icon, dark_image=db_icon, size=(28, 28)),
+            image=ctk.CTkImage(light_image=db_icon, dark_image=db_icon, size=(28, 22)),
             compound='left',
             text='   Database Status:',
             text_color='#d7dddd',
             font=db_status_font
         )
-        # self.db_icon.grid(row=0, column=0, columnspan=2, padx=4, pady=4)
         self.db_icon.pack(expand=True, pady=12, side='left')
 
         # Connection Status Text
@@ -237,7 +236,6 @@ class DBConnectionFrame(ctk.CTkFrame):
             font=db_status_font,
             justify='left'
         )
-        # self.status_text.grid(row=0, column=2, columnspan=3, padx=4, pady=4, sticky='w')
         self.status_text.pack(expand=True, fill='both', pady=12, side='left')
 
         # Place

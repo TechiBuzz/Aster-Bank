@@ -32,8 +32,8 @@ class SignUpScreen(ctk.CTkFrame):
 
         self.name_fields_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='First Name',
                                                   right_label_text='Last Name',
-                                                  left_entry_validation=('alphabets_only', 12),
-                                                  right_entry_validation=('alphabets_only', 12))
+                                                  left_entry_validation=('alphabets_only', 16),
+                                                  right_entry_validation=('alphabets_only', 16))
         self.back_button = (BackButton(self.name_fields_frame, 'SignUpScreen', 'LoginScreen', self.app_instance))
         self.back_button.place(relx=0.04, rely=0.15, anchor='nw')  # clunky but works
 
@@ -279,7 +279,7 @@ class DoubleEntryFrame(ctk.CTkFrame):
 
         self.left_field_var = ctk.StringVar()
         self.left_field = ctk.CTkEntry(self, width=450, height=70, textvariable=self.left_field_var,
-                                       corner_radius=COMMON_ENTRY_CORNER_RADIUS,
+                                       corner_radius=40,
                                        font=SIGNUP_SCREEN_FIELD_ENTRY_FONT, justify='center')
         self.left_field.grid(row=1, column=0, padx=12, pady=12)
 
@@ -288,7 +288,7 @@ class DoubleEntryFrame(ctk.CTkFrame):
 
         self.right_field_var = ctk.StringVar()
         self.right_field = ctk.CTkEntry(self, width=450, height=70, textvariable=self.right_field_var,
-                                        corner_radius=COMMON_ENTRY_CORNER_RADIUS,
+                                        corner_radius=40,
                                         font=SIGNUP_SCREEN_FIELD_ENTRY_FONT, justify='center')
         self.right_field.grid(row=1, column=1, padx=12, pady=12)
 
@@ -363,19 +363,22 @@ class DateOfBirthSelectionFrame(ctk.CTkFrame):
 
         self.cal = Calendar(
             self.calendar_container,
+            year=2000,
+            month=1,
+            day=1,
+            font=SIGNUP_SCREEN_CALENDAR_FONT,
+            showweeknumbers=False,
             selectmode='day',
             locale='en_US',
             disabledforeground='red',
             cursor="hand2",
             date_pattern='yyyy-mm-dd',
-            year=2000,
-            month=1,
-            day=1,
             mindate=datetime.date(year=1947, month=1, day=1),
             maxdate=datetime.date.today(),
             background=ctk.ThemeManager.theme["CTkFrame"]["fg_color"][1],
             selectbackground=ctk.ThemeManager.theme["CTkButton"]["fg_color"][1]
         )
+        self.cal._header.configure(padding=10)
         self.cal.pack(expand=True, fill='both', padx=12, pady=12)
 
         # Place

@@ -44,7 +44,7 @@ class TsarBank(ctk.CTk):
         }
 
         # TODO -> change back to WelcomeScreen after testing!!!!!!!!!!!!
-        self.show_window('WelcomeScreen')  # show login screen at start
+        self.show_window('LoginScreen')  # show login screen at start
 
     def show_window(self, window_to_show: str, window_to_clear: str = None):
         window_to_show = self.gui_instances[window_to_show]

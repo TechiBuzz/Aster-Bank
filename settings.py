@@ -3,10 +3,10 @@ WINDOW_TITLE = 'Tsar Bank 2.0'
 WINDOW_HEIGHT = 700
 WINDOW_WIDTH = 1100
 
-# ASSETS
+# IMAGES
 WINDOW_BITMAP_ICON = 'assets\\icon\\tsar_bank_icon.ico'
 
-SMALL_DB_ICON = 'assets\\ui\\login_screen\\db_icon.png'
+SMALL_DB_ICON = 'assets\\ui\\login_screen\\database_icon.png'
 LOGIN_SCREEN_USER_ICON = 'assets\\ui\\login_screen\\user_icon.png'
 
 MAIN_SCREEN_USER_ICON = 'assets\\ui\\main_screen\\user_icon.png'
@@ -19,7 +19,7 @@ HIDE_PASSWORD_ICON = 'assets\\ui\\obfuscate_widget\\hide_password.png'
 
 TRANSITION_CHECKMARK_ICON = 'assets\\ui\\transition_screen\\check.png'
 
-# FONT
+# FONTS
 WELCOME_SCREEN_WELCOME_LABEL_FONT = ('Congenial Black', 70, 'bold')
 WELCOME_SCREEN_BUTTON_FONT = ('Congenial Black', 40, 'bold')
 
@@ -36,21 +36,12 @@ TRANSITION_SCREEN_FONT = ('Congenial Black', 80, 'bold')
 SIGNUP_SCREEN_LABEL_FONT = ('Calibri', 50, 'bold')
 SIGNUP_SCREEN_FIELD_ENTRY_FONT = ('Calibri', 38)
 SIGNUP_SCREEN_RADIO_BUTTON_FONT = ('Calibri', 25, 'bold')
+SIGNUP_SCREEN_CALENDAR_FONT = ('Calibri', 13, 'bold')
 SIGNUP_SCREEN_ADDRESS_FONT = ('Calibri', 32)
 SIGNUP_SCREEN_OPERATION_BUTTON_FONT =('Calibri', 30, 'bold')
 
 MAIN_SCREEN_HEADER_FONT = ('Calibri', 46, 'bold')
 MAIN_SCREEN_PANEL_FONT = ('Calibri', 40, 'bold')
-
-# DIMENSIONS
-SIDE_PANEL_BUTTON_DIMENSION = 100
-SIDE_PANEL_BUTTON_CORNER_RADIUS = 18
-
-COMMON_ENTRY_CORNER_RADIUS = 40
-
-LOGIN_SCREEN_BOTTOM_BUTTON_WIDTH = 380
-LOGIN_SCREEN_BOTTOM_BUTTON_HEIGHT = 80
-LOGIN_SCREEN_BOTTOM_BUTTON_CORNER_RADIUS = 100
 
 # COLORS
 APP_COLOR_THEME = 'green'  # Available -> ['blue', 'dark-blue', 'green']

@@ -1,5 +1,6 @@
 from PIL import Image
 from settings import *
+from tktooltip import ToolTip
 
 import customtkinter as ctk
 
@@ -18,6 +19,7 @@ class MainScreen(ctk.CTkFrame):
         self.central_frame.place(relx=0.5, rely=0.5, relheight=0.93, relwidth=0.95, anchor='center')
 
         self.user_details_frame = UserInfoFrame(self.central_frame)
+        self.balance_details_frame = BalanceInfoFrame(self.central_frame)
         self.feature_panels_frame = FeaturePanelsFrame(self.central_frame)
 
 
@@ -42,12 +44,22 @@ class UserInfoFrame(ctk.CTkFrame):
         )
         self.user_icon.pack(pady=12, side='left')
 
+        ToolTip(self.user_icon, "Account Info")
+
         self.name = ctk.CTkLabel(
             master=self,
             text='',
             font=MAIN_SCREEN_HEADER_FONT
         )
-        self.name.pack(pady=12, side='left')
+        self.name.pack(padx=12, pady=12, side='left')
+
+        # Place
+        self.pack(fill='x', padx=12, pady=(12, 6))
+
+
+class BalanceInfoFrame(ctk.CTkFrame):
+    def __init__(self, parent):
+        super().__init__(parent, corner_radius=15)
 
         self.rupee_icon = ctk.CTkLabel(
             master=self,
@@ -58,14 +70,14 @@ class UserInfoFrame(ctk.CTkFrame):
                 size=(55, 55)
             )
         )
-        self.rupee_icon.pack(padx=5, pady=12, side='right')
+        self.rupee_icon.pack(padx=16, pady=12, side='left')
 
         self.balance = ctk.CTkLabel(
             master=self,
             text='Balance: ₹',
             font=MAIN_SCREEN_HEADER_FONT
         )
-        self.balance.pack(padx=10, pady=12, side='right', before=self.rupee_icon)
+        self.balance.pack(padx=10, pady=12, side='left')
 
         self.balance_var = ctk.StringVar(value='0.00')
         self.balance_value = ctk.CTkLabel(
@@ -74,10 +86,10 @@ class UserInfoFrame(ctk.CTkFrame):
             textvariable=self.balance_var,
             font=MAIN_SCREEN_HEADER_FONT
         )
-        self.balance_value.pack(padx=(0, 16), pady=12, side='right', before=self.balance)
+        self.balance_value.pack(padx=(0, 16), pady=12, side='left')
 
         # Place
-        self.pack(fill='x', padx=12, pady=12)
+        self.pack(fill='x', padx=12, pady=(6, 6))
 
 
 class FeaturePanelsFrame(ctk.CTkFrame):
@@ -98,7 +110,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             compound='top',
             command=lambda: parent.main_screen_instance.show_window('FundManagementScreen')
         )
-        self.atm_panel.grid(row=0, column=0, padx=12, pady=12, sticky='nsew')
+        self.atm_panel.grid(row=0, column=0, padx=(16, 8), pady=(16, 8), sticky='nsew')
 
         self.transfer_panel = ctk.CTkButton(
             self,
@@ -108,7 +120,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             compound='top',
             command=lambda: parent.main_screen_instance.show_window('TransferMoneyScreen')
         )
-        self.transfer_panel.grid(row=0, column=1, padx=12, pady=12, sticky='nsew')
+        self.transfer_panel.grid(row=0, column=1, padx=(8, 8), pady=(16, 8), sticky='nsew')
 
         self.request_panel = ctk.CTkButton(
             self,
@@ -118,7 +130,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             compound='top',
             command=lambda: parent.main_screen_instance.show_window('RequestMoneyScreen')
         )
-        self.request_panel.grid(row=0, column=2, padx=12, pady=12, sticky='nsew')
+        self.request_panel.grid(row=0, column=2, padx=(8, 16), pady=(16, 8), sticky='nsew')
 
         self.fd_calculator_panel = ctk.CTkButton(
             self,
@@ -128,7 +140,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             compound='top',
             command=lambda: parent.main_screen_instance.show_window('FDCalculatorScreen')
         )
-        self.fd_calculator_panel.grid(row=1, column=0, padx=12, pady=12, sticky='nsew')
+        self.fd_calculator_panel.grid(row=1, column=0, padx=(16, 8), pady=(8, 16), sticky='nsew')
 
         self.bills_panel = ctk.CTkButton(
             self,
@@ -138,7 +150,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             compound='top',
             command=lambda: parent.main_screen_instance.show_window('BillManagementScreen')
         )
-        self.bills_panel.grid(row=1, column=1, padx=12, pady=12, sticky='nsew')
+        self.bills_panel.grid(row=1, column=1, padx=(8, 8), pady=(8, 16), sticky='nsew')
 
         self.transaction_history_panel = (ctk.CTkButton(
             self,
@@ -148,7 +160,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             compound='top',
             command=lambda: parent.main_screen_instance.show_window('TransactionHistoryScreen')
         ))
-        self.transaction_history_panel.grid(row=1, column=2, padx=12, pady=12, sticky='nsew')
+        self.transaction_history_panel.grid(row=1, column=2, padx=(8, 16), pady=(8, 16), sticky='nsew')
 
         # Place
-        self.pack(expand=True, fill='both', padx=12, pady=12)
+        self.pack(expand=True, fill='both', padx=12, pady=(6, 12))
