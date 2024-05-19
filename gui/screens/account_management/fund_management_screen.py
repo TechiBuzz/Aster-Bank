@@ -12,7 +12,8 @@ class FundManagementScreen(ctk.CTkFrame):
         self.account = None
 
         # Widgets
-        BaseFeatureScreen(self, self.app_instance, 'Manage Funds', False)
+        self.base_frame = BaseFeatureScreen(self, self.app_instance, 'Manage Funds', False)
+        self.content_frame = self.base_frame.content_frame
 
     def get_name(self) -> str:
         return 'FundManagementScreen'

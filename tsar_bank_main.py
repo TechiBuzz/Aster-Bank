@@ -5,7 +5,7 @@ from gui.screens.login_screen import LoginScreen
 from gui.screens.sign_up_screen import SignUpScreen
 from gui.screens.account_management.profile_management import ProfileManagementScreen
 from gui.screens.account_management.fund_management_screen import FundManagementScreen
-from gui.screens.account_management.transfer_screen import TransferMoneyScreen
+from gui.screens.account_management.transfer_money_screen import TransferMoneyScreen
 from gui.screens.account_management.request_money_screen import RequestMoneyScreen
 from gui.screens.account_management.bills_screen import BillManagementScreen
 from gui.screens.account_management.fd_calculator_screen import FDCalculatorScreen
@@ -14,11 +14,12 @@ from gui.screens.account_management.transaction_history_screen import Transactio
 import mysql.connector
 import customtkinter as ctk
 
-# Color Theme Of App
+# Theme Of App
+ctk.set_appearance_mode('dark')
 try:
     ctk.set_default_color_theme(APP_COLOR_THEME)
-except:
-    pass
+except FileNotFoundError:
+    print('Unable to set custom color theme! Defaulting to BLUE')
 
 
 class TsarBank(ctk.CTk):
@@ -44,7 +45,7 @@ class TsarBank(ctk.CTk):
         }
 
         # TODO -> change back to WelcomeScreen after testing!!!!!!!!!!!!
-        self.show_window('WelcomeScreen')
+        self.show_window('LoginScreen')
 
     def show_window(self, window_to_show: str, window_to_clear: str = None):
         window_to_show = self.gui_instances[window_to_show]

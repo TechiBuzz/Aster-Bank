@@ -25,8 +25,8 @@ class LoginScreen(ctk.CTkFrame):
         self.central_frame.login_screen_instance = self
         self.central_frame.place(relx=0.5, rely=0.05, relheight=0.85, relwidth=0.935, anchor='n')
 
-        user_icon_img = ctk.CTkImage(light_image=Image.open(LOGIN_SCREEN_USER_ICON),
-                                     dark_image=Image.open(LOGIN_SCREEN_USER_ICON),
+        user_icon_img = ctk.CTkImage(light_image=Image.open(USER_ICON),
+                                     dark_image=Image.open(USER_ICON),
                                      size=(140, 140))
         self.user_icon = ctk.CTkLabel(self.central_frame, text='', image=user_icon_img)
         self.user_icon.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.3, anchor='w')

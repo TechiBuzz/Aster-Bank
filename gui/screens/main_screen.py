@@ -31,8 +31,8 @@ class UserInfoFrame(ctk.CTkFrame):
             master=self,
             text='',
             image=ctk.CTkImage(
-                light_image=Image.open(MAIN_SCREEN_USER_ICON),
-                dark_image=Image.open(MAIN_SCREEN_USER_ICON),
+                light_image=Image.open(USER_ICON),
+                dark_image=Image.open(USER_ICON),
                 size=(55, 55)
             ),
             fg_color='transparent',

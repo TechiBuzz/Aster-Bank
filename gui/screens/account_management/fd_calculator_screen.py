@@ -12,7 +12,8 @@ class FDCalculatorScreen(ctk.CTkFrame):
         self.account = None
 
         # Widgets
-        BaseFeatureScreen(self, self.app_instance, 'Calculate Interest on FD', False)
+        self.base_frame = BaseFeatureScreen(self, self.app_instance, 'Calculate Interest on FD', False)
+        self.content_frame = self.base_frame.content_frame
 
     def get_name(self) -> str:
         return 'FDCalculatorScreen'
