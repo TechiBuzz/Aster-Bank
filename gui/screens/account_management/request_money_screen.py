@@ -1,3 +1,4 @@
+from gui.screens.account_management.base_feature_screen import BaseFeatureScreen
 import customtkinter as ctk
 
 
@@ -11,8 +12,10 @@ class RequestMoneyScreen(ctk.CTkFrame):
         self.account = None
 
         # Widgets
-        self.central_frame = ctk.CTkFrame(self, corner_radius=15)
-        self.central_frame.place(relx=0.5, rely=0.5, relheight=0.93, relwidth=0.95, anchor='center')
+        BaseFeatureScreen(self, self.app_instance, 'Request Money', False)
 
-    def clear_screen(self):
+    def get_name(self) -> str:
+        return 'RequestMoneyScreen'
+
+    def clear_screen(self) -> None:
         self.place_forget()

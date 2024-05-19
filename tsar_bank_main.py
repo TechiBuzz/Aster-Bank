@@ -44,7 +44,7 @@ class TsarBank(ctk.CTk):
         }
 
         # TODO -> change back to WelcomeScreen after testing!!!!!!!!!!!!
-        self.show_window('MainScreen')
+        self.show_window('WelcomeScreen')
 
     def show_window(self, window_to_show: str, window_to_clear: str = None):
         window_to_show = self.gui_instances[window_to_show]
@@ -54,6 +54,7 @@ class TsarBank(ctk.CTk):
         if window_to_clear:
             window_to_clear = self.gui_instances[window_to_clear]
             window_to_clear.clear_screen()
+
 
 def get_db_connection():
     try:

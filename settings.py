@@ -1,3 +1,10 @@
+# DEBUG MODE
+"""
+Set true to disable updating the database with actual data
+"""
+TESTING_MODE = True
+
+
 # APP
 WINDOW_TITLE = 'Tsar Bank 2.0'
 WINDOW_HEIGHT = 700

@@ -1,5 +1,4 @@
-from gui.util_widgets.back_button import BackButton
-
+from gui.screens.account_management.base_feature_screen import BaseFeatureScreen
 import customtkinter as ctk
 
 
@@ -13,11 +12,10 @@ class ProfileManagementScreen(ctk.CTkFrame):
         self.account = None
 
         # Widgets
-        self.central_frame = ctk.CTkFrame(self, corner_radius=15)
-        self.central_frame.place(relx=0.5, rely=0.5, relheight=0.93, relwidth=0.95, anchor='center')
+        BaseFeatureScreen(self, self.app_instance, 'Manage Profile', False)
 
-        self.back_button = BackButton(self.central_frame, 'ProfileManagementScreen', 'MainScreen', self.app_instance)
-        self.back_button.place(relx=0.02, rely=0.03, anchor='nw')
+    def get_name(self) -> str:
+        return 'ProfileManagementScreen'
 
-    def clear_screen(self):
+    def clear_screen(self) -> None:
         self.place_forget()

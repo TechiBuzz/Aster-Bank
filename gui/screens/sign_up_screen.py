@@ -224,11 +224,11 @@ class SignUpScreen(ctk.CTkFrame):
                     # Hash password
                     pass_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-                    self.update_db(first_name, last_name, gender, dob, address, email, phone, pass_hash)
+                    if not TESTING_MODE:  # wont update actual database with info
+                        self.update_db(first_name, last_name, gender, dob, address, email, phone, pass_hash)
 
                     # Change from transition screen after 4 seconds
-                    self.after(4000, lambda: self.app_instance.show_window('LoginScreen', 'SignUpScreen'))
-                    TransitionScreen(self, 'Signing Up...', 'Signed Up!', 4000, 2500)
+                    TransitionScreen(self, 'SignUpScreen', 'LoginScreen', 'Signing Up...', 'Signed Up!', 4000)
 
                 else:
                     self.warning_label.raise_warning(19)

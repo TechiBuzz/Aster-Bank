@@ -1,3 +1,5 @@
+from typing import Any
+
 from PIL import Image
 from settings import *
 from gui.screens.transition_screen import TransitionScreen
@@ -63,9 +65,8 @@ class LoginScreen(ctk.CTkFrame):
                        'BillManagementScreen', 'FDCalculatorScreen', 'TransactionHistoryScreen'):
             self.app_instance.gui_instances[screen].account = account
 
-        # Change from transition screen after 3.5 seconds
-        self.after(4000, lambda: self.app_instance.show_window('MainScreen', 'LoginScreen'))
-        TransitionScreen(self, 'Logging In...', 'Logged In!', 4000, 2500)
+        # Change from transition screen after 4 seconds
+        TransitionScreen(self, 'LoginScreen', 'MainScreen', 'Logging In...', 'Logged In!', 4000)
 
     def login(self) -> None:
         username: str = self.username_entry.entry.get()
@@ -82,14 +83,14 @@ class LoginScreen(ctk.CTkFrame):
             # All checks passed
             return True
 
-        def database_connected():
+        def database_connected() -> bool:
             db_cnx = self.app_instance.db_connection
             if not db_cnx:
                 self.warning_label.raise_warning(2)
                 return False
             return True
 
-        def fetch_login_result():
+        def fetch_login_result() -> tuple | None:
             result = None
 
             cursor = self.app_instance.db_connection.cursor()

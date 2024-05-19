@@ -5,8 +5,11 @@ import customtkinter as ctk
 
 
 class TransitionScreen(ctk.CTkFrame):
-    def __init__(self, parent, text_before_transition, text_after_transition, transition_time, change_text_after):
+    def __init__(self, parent, transition_from_page, transition_to_page, text_before_transition, text_after_transition, transition_time):
         super().__init__(parent)
+
+        # App instance
+        self.app_instance = parent.app_instance
 
         # Widgets
         self.central_frame = ctk.CTkFrame(self, corner_radius=15)
@@ -27,9 +30,10 @@ class TransitionScreen(ctk.CTkFrame):
         # Place
         self.place(relx=0.0, rely=0.0, relwidth=1, relheight=1, anchor='nw')
 
-        self.after(change_text_after, lambda: self.finish_transition(text_after_transition, (transition_time - change_text_after)))
+        self.after(int(transition_time * 0.64), lambda: self.change_text(text_after_transition))
+        self.after(transition_time, lambda: self.finish_transition(transition_from_page, transition_to_page))
 
-    def finish_transition(self, text_after_transition, destroy_after):
+    def change_text(self, text_after_transition):
         self.text_var.set(text_after_transition)
         self.progress_bar.grid_forget()
 
@@ -44,4 +48,6 @@ class TransitionScreen(ctk.CTkFrame):
             )
         ).grid(column=0, row=1, sticky='n')
 
-        self.after(destroy_after, self.destroy)
+    def finish_transition(self, from_page, to_page):
+        self.app_instance.show_window(to_page, from_page)
+        self.destroy()
