@@ -2,7 +2,7 @@
 """
 Set true to disable updating the database with actual data
 """
-TESTING_MODE = True
+TESTING_MODE = False
 
 
 # APP
@@ -45,10 +45,12 @@ SIGNUP_SCREEN_FIELD_ENTRY_FONT = ('Calibri', 38)
 SIGNUP_SCREEN_RADIO_BUTTON_FONT = ('Calibri', 25, 'bold')
 SIGNUP_SCREEN_CALENDAR_FONT = ('Calibri', 13, 'bold')
 SIGNUP_SCREEN_ADDRESS_FONT = ('Calibri', 32)
-SIGNUP_SCREEN_OPERATION_BUTTON_FONT =('Calibri', 30, 'bold')
+SIGNUP_SCREEN_OPERATION_BUTTON_FONT = ('Calibri', 30, 'bold')
 
 MAIN_SCREEN_HEADER_FONT = ('Calibri', 46, 'bold')
 MAIN_SCREEN_PANEL_FONT = ('Calibri', 40, 'bold')
+
+TRANSFER_MONEY_SCREEN_ENTRY_LABEL_FONT = ('Calibri', 40, 'bold')
 
 # COLORS
 APP_COLOR_THEME = 'green'  # Available -> ['blue', 'dark-blue', 'green']

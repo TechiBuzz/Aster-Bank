@@ -1,17 +1,19 @@
-import bcrypt
-
+from PIL import Image
 from settings import *
+from database import db
+from random import choice
 from tkcalendar import Calendar
-from random import randint, choice
+from data_manager import data_manager
 from tkinter.messagebox import askokcancel
-from gui.screens.transition_screen import TransitionScreen
 from gui.util_widgets.back_button import BackButton
+from gui.screens.transition_screen import TransitionScreen
 from gui.util_widgets.warning_label_widget import WarningLabel
 from gui.util_widgets.obfuscate_entry_widget import ObfuscateEntryWidget
 
 import re
 import string
 import datetime
+import bcrypt
 import customtkinter as ctk
 
 
@@ -22,9 +24,6 @@ class SignUpScreen(ctk.CTkFrame):
         # App instance
         self.app_instance = parent
 
-        # Database connection
-        self.db_connection = parent.db_connection
-
         # Widgets
         self.scroll_frame = ctk.CTkScrollableFrame(self)
         self.scroll_frame.signup_screen_instance = self
@@ -34,7 +33,7 @@ class SignUpScreen(ctk.CTkFrame):
                                                   right_label_text='Last Name',
                                                   left_entry_validation=('alphabets_only', 16),
                                                   right_entry_validation=('alphabets_only', 16))
-        self.back_button = (BackButton(self.name_fields_frame, 'SignUpScreen', 'LoginScreen', self.app_instance))
+        self.back_button = BackButton(self.name_fields_frame, self, 'LoginScreen', self.app_instance)
         self.back_button.place(relx=0.04, rely=0.15, anchor='nw')  # clunky but works
 
         self.gender_selection_frame = GenderSelectionFrame(self.scroll_frame)
@@ -64,12 +63,8 @@ class SignUpScreen(ctk.CTkFrame):
     def update_db(self, first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str,
                   phone: str,
                   password: bytes):
-        db_connection = self.db_connection
-        cursor = db_connection.cursor()
-
         # Generate a new username
-        cursor.execute('SELECT USERNAME FROM accounts')
-        current_usernames = cursor.fetchall()
+        current_usernames = db.fetch_result('SELECT USERNAME FROM accounts')
 
         chars = string.digits
         random_number_suffix = ''.join(choice(chars) for _ in range(4))
@@ -83,12 +78,23 @@ class SignUpScreen(ctk.CTkFrame):
         query = 'INSERT INTO accounts (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'
         values = (
             username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender,
-            dob,
-            address, email, phone)
+            dob, address, email, phone
+        )
+        db.execute_query(query, values)
 
-        cursor.execute(query, values)
-        db_connection.commit()
-        cursor.close()
+        # Update data manager
+        data_manager.set_account({
+            'ACCOUNT_ID': f'{db.fetch_result('SELECT COUNT(USERNAME) FROM accounts')[0][0] + 10001}',
+            'USERNAME': username,
+            'FIRST_NAME': first_name,
+            'LAST_NAME': last_name,
+            'GENDER': gender,
+            'DATE_OF_BIRTH': dob,
+            'ADDRESS': address,
+            'EMAIL_ID': email,
+            'PHONE_NO': phone,
+            'ADMIN': False
+        })
 
     def valid_credentials(self, first_name: str, last_name: str, gender: str, dob: datetime.date, address: str,
                           email: str,
@@ -219,7 +225,7 @@ class SignUpScreen(ctk.CTkFrame):
 
             if self.valid_credentials(first_name, last_name, gender, dob, address, email, phone, password,
                                       cnf_password):
-                if self.db_connection:  # database connected
+                if db.connection:  # database connected
 
                     # Hash password
                     pass_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
@@ -228,7 +234,8 @@ class SignUpScreen(ctk.CTkFrame):
                         self.update_db(first_name, last_name, gender, dob, address, email, phone, pass_hash)
 
                     # Change from transition screen after 4 seconds
-                    TransitionScreen(self, 'SignUpScreen', 'LoginScreen', 'Signing Up...', 'Signed Up!', 4000)
+                    TransitionScreen(self, 'PostSignUpScreen', 'Signing Up...', 'Signed Up!', 4000)
+                    self.app_instance.gui_instances['PostSignUpScreen'].username.configure(text=data_manager.get_username())
 
                 else:
                     self.warning_label.raise_warning(19)
@@ -278,18 +285,30 @@ class DoubleEntryFrame(ctk.CTkFrame):
         self.left_label.grid(row=0, column=0, sticky='nsew', padx=12, pady=12)
 
         self.left_field_var = ctk.StringVar()
-        self.left_field = ctk.CTkEntry(self, width=450, height=70, textvariable=self.left_field_var,
-                                       corner_radius=40,
-                                       font=SIGNUP_SCREEN_FIELD_ENTRY_FONT, justify='center')
+        self.left_field = ctk.CTkEntry(
+            master=self,
+            width=470,
+            height=70,
+            corner_radius=40,
+            textvariable=self.left_field_var,
+            font=SIGNUP_SCREEN_FIELD_ENTRY_FONT,
+            justify='center'
+        )
         self.left_field.grid(row=1, column=0, padx=12, pady=12)
 
         self.right_label = ctk.CTkLabel(self, text=right_label_text, font=SIGNUP_SCREEN_LABEL_FONT)
         self.right_label.grid(row=0, column=1, sticky='nsew', padx=12, pady=12)
 
         self.right_field_var = ctk.StringVar()
-        self.right_field = ctk.CTkEntry(self, width=450, height=70, textvariable=self.right_field_var,
-                                        corner_radius=40,
-                                        font=SIGNUP_SCREEN_FIELD_ENTRY_FONT, justify='center')
+        self.right_field = ctk.CTkEntry(
+            master=self,
+            width=470,
+            height=70,
+            corner_radius=40,
+            textvariable=self.right_field_var,
+            font=SIGNUP_SCREEN_FIELD_ENTRY_FONT,
+            justify='center'
+        )
         self.right_field.grid(row=1, column=1, padx=12, pady=12)
 
         # Entry Validation
@@ -336,14 +355,21 @@ class GenderSelectionFrame(ctk.CTkFrame):
         self.radio_container.pack(expand=True, fill='both', side='bottom', ipady=12, padx=12, pady=12)
 
         self.radio_var = ctk.IntVar(value=0)
-        self.radio_button_male = ctk.CTkRadioButton(self.radio_container, text='Male',
-                                                    font=SIGNUP_SCREEN_RADIO_BUTTON_FONT, variable=self.radio_var,
-                                                    value=1)
+        self.radio_button_male = ctk.CTkRadioButton(
+            self.radio_container,
+            text='Male',
+            font=SIGNUP_SCREEN_RADIO_BUTTON_FONT,
+            variable=self.radio_var,
+            value=1
+        )
         self.radio_button_male.grid(row=0, column=0)
 
-        self.radio_button_female = ctk.CTkRadioButton(self.radio_container, text='Female',
-                                                      font=SIGNUP_SCREEN_RADIO_BUTTON_FONT, variable=self.radio_var,
-                                                      value=2)
+        self.radio_button_female = ctk.CTkRadioButton(
+            self.radio_container, text='Female',
+            font=SIGNUP_SCREEN_RADIO_BUTTON_FONT,
+            variable=self.radio_var,
+            value=2
+        )
         self.radio_button_female.grid(row=0, column=1)
 
         # Place
@@ -431,3 +457,46 @@ class OperationButtonsFrame(ctk.CTkFrame):
 
         # Place
         self.pack(expand=True, fill='x', padx=12, pady=12)
+
+
+class PostSignUpScreen(ctk.CTkFrame):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        # Widgets
+        self.frame = ctk.CTkFrame(self, corner_radius=15)
+        self.frame.place(relx=0.5, rely=0.5, relheight=0.93, relwidth=0.95, anchor='center')
+
+        self.another_frame = ctk.CTkFrame(self.frame, corner_radius=15)
+        self.another_frame.pack(expand=True, fill='both', padx=12, pady=12)
+
+        ctk.CTkLabel(
+            self.another_frame,
+            text='Account Username',
+            font=WELCOME_SCREEN_WELCOME_LABEL_FONT
+        ).pack(expand=True, fill='x', padx=12, pady=12)
+
+        ctk.CTkLabel(
+            self.another_frame,
+            text='',
+            image=ctk.CTkImage(
+                light_image=Image.open(USER_ICON),
+                dark_image=Image.open(USER_ICON),
+                size=(180, 180)
+            )).pack(expand=True, fill='x', padx=12, pady=12)
+
+        self.username = ctk.CTkLabel(self.another_frame, text='', font=SIGNUP_SCREEN_LABEL_FONT)
+        self.username.pack(expand=True, fill='x', padx=12, pady=(6, 12))
+
+        ctk.CTkButton(
+            self.another_frame,
+            width=780,
+            height=80,
+            corner_radius=100,
+            text='Confirm',
+            font=WELCOME_SCREEN_BUTTON_FONT,
+            command=lambda: parent.show_window('LoginScreen')
+        ).pack(expand=True, padx=12, pady=12)
+
+    def clear_screen(self):
+        self.place_forget()
