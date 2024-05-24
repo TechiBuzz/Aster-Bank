@@ -1,14 +1,14 @@
 from PIL import Image
 from settings import *
-from database import db
+from util.database import db
 from random import choice
 from tkcalendar import Calendar
-from data_manager import data_manager
+from util.data_manager import data_manager
 from tkinter.messagebox import askokcancel
 from gui.util_widgets.back_button import BackButton
-from gui.screens.transition_screen import TransitionScreen
-from gui.util_widgets.warning_label_widget import WarningLabel
-from gui.util_widgets.obfuscate_entry_widget import ObfuscateEntryWidget
+from gui.screens.transition import TransitionScreen
+from gui.util_widgets.warning_label import WarningLabel
+from gui.util_widgets.obfuscate_entry import ObfuscateEntryWidget
 
 import re
 import string

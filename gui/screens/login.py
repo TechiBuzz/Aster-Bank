@@ -1,10 +1,10 @@
 from PIL import Image
 from settings import *
-from database import db
-from data_manager import data_manager
-from gui.screens.transition_screen import TransitionScreen
-from gui.util_widgets.warning_label_widget import WarningLabel
-from gui.util_widgets.obfuscate_entry_widget import ObfuscateEntryWidget
+from util.database import db
+from util.data_manager import data_manager
+from gui.screens.transition import TransitionScreen
+from gui.util_widgets.warning_label import WarningLabel
+from gui.util_widgets.obfuscate_entry import ObfuscateEntryWidget
 
 import bcrypt
 import customtkinter as ctk
