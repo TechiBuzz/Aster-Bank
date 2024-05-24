@@ -1,6 +1,6 @@
 from PIL import Image
 from settings import *
-from data_manager import data_manager
+from util.data_manager import data_manager
 from gui.util_widgets.back_button import BackButton
 
 import customtkinter as ctk

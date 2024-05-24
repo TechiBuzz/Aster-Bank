@@ -1,6 +1,6 @@
 from PIL import Image
 from settings import *
-from data_manager import data_manager
+from util.data_manager import data_manager
 from tktooltip import ToolTip
 
 import customtkinter as ctk
