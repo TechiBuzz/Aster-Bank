@@ -1,5 +1,6 @@
 from PIL import Image
 from settings import *
+from data_manager import data_manager
 from tktooltip import ToolTip
 
 import customtkinter as ctk
@@ -9,30 +10,30 @@ class MainScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
 
-        self.db_connection = parent.db_connection
-
         # Widgets
         self.central_frame = ctk.CTkFrame(self, corner_radius=15)
-        self.central_frame.app_instance = parent
         self.central_frame.place(relx=0.5, rely=0.5, relheight=0.93, relwidth=0.95, anchor='center')
 
-        self.user_details_frame = UserInfoFrame(self.central_frame)
+        self.user_details_frame = UserInfoFrame(self.central_frame, parent)
         self.balance_details_frame = BalanceInfoFrame(self.central_frame)
 
-        self.feature_panels_frame = FeaturePanelsFrame(self.central_frame)
-        self.feature_panels_frame.app_instance = parent
+        self.feature_panels_frame = FeaturePanelsFrame(self.central_frame, parent)
+
+    def update_info(self):
+        self.user_details_frame.name.configure(text=data_manager.get_full_name())
+        self.balance_details_frame.balance_value.configure(text=data_manager.get_balance())
 
 
 class UserInfoFrame(ctk.CTkFrame):
-    def __init__(self, parent):
+    def __init__(self, parent, app_instance):
         super().__init__(parent, corner_radius=15)
 
         self.user_icon = ctk.CTkButton(
             master=self,
             text='',
             image=ctk.CTkImage(
-                light_image=Image.open(MAIN_SCREEN_USER_ICON),
-                dark_image=Image.open(MAIN_SCREEN_USER_ICON),
+                light_image=Image.open(USER_ICON),
+                dark_image=Image.open(USER_ICON),
                 size=(55, 55)
             ),
             fg_color='transparent',
@@ -40,7 +41,7 @@ class UserInfoFrame(ctk.CTkFrame):
             bg_color='transparent',
             corner_radius=100,
             width=0,
-            command=lambda: parent.app_instance.show_window('ProfileManagementScreen')
+            command=lambda: app_instance.show_window('ProfileManagementScreen')
         )
         self.user_icon.pack(pady=12, side='left')
 
@@ -79,11 +80,9 @@ class BalanceInfoFrame(ctk.CTkFrame):
         )
         self.balance.pack(padx=10, pady=12, side='left')
 
-        self.balance_var = ctk.StringVar(value='0.00')
         self.balance_value = ctk.CTkLabel(
             master=self,
             text='',
-            textvariable=self.balance_var,
             font=MAIN_SCREEN_HEADER_FONT
         )
         self.balance_value.pack(padx=(0, 16), pady=12, side='left')
@@ -93,7 +92,7 @@ class BalanceInfoFrame(ctk.CTkFrame):
 
 
 class FeaturePanelsFrame(ctk.CTkFrame):
-    def __init__(self, parent):
+    def __init__(self, parent, app_instance):
         super().__init__(parent, corner_radius=15)
 
         # Layout
@@ -109,7 +108,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: parent.app_instance.show_window('FundManagementScreen')
+            command=lambda: app_instance.show_window('FundManagementScreen')
         )
         self.atm_panel.grid(row=0, column=0, padx=(panel_spacing, panel_spacing//2), pady=(panel_spacing, panel_spacing//2), sticky='nsew')
 
@@ -119,7 +118,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: parent.app_instance.show_window('TransferMoneyScreen')
+            command=lambda: app_instance.show_window('TransferMoneyScreen')
         )
         self.transfer_panel.grid(row=0, column=1, padx=(panel_spacing//2, panel_spacing//2), pady=(panel_spacing, panel_spacing//2), sticky='nsew')
 
@@ -129,7 +128,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: parent.app_instance.show_window('RequestMoneyScreen')
+            command=lambda: app_instance.show_window('RequestMoneyScreen')
         )
         self.request_panel.grid(row=0, column=2, padx=(panel_spacing//2, panel_spacing), pady=(panel_spacing, panel_spacing//2), sticky='nsew')
 
@@ -139,7 +138,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: parent.app_instance.show_window('FDCalculatorScreen')
+            command=lambda: app_instance.show_window('FDCalculatorScreen')
         )
         self.fd_calculator_panel.grid(row=1, column=0, padx=(panel_spacing, panel_spacing//2), pady=(panel_spacing//2, panel_spacing), sticky='nsew')
 
@@ -149,7 +148,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: parent.app_instance.show_window('BillManagementScreen')
+            command=lambda: app_instance.show_window('BillManagementScreen')
         )
         self.bills_panel.grid(row=1, column=1, padx=(panel_spacing//2, panel_spacing//2), pady=(panel_spacing//2, panel_spacing), sticky='nsew')
 
@@ -159,7 +158,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: parent.app_instance.show_window('TransactionHistoryScreen')
+            command=lambda: app_instance.show_window('TransactionHistoryScreen')
         ))
         self.transaction_history_panel.grid(row=1, column=2, padx=(panel_spacing//2, panel_spacing), pady=(panel_spacing//2, panel_spacing), sticky='nsew')
 

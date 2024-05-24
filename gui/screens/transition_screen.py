@@ -5,7 +5,7 @@ import customtkinter as ctk
 
 
 class TransitionScreen(ctk.CTkFrame):
-    def __init__(self, parent, transition_from_page, transition_to_page, text_before_transition, text_after_transition, transition_time):
+    def __init__(self, parent, transition_to_page, text_before_transition, text_after_transition, transition_time):
         super().__init__(parent)
 
         # App instance
@@ -31,7 +31,7 @@ class TransitionScreen(ctk.CTkFrame):
         self.place(relx=0.0, rely=0.0, relwidth=1, relheight=1, anchor='nw')
 
         self.after(int(transition_time * 0.64), lambda: self.change_text(text_after_transition))
-        self.after(transition_time, lambda: self.finish_transition(transition_from_page, transition_to_page))
+        self.after(transition_time, lambda: self.finish_transition(parent, transition_to_page))
 
     def change_text(self, text_after_transition):
         self.text_var.set(text_after_transition)

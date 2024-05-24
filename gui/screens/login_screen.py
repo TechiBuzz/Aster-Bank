@@ -1,7 +1,7 @@
-from typing import Any
-
 from PIL import Image
 from settings import *
+from database import db
+from data_manager import data_manager
 from gui.screens.transition_screen import TransitionScreen
 from gui.util_widgets.warning_label_widget import WarningLabel
 from gui.util_widgets.obfuscate_entry_widget import ObfuscateEntryWidget
@@ -17,16 +17,13 @@ class LoginScreen(ctk.CTkFrame):
         # App instance
         self.app_instance = parent
 
-        # Database
-        self.db_connection = parent.db_connection
-
         # Widgets
         self.central_frame = ctk.CTkFrame(self, corner_radius=15)
         self.central_frame.login_screen_instance = self
         self.central_frame.place(relx=0.5, rely=0.05, relheight=0.85, relwidth=0.935, anchor='n')
 
-        user_icon_img = ctk.CTkImage(light_image=Image.open(LOGIN_SCREEN_USER_ICON),
-                                     dark_image=Image.open(LOGIN_SCREEN_USER_ICON),
+        user_icon_img = ctk.CTkImage(light_image=Image.open(USER_ICON),
+                                     dark_image=Image.open(USER_ICON),
                                      size=(140, 140))
         self.user_icon = ctk.CTkLabel(self.central_frame, text='', image=user_icon_img)
         self.user_icon.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.3, anchor='w')
@@ -39,7 +36,7 @@ class LoginScreen(ctk.CTkFrame):
 
         self.login_buttons = LoginButtonsFrame(self.central_frame)
 
-        self.db_connection_frame = DBConnectionFrame(self, self.db_connection)
+        self.db_connection_frame = DBConnectionFrame(self)
 
     def successful_login(self, user_data) -> None:
         account = {
@@ -57,16 +54,17 @@ class LoginScreen(ctk.CTkFrame):
         }
 
         # Update account details
-        main_screen = self.app_instance.gui_instances['MainScreen']
-        main_screen.user_details_frame.name.configure(text=f'{account['FIRST_NAME']} {account['LAST_NAME']}')
-        main_screen.balance_details_frame.balance_var.set(str(account['BALANCE']))
+        data_manager.set_account(account)
 
-        for screen in ('ProfileManagementScreen', 'FundManagementScreen', 'TransferMoneyScreen', 'RequestMoneyScreen',
+        for screen in ('MainScreen', 'ProfileManagementScreen', 'FundManagementScreen', 'TransferMoneyScreen', 'RequestMoneyScreen',
                        'BillManagementScreen', 'FDCalculatorScreen', 'TransactionHistoryScreen'):
-            self.app_instance.gui_instances[screen].account = account
+            try:
+                self.app_instance.gui_instances[screen].update_info()
+            except AttributeError:
+                pass
 
         # Change from transition screen after 4 seconds
-        TransitionScreen(self, 'LoginScreen', 'MainScreen', 'Logging In...', 'Logged In!', 4000)
+        TransitionScreen(self, 'MainScreen', 'Logging In...', 'Logged In!', 4000)
 
     def login(self) -> None:
         username: str = self.username_entry.entry.get()
@@ -84,8 +82,7 @@ class LoginScreen(ctk.CTkFrame):
             return True
 
         def database_connected() -> bool:
-            db_cnx = self.app_instance.db_connection
-            if not db_cnx:
+            if not db.connection:
                 self.warning_label.raise_warning(2)
                 return False
             return True
@@ -93,26 +90,13 @@ class LoginScreen(ctk.CTkFrame):
         def fetch_login_result() -> tuple | None:
             result = None
 
-            cursor = self.app_instance.db_connection.cursor()
-
             validation_query = 'SELECT PASSWORD FROM accounts WHERE USERNAME = %s'
-            cursor.execute(validation_query, (username,))
+            retrieved_pass = db.fetch_result(validation_query, (username,))
 
-            # Retrieve stored password from database
-            try:
-                stored_pass = cursor.fetchone()[0]
-            except TypeError:
-                return None
-
-            # Check if password valid
-            pass_good = bcrypt.checkpw(password_field.get().encode('utf-8'), stored_pass.encode('utf-8'))
-
-            if pass_good:
-                # Retrieve entire account if valid password
-                cursor.execute('SELECT * FROM accounts WHERE USERNAME = %s', (username,))
-                result = cursor.fetchone()
-
-            cursor.close()
+            if retrieved_pass:
+                retrieved_pass = retrieved_pass[0][0]
+                if bcrypt.checkpw(password_field.get().encode('utf-8'), retrieved_pass.encode('utf-8')):
+                    result = db.fetch_result('SELECT * FROM accounts WHERE USERNAME = %s', (username,))
 
             return result
 
@@ -120,13 +104,13 @@ class LoginScreen(ctk.CTkFrame):
             login_result = fetch_login_result()
 
             if login_result:
-                self.successful_login(login_result)
+                self.successful_login(login_result[0])
             else:
                 self.warning_label.raise_warning(3)
 
     def signup(self) -> None:
-        if self.app_instance.db_connection:
-            self.app_instance.show_window(window_to_show='SignUpScreen', window_to_clear='LoginScreen')
+        if db.connection:
+            self.app_instance.show_window('SignUpScreen', self)
         else:
             self.warning_label.raise_warning(2)
 
@@ -212,7 +196,7 @@ class LoginButtonsFrame(ctk.CTkFrame):
 
 
 class DBConnectionFrame(ctk.CTkFrame):
-    def __init__(self, parent, db_connection):
+    def __init__(self, parent):
         super().__init__(master=parent, corner_radius=15, bg_color='transparent')
 
         # Small DB Icon
@@ -231,7 +215,7 @@ class DBConnectionFrame(ctk.CTkFrame):
 
         # Connection Status Text
         self.connection_status_var = ctk.StringVar(value='')
-        self.after(500, lambda: self.set_db_status(db_connection))
+        self.after(500, self.set_db_status)
 
         self.status_text = ctk.CTkLabel(
             master=self,
@@ -246,8 +230,8 @@ class DBConnectionFrame(ctk.CTkFrame):
         # Place
         self.place(relx=0.5, rely=0.947, anchor='center', relwidth=0.3, relheight=0.07)
 
-    def set_db_status(self, db_connection) -> None:
-        if db_connection:
+    def set_db_status(self) -> None:
+        if db.connection:
             self.connection_status_var.set('Connected')
             self.status_text.configure(text_color='#006d77')
         else:
