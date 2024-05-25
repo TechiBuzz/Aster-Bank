@@ -4,13 +4,13 @@ from gui.screens.main import MainScreen
 from gui.screens.login import LoginScreen
 from gui.screens.sign_up import SignUpScreen
 from gui.screens.sign_up import PostSignUpScreen
-from gui.screens.acc_management import ProfileManagementScreen
-from gui.screens.acc_management import FundManagementScreen
-from gui.screens.acc_management import TransferMoneyScreen
-from gui.screens.acc_management import RequestMoneyScreen
-from gui.screens.acc_management import BillManagementScreen
-from gui.screens.acc_management import FDCalculatorScreen
-from gui.screens.acc_management import TransactionHistoryScreen
+from gui.screens.feature_panels import ProfileManagementScreen
+from gui.screens.feature_panels import FundManagementScreen
+from gui.screens.feature_panels import TransferMoneyScreen
+from gui.screens.feature_panels import RequestMoneyScreen
+from gui.screens.feature_panels import BillManagementScreen
+from gui.screens.feature_panels import FDCalculatorScreen
+from gui.screens.feature_panels import TransactionHistoryScreen
 
 import customtkinter as ctk
 
@@ -43,7 +43,7 @@ class TsarBank(ctk.CTk):
         }
 
         # TODO -> change back to WelcomeScreen after testing!!!!!!!!!!!!
-        self.show_window('WelcomeScreen')
+        self.show_window('LoginScreen')
 
     def show_window(self, window_to_show: str, window_to_clear=None):
         window_to_show = self.gui_instances[window_to_show]

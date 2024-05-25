@@ -38,6 +38,13 @@ class LoginScreen(ctk.CTkFrame):
 
         self.db_connection_frame = DBConnectionFrame(self)
 
+        '''
+        REMOVE AFTER TESTING
+        '''
+
+        helpful_button = ctk.CTkButton(self.central_frame, text='FILL INFO', command=lambda: [self.username_entry.entry_var.set('AdityaK5988'), self.password_entry.entry_var.set('AD!ty@123')])
+        helpful_button.place(relx=0.1, rely=0.7, relheight=0.1)
+
     def successful_login(self, user_data) -> None:
         account = {
             'ACCOUNT_ID': user_data[0],
@@ -50,7 +57,8 @@ class LoginScreen(ctk.CTkFrame):
             'EMAIL_ID': user_data[8],
             'PHONE_NO': user_data[9],
             'BALANCE': user_data[10],
-            'ADMIN': user_data[11]
+            'ADMIN': user_data[11],
+            'IMAGE': user_data[12]
         }
 
         # Update account details
