@@ -1,6 +1,9 @@
+import io
+
 from PIL import Image
 from settings import *
 from util.data_manager import data_manager
+from util.profile_picture import bytes_to_ctk_image
 from tktooltip import ToolTip
 
 import customtkinter as ctk
@@ -21,6 +24,12 @@ class MainScreen(ctk.CTkFrame):
 
     def update_info(self):
         self.user_details_frame.name.configure(text=data_manager.get_full_name())
+
+        pfp = data_manager.get_profile_pic()
+        if pfp:
+            pfp.configure(size=(55, 55))
+            self.user_details_frame.user_icon.configure(image=pfp)
+
         self.balance_details_frame.balance_value.configure(text=data_manager.get_balance())
 
 

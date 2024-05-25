@@ -1,8 +1,10 @@
-from PIL import Image
+from PIL import Image, ImageOps, ImageDraw
 from settings import *
-from util.database import db
 from random import choice
+from tkinter import filedialog
 from tkcalendar import Calendar
+from util.database import db
+from util.profile_picture import image_to_bytes
 from util.data_manager import data_manager
 from tkinter.messagebox import askokcancel
 from gui.util_widgets.back_button import BackButton
@@ -29,12 +31,15 @@ class SignUpScreen(ctk.CTkFrame):
         self.scroll_frame.signup_screen_instance = self
         self.scroll_frame.place(relx=0.0, rely=0.0, relwidth=1, relheight=1)
 
+        self.profile_picture_frame = ProfilePictureFrame(self.scroll_frame)
+
+        self.back_button = BackButton(self.profile_picture_frame, self, 'LoginScreen', self.app_instance)
+        self.back_button.place(relx=0.02, rely=0.06, anchor='nw')
+
         self.name_fields_frame = DoubleEntryFrame(self.scroll_frame, left_label_text='First Name',
                                                   right_label_text='Last Name',
                                                   left_entry_validation=('alphabets_only', 16),
                                                   right_entry_validation=('alphabets_only', 16))
-        self.back_button = BackButton(self.name_fields_frame, self, 'LoginScreen', self.app_instance)
-        self.back_button.place(relx=0.04, rely=0.15, anchor='nw')  # clunky but works
 
         self.gender_selection_frame = GenderSelectionFrame(self.scroll_frame)
         self.dob_selection_frame = DateOfBirthSelectionFrame(self.scroll_frame)
@@ -61,8 +66,7 @@ class SignUpScreen(ctk.CTkFrame):
         self.operation_buttons_frame = OperationButtonsFrame(self.scroll_frame)
 
     def update_db(self, first_name: str, last_name: str, gender: str, dob: datetime.date, address: str, email: str,
-                  phone: str,
-                  password: bytes):
+                  phone: str, password: bytes):
         # Generate a new username
         current_usernames = db.fetch_result('SELECT USERNAME FROM accounts')
 
@@ -74,11 +78,17 @@ class SignUpScreen(ctk.CTkFrame):
             random_number_suffix = ''.join(choice(chars) for _ in range(4))
             username = f'{first_name.lower().capitalize()}{last_name.upper()[0]}{random_number_suffix}'
 
+        # Profile picture
+        img_binary = None
+        ctk_pfp: ctk.CTkImage = self.profile_picture_frame.image_display.cget('image')
+        if ctk_pfp:
+            img_binary = image_to_bytes(ctk_pfp._light_image)
+
         # Update
-        query = 'INSERT INTO accounts (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        query = 'INSERT INTO accounts (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO, IMAGE) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         values = (
             username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender,
-            dob, address, email, phone
+            dob, address, email, phone, img_binary
         )
         db.execute_query(query, values)
 
@@ -93,7 +103,8 @@ class SignUpScreen(ctk.CTkFrame):
             'ADDRESS': address,
             'EMAIL_ID': email,
             'PHONE_NO': phone,
-            'ADMIN': False
+            'ADMIN': False,
+            'IMAGE': img_binary
         })
 
     def valid_credentials(self, first_name: str, last_name: str, gender: str, dob: datetime.date, address: str,
@@ -230,12 +241,19 @@ class SignUpScreen(ctk.CTkFrame):
                     # Hash password
                     pass_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-                    if not TESTING_MODE:  # wont update actual database with info
+                    if not TESTING_MODE:  # won't update actual database with info
                         self.update_db(first_name, last_name, gender, dob, address, email, phone, pass_hash)
 
                     # Change from transition screen after 4 seconds
                     TransitionScreen(self, 'PostSignUpScreen', 'Signing Up...', 'Signed Up!', 4000)
-                    self.app_instance.gui_instances['PostSignUpScreen'].username.configure(text=data_manager.get_username())
+
+                    post_signup_screen = self.app_instance.gui_instances['PostSignUpScreen']
+                    post_signup_screen.username.configure(text=data_manager.get_username())
+
+                    pfp = data_manager.get_profile_pic()
+                    if pfp:
+                        pfp.configure(size=(180, 180))
+                        post_signup_screen.profile_pic.configure(image=pfp)
 
                 else:
                     self.warning_label.raise_warning(19)
@@ -269,6 +287,59 @@ class SignUpScreen(ctk.CTkFrame):
 
         if place_forget:
             self.place_forget()
+
+
+class ProfilePictureFrame(ctk.CTkFrame):
+    def __init__(self, parent):
+        super().__init__(parent, corner_radius=15)
+
+        self.header_label = ctk.CTkLabel(self, text='Profile Picture', font=SIGNUP_SCREEN_LABEL_FONT)
+        self.header_label.pack(expand=True, fill='both', side='top', padx=12, pady=(12, 0))
+
+        self.image_display_container = ctk.CTkFrame(self, corner_radius=58)
+        self.image_display_container.pack(expand=True, ipadx=10, padx=12, pady=20)
+
+        self.image_display = ctk.CTkLabel(self.image_display_container, text='', image=ctk.CTkImage(Image.open(USER_ICON), Image.open(USER_ICON), (140, 140)))
+        self.image_display.pack(expand=True, fill='both', padx=12, pady=20)
+
+        self.choose_image_button = ctk.CTkButton(self, width=200, height=50, corner_radius=100, text='Choose Image', font=SIGNUP_SCREEN_RADIO_BUTTON_FONT, command=self.open_image_dialogue)
+        self.choose_image_button.pack(expand=True, padx=12, pady=(0, 6))
+
+        self.clear_image_button = ctk.CTkButton(self, width=200, height=50, corner_radius=100, text='Clear Image', font=SIGNUP_SCREEN_RADIO_BUTTON_FONT, command=self.clear_image)
+        self.clear_image_button.pack(expand=True, padx=12, pady=(6, 18))
+
+        # Place
+        self.pack(expand=True, fill='x', padx=12, pady=12)
+
+    def open_image_dialogue(self):
+        path = filedialog.askopenfile(filetypes=(('Image', ('*.png', '*.jpeg', '*.jpg')),))
+        if path:
+            path = path.name
+            size = (140, 140)
+
+            # Open the image
+            image = Image.open(path).convert("RGBA")
+            image = ImageOps.exif_transpose(image)
+            image.thumbnail(size)
+
+            # Create a circular mask
+            mask = Image.new('L', size, 0)
+            draw = ImageDraw.Draw(mask)
+            draw.ellipse((0, 0) + size, fill=255)
+
+            # Apply the mask to the image
+            circular_image = ImageOps.fit(image, size, centering=(0.5, 0.5))
+            circular_image.putalpha(mask)
+
+            # Convert the image to a format compatible with CTkImage
+            ctk_img = ctk.CTkImage(light_image=circular_image, dark_image=circular_image, size=size)
+
+            # Display the image
+            self.image_display.configure(image=ctk_img)
+
+    def clear_image(self):
+        ctk_img = ctk.CTkImage(light_image=Image.open(USER_ICON), dark_image=Image.open(USER_ICON), size=(140, 140))
+        self.image_display.configure(image=ctk_img)
 
 
 class DoubleEntryFrame(ctk.CTkFrame):
@@ -347,7 +418,7 @@ class GenderSelectionFrame(ctk.CTkFrame):
         self.header_label = ctk.CTkLabel(self, text='Gender', font=SIGNUP_SCREEN_LABEL_FONT)
         self.header_label.pack(expand=True, fill='both', side='top', padx=12, pady=12)
 
-        self.radio_container = ctk.CTkFrame(self)
+        self.radio_container = ctk.CTkFrame(self, corner_radius=15)
 
         self.radio_container.rowconfigure(0, weight=1)
         self.radio_container.columnconfigure((0, 1), weight=1, uniform='G')
@@ -426,8 +497,6 @@ class AddressDetailsFrame(ctk.CTkFrame):
                                          corner_radius=15)
         self.text_entry.pack(expand=True, fill='both', padx=12, pady=12)
 
-        self.text_entry.widgetName = 'TextBox'  # required to clear field in main instance
-
         # Place
         self.pack(expand=True, fill='x', padx=12, pady=12)
 
@@ -476,14 +545,15 @@ class PostSignUpScreen(ctk.CTkFrame):
             font=WELCOME_SCREEN_WELCOME_LABEL_FONT
         ).pack(expand=True, fill='x', padx=12, pady=12)
 
-        ctk.CTkLabel(
+        self.profile_pic = ctk.CTkLabel(
             self.another_frame,
             text='',
             image=ctk.CTkImage(
                 light_image=Image.open(USER_ICON),
                 dark_image=Image.open(USER_ICON),
                 size=(180, 180)
-            )).pack(expand=True, fill='x', padx=12, pady=12)
+            ))
+        self.profile_pic.pack(expand=True, fill='x', padx=12, pady=12)
 
         self.username = ctk.CTkLabel(self.another_frame, text='', font=SIGNUP_SCREEN_LABEL_FONT)
         self.username.pack(expand=True, fill='x', padx=12, pady=(6, 12))

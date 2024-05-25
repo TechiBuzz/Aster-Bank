@@ -24,8 +24,8 @@ class Database:
             try:
                 cursor.execute(query, args)
                 self.connection.commit()
-            except mysql.connector.Error:
-                print("Failed to execute query!")
+            except mysql.connector.Error as e:
+                print(f'Failed to execute query! Error: {e}')
 
     def fetch_result(self, query: str, args: tuple = None) -> tuple | None:
         if self.connection:

@@ -1,7 +1,10 @@
-from PIL import Image
+from CTkTable import CTkTable
+from PIL import Image, ImageOps, ImageDraw
 from settings import *
 from util.data_manager import data_manager
 from gui.util_widgets.back_button import BackButton
+from tkinter import filedialog
+
 
 import customtkinter as ctk
 
@@ -40,6 +43,14 @@ class ProfileManagementScreen(ctk.CTkFrame):
         # Widgets
         self.base_frame = create_base_screen(self, self.app_instance, 'Manage Profile', False)
         self.content_frame = self.base_frame.content_frame
+
+        value = [
+            ['Account Number', '10001'],
+            ['Username', 'Aditya Kumar']
+        ]
+
+        self.info_table = CTkTable(self.content_frame, row=5, column=2, values=value)
+        self.info_table.pack(expand=True, fill='x', padx=12, pady=12)
 
     def get_name(self) -> str:
         return 'ProfileManagementScreen'
