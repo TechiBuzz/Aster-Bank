@@ -17,14 +17,23 @@ class DataManager:
     def set_profile_pic(self, image: Image) -> None:
         self.account['IMAGE'] = image_to_bytes(image)
 
-    def get_username(self) -> str:
-        return self.account['USERNAME']
+    def get_username(self) -> str | None:
+        try:
+            return self.account['USERNAME']
+        except KeyError:
+            return None
 
-    def get_full_name(self) -> str:
-        return self.account['FIRST_NAME'] + ' ' + self.account['LAST_NAME']
+    def get_full_name(self) -> str | None:
+        try:
+            return self.account['FIRST_NAME'] + ' ' + self.account['LAST_NAME']
+        except KeyError:
+            return None
 
-    def get_balance(self) -> float:
-        return self.account['BALANCE']
+    def get_balance(self) -> float | None:
+        try:
+            return self.account['BALANCE'] if self.account['BALANCE'] else None
+        except KeyError:
+            return None
 
     def update_balance(self, new_balance) -> None:
         self.account['BALANCE'] = new_balance

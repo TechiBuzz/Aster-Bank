@@ -1,9 +1,7 @@
-import io
-
 from PIL import Image
 from settings import *
 from util.data_manager import data_manager
-from util.profile_picture import bytes_to_ctk_image
+from tkinter.messagebox import askyesno
 from tktooltip import ToolTip
 
 import customtkinter as ctk
@@ -37,6 +35,8 @@ class UserInfoFrame(ctk.CTkFrame):
     def __init__(self, parent, app_instance):
         super().__init__(parent, corner_radius=15)
 
+        self.app_instance = app_instance
+
         self.user_icon = ctk.CTkButton(
             master=self,
             text='',
@@ -63,8 +63,34 @@ class UserInfoFrame(ctk.CTkFrame):
         )
         self.name.pack(padx=12, pady=12, side='left')
 
+        self.logout_icon = ctk.CTkButton(
+            master=self,
+            text='',
+            image=ctk.CTkImage(
+                light_image=Image.open(MAIN_SCREEN_LOGOUT_ICON),
+                dark_image=Image.open(MAIN_SCREEN_LOGOUT_ICON),
+                size=(55, 55)
+            ),
+            fg_color='transparent',
+            hover_color='#2B2B2B',
+            bg_color='transparent',
+            corner_radius=100,
+            width=0,
+            command=lambda: self.logout(app_instance)
+        )
+        self.logout_icon.pack(pady=12, side='right')
+
+        ToolTip(self.logout_icon, "Logout")
+
         # Place
         self.pack(fill='x', padx=12, pady=(12, 6))
+
+    def logout(self, app_instance):
+        user_decision = askyesno('Logout', message='Are you sure you want to log out of this account?')
+
+        if user_decision:
+            app_instance.show_window('LoginScreen')
+            data_manager.set_account(dict())
 
 
 class BalanceInfoFrame(ctk.CTkFrame):
@@ -109,7 +135,7 @@ class FeaturePanelsFrame(ctk.CTkFrame):
         self.columnconfigure((0, 1, 2), weight=1, uniform='WOLVERINE')
 
         font = MAIN_SCREEN_PANEL_FONT
-        panel_spacing = 20
+        panel_spacing = 22
 
         self.atm_panel = ctk.CTkButton(
             self,
@@ -117,7 +143,8 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: app_instance.show_window('FundManagementScreen')
+            command=lambda: app_instance.show_window('FundManagementScreen'),
+            corner_radius=20
         )
         self.atm_panel.grid(row=0, column=0, padx=(panel_spacing, panel_spacing//2), pady=(panel_spacing, panel_spacing//2), sticky='nsew')
 
@@ -127,7 +154,8 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: app_instance.show_window('TransferMoneyScreen')
+            command=lambda: app_instance.show_window('TransferMoneyScreen'),
+            corner_radius=20
         )
         self.transfer_panel.grid(row=0, column=1, padx=(panel_spacing//2, panel_spacing//2), pady=(panel_spacing, panel_spacing//2), sticky='nsew')
 
@@ -137,7 +165,8 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: app_instance.show_window('RequestMoneyScreen')
+            command=lambda: app_instance.show_window('RequestMoneyScreen'),
+            corner_radius=20
         )
         self.request_panel.grid(row=0, column=2, padx=(panel_spacing//2, panel_spacing), pady=(panel_spacing, panel_spacing//2), sticky='nsew')
 
@@ -147,7 +176,8 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: app_instance.show_window('FDCalculatorScreen')
+            command=lambda: app_instance.show_window('FDCalculatorScreen'),
+            corner_radius=20
         )
         self.fd_calculator_panel.grid(row=1, column=0, padx=(panel_spacing, panel_spacing//2), pady=(panel_spacing//2, panel_spacing), sticky='nsew')
 
@@ -157,7 +187,8 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: app_instance.show_window('BillManagementScreen')
+            command=lambda: app_instance.show_window('BillManagementScreen'),
+            corner_radius=20
         )
         self.bills_panel.grid(row=1, column=1, padx=(panel_spacing//2, panel_spacing//2), pady=(panel_spacing//2, panel_spacing), sticky='nsew')
 
@@ -167,7 +198,8 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=font,
             image=None,
             compound='top',
-            command=lambda: app_instance.show_window('TransactionHistoryScreen')
+            command=lambda: app_instance.show_window('TransactionHistoryScreen'),
+            corner_radius=20
         ))
         self.transaction_history_panel.grid(row=1, column=2, padx=(panel_spacing//2, panel_spacing), pady=(panel_spacing//2, panel_spacing), sticky='nsew')
 

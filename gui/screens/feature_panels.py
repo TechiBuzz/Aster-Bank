@@ -17,7 +17,7 @@ def create_base_screen(parent, app_instance, header_text: str, scroll_frame: boo
     screen.header_frame.pack(fill='x', padx=12, pady=(12, 6))
 
     screen.back_button = BackButton(screen.header_frame, parent, 'MainScreen', app_instance)
-    screen.back_button.place(relx=0.02, rely=0.18, anchor='nw')
+    screen.back_button.place(relx=0.02, rely=0.22, anchor='nw')
 
     screen.header_text = ctk.CTkLabel(screen.header_frame, text=header_text, font=SIGNUP_SCREEN_LABEL_FONT)
     screen.header_text.pack(ipady=15.5)
@@ -44,13 +44,27 @@ class ProfileManagementScreen(ctk.CTkFrame):
         self.base_frame = create_base_screen(self, self.app_instance, 'Manage Profile', False)
         self.content_frame = self.base_frame.content_frame
 
-        value = [
-            ['Account Number', '10001'],
-            ['Username', 'Aditya Kumar']
-        ]
+        self.pfp_container = ctk.CTkFrame(self.content_frame, corner_radius=58)
+        self.pfp_container.pack(expand=True, ipadx=12, padx=12, pady=20)
 
-        self.info_table = CTkTable(self.content_frame, row=5, column=2, values=value)
-        self.info_table.pack(expand=True, fill='x', padx=12, pady=12)
+        self.profile_pic = ctk.CTkButton(
+            self.pfp_container,
+            text='',
+            fg_color='transparent',
+            hover_color='#333333',
+            bg_color='transparent',
+            corner_radius=100,
+            width=0,
+            image=ctk.CTkImage(Image.open(USER_ICON), Image.open(USER_ICON), (120, 120))
+        )
+        self.profile_pic.pack(expand=True, fill='both', padx=12, pady=20)
+
+    def update_info(self):
+        # Set profile picture
+        if data_manager.get_profile_pic():
+            pic = data_manager.get_profile_pic()
+            pic.configure(size=(120, 120))
+            self.profile_pic.configure(image=pic)
 
     def get_name(self) -> str:
         return 'ProfileManagementScreen'
@@ -86,6 +100,8 @@ class FDCalculatorScreen(ctk.CTkFrame):
         self.base_frame = create_base_screen(self, self.app_instance, 'Calculate Interest on FD', False)
         self.content_frame = self.base_frame.content_frame
 
+
+
     def get_name(self) -> str:
         return 'FDCalculatorScreen'
 
@@ -102,6 +118,14 @@ class FundManagementScreen(ctk.CTkFrame):
         # Widgets
         self.base_frame = create_base_screen(self, self.app_instance, 'Manage Funds', False)
         self.content_frame = self.base_frame.content_frame
+
+        self.action_var = ctk.StringVar(value='Deposit')
+        self.action_selector = ctk.CTkComboBox(self.content_frame, values=['Deposit', 'Withdraw'], variable=self.action_var, state='readonly')
+        self.action_selector.pack(expand=True)
+
+        self.entry = ctk.CTkEntry(self.content_frame, corner_radius=50)
+        self.entry.pack(expand=True)
+
 
     def get_name(self) -> str:
         return 'FundManagementScreen'

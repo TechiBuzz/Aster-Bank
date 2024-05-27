@@ -545,15 +545,11 @@ class PostSignUpScreen(ctk.CTkFrame):
             font=WELCOME_SCREEN_WELCOME_LABEL_FONT
         ).pack(expand=True, fill='x', padx=12, pady=12)
 
-        self.profile_pic = ctk.CTkLabel(
-            self.another_frame,
-            text='',
-            image=ctk.CTkImage(
-                light_image=Image.open(USER_ICON),
-                dark_image=Image.open(USER_ICON),
-                size=(180, 180)
-            ))
-        self.profile_pic.pack(expand=True, fill='x', padx=12, pady=12)
+        self.pfp_container = ctk.CTkFrame(self.another_frame, corner_radius=58)
+        self.pfp_container.pack(expand=True, ipadx=14, padx=12, pady=20)
+
+        self.profile_pic = ctk.CTkLabel(self.pfp_container, text='', image=ctk.CTkImage(Image.open(USER_ICON), Image.open(USER_ICON), (180, 180)))
+        self.profile_pic.pack(expand=True, fill='both', padx=12, pady=20)
 
         self.username = ctk.CTkLabel(self.another_frame, text='', font=SIGNUP_SCREEN_LABEL_FONT)
         self.username.pack(expand=True, fill='x', padx=12, pady=(6, 12))

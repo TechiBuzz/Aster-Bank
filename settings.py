@@ -18,6 +18,7 @@ USER_ICON = 'assets\\ui\\user_icon.png'
 SMALL_DB_ICON = 'assets\\ui\\login_screen\\database_icon.png'
 
 MAIN_SCREEN_RUPEE_ICON = 'assets\\ui\\main_screen\\rupee.png'
+MAIN_SCREEN_LOGOUT_ICON = 'assets\\ui\\main_screen\\logout.png'
 
 BACK_ARROW_ICON = 'assets\\ui\\util_widgets\\back_button.png'
 WARNING_ICON = 'assets\\ui\\util_widgets\\warning_icon.png'
