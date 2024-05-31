@@ -1,5 +1,5 @@
 from settings import *
-from PIL import Image
+from util.image_util import open_image
 
 import customtkinter as ctk
 
@@ -9,10 +9,8 @@ class ObfuscateEntryWidget(ctk.CTkButton):
         super().__init__(parent)
 
         # Images
-        self.show_pass_img = ctk.CTkImage(light_image=Image.open(SHOW_PASSWORD_ICON),
-                                          dark_image=Image.open(SHOW_PASSWORD_ICON))
-        self.hide_pass_img = ctk.CTkImage(light_image=Image.open(HIDE_PASSWORD_ICON),
-                                          dark_image=Image.open(HIDE_PASSWORD_ICON))
+        self.show_pass_img = open_image(SHOW_PASSWORD_ICON, (24, 28))
+        self.hide_pass_img = open_image(HIDE_PASSWORD_ICON, (24, 28))
 
         # Configuration
         self.configure(

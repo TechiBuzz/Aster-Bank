@@ -1,10 +1,11 @@
-from PIL import Image
-from settings import *
-from util.data_manager import data_manager
 from tkinter.messagebox import askyesno
-from tktooltip import ToolTip
 
 import customtkinter as ctk
+from tktooltip import ToolTip
+
+from settings import *
+from util.data_manager import data_manager
+from util.image_util import open_image
 
 
 class MainScreen(ctk.CTkFrame):
@@ -40,11 +41,7 @@ class UserInfoFrame(ctk.CTkFrame):
         self.user_icon = ctk.CTkButton(
             master=self,
             text='',
-            image=ctk.CTkImage(
-                light_image=Image.open(USER_ICON),
-                dark_image=Image.open(USER_ICON),
-                size=(55, 55)
-            ),
+            image=open_image(USER_ICON, (55, 55)),
             fg_color='transparent',
             hover_color='#2B2B2B',
             bg_color='transparent',
@@ -66,11 +63,7 @@ class UserInfoFrame(ctk.CTkFrame):
         self.logout_icon = ctk.CTkButton(
             master=self,
             text='',
-            image=ctk.CTkImage(
-                light_image=Image.open(MAIN_SCREEN_LOGOUT_ICON),
-                dark_image=Image.open(MAIN_SCREEN_LOGOUT_ICON),
-                size=(55, 55)
-            ),
+            image=open_image(MAIN_SCREEN_LOGOUT_ICON, (55, 55)),
             fg_color='transparent',
             hover_color='#2B2B2B',
             bg_color='transparent',
@@ -100,11 +93,7 @@ class BalanceInfoFrame(ctk.CTkFrame):
         self.rupee_icon = ctk.CTkLabel(
             master=self,
             text='',
-            image=ctk.CTkImage(
-                light_image=Image.open(MAIN_SCREEN_RUPEE_ICON),
-                dark_image=Image.open(MAIN_SCREEN_RUPEE_ICON),
-                size=(55, 55)
-            )
+            image=open_image(MAIN_SCREEN_RUPEE_ICON, (55, 55)),
         )
         self.rupee_icon.pack(padx=16, pady=12, side='left')
 

@@ -1,5 +1,6 @@
 from settings import *
-from PIL import Image
+from util.image_util import open_image
+from tktooltip import ToolTip
 
 import customtkinter as ctk
 
@@ -12,13 +13,13 @@ class BackButton(ctk.CTkButton):
     def __init__(self, parent, from_page, to_page, app_instance):
         super().__init__(parent)
 
-        img = Image.open(BACK_ARROW_ICON)
-
         self.configure(
             width=50,
             height=50,
             corner_radius=25,
             text='',
-            image=ctk.CTkImage(dark_image=img, light_image=img),
+            image=open_image(BACK_ARROW_ICON, (30, 30)),
             command=lambda: go_back(app_instance, to_page, from_page)
         )
+
+        ToolTip(self, msg='Go Back')

@@ -1,7 +1,7 @@
-from PIL import Image
 from settings import *
 from util.database import db
 from util.data_manager import data_manager
+from util.image_util import open_image
 from gui.screens.transition import TransitionScreen
 from gui.util_widgets.warning_label import WarningLabel
 from gui.util_widgets.obfuscate_entry import ObfuscateEntryWidget
@@ -22,10 +22,7 @@ class LoginScreen(ctk.CTkFrame):
         self.central_frame.login_screen_instance = self
         self.central_frame.place(relx=0.5, rely=0.05, relheight=0.85, relwidth=0.935, anchor='n')
 
-        user_icon_img = ctk.CTkImage(light_image=Image.open(USER_ICON),
-                                     dark_image=Image.open(USER_ICON),
-                                     size=(140, 140))
-        self.user_icon = ctk.CTkLabel(self.central_frame, text='', image=user_icon_img)
+        self.user_icon = ctk.CTkLabel(self.central_frame, text='', image=open_image(USER_ICON, (140, 140)))
         self.user_icon.place(relx=0.05, rely=0.15, relwidth=0.9, relheight=0.3, anchor='w')
 
         self.username_entry = LabelledEntry(self.central_frame, 0.4, 'Username', ('alphanumeric', 25), False)
@@ -208,12 +205,11 @@ class DBConnectionFrame(ctk.CTkFrame):
         super().__init__(master=parent, corner_radius=15, bg_color='transparent')
 
         # Small DB Icon
-        db_icon = Image.open(SMALL_DB_ICON)
         db_status_font = LOGIN_SCREEN_DB_STATUS_FONT
 
         self.db_icon = ctk.CTkLabel(
             master=self,
-            image=ctk.CTkImage(light_image=db_icon, dark_image=db_icon, size=(28, 22)),
+            image=open_image(SMALL_DB_ICON, (28, 22)),
             compound='left',
             text='   Database Status:',
             text_color='#d7dddd',

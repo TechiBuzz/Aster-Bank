@@ -1,12 +1,12 @@
-from CTkTable import CTkTable
-from PIL import Image, ImageOps, ImageDraw
-from settings import *
-from util.data_manager import data_manager
-from gui.util_widgets.back_button import BackButton
 from tkinter import filedialog
 
-
 import customtkinter as ctk
+from PIL import Image
+
+from gui.util_widgets.back_button import BackButton
+from settings import *
+from util.data_manager import data_manager
+from util.image_util import open_image, circular_image
 
 
 def create_base_screen(parent, app_instance, header_text: str, scroll_frame: bool) -> ctk.CTkFrame:
@@ -41,33 +41,117 @@ class ProfileManagementScreen(ctk.CTkFrame):
         self.app_instance = parent
 
         # Widgets
-        self.base_frame = create_base_screen(self, self.app_instance, 'Manage Profile', False)
+        self.base_frame = create_base_screen(self, self.app_instance, 'Manage Profile', True)
         self.content_frame = self.base_frame.content_frame
 
-        self.pfp_container = ctk.CTkFrame(self.content_frame, corner_radius=58)
-        self.pfp_container.pack(expand=True, ipadx=12, padx=12, pady=20)
+        self.pfp_frame = ctk.CTkFrame(self.content_frame, fg_color='transparent', corner_radius=58)
+        self.pfp_frame.pack(expand=True, fill='x', padx=12, pady=(12, 6))
 
-        self.profile_pic = ctk.CTkButton(
-            self.pfp_container,
-            text='',
-            fg_color='transparent',
-            hover_color='#333333',
-            bg_color='transparent',
-            corner_radius=100,
-            width=0,
-            image=ctk.CTkImage(Image.open(USER_ICON), Image.open(USER_ICON), (120, 120))
-        )
-        self.profile_pic.pack(expand=True, fill='both', padx=12, pady=20)
+        self.profile_pic = ctk.CTkLabel(self.pfp_frame, text='',
+                                        image=open_image(USER_ICON, (140, 140)), fg_color='transparent',
+                                        bg_color='transparent')
+        self.profile_pic.pack(expand=True, padx=12, pady=(0, 6))
+
+        self.name_label = ctk.CTkLabel(self.pfp_frame, text='Test Name', font=MAIN_SCREEN_HEADER_FONT)
+        self.name_label.pack(expand=True, fill='x', padx=12, pady=(6, 6))
+
+        self.choose_image_button = ctk.CTkButton(self.pfp_frame, width=170, height=50, corner_radius=100,
+                                                 text='Choose Image',
+                                                 font=SIGNUP_SCREEN_RADIO_BUTTON_FONT,
+                                                 command=self.choose_image_dialogue)
+        self.choose_image_button.pack(expand=True, padx=12, pady=(6, 6))
+
+        self.clear_image_button = ctk.CTkButton(self.pfp_frame, width=200, height=50, corner_radius=100,
+                                                text='Clear Image',
+                                                font=SIGNUP_SCREEN_RADIO_BUTTON_FONT, command=self.clear_image)
+        self.clear_image_button.pack(expand=True, padx=12, pady=(6, 12))
+
+    def choose_image_dialogue(self):
+        path = filedialog.askopenfile(filetypes=(('Image', ('*.png', '*.jpeg', '*.jpg')),))
+        if path:
+            path = path.name
+            self.profile_pic.configure(image=circular_image(Image.open(path), (140, 140)))
+
+    def clear_image(self):
+        # Reset name
+        self.name_label.configure(text='')
+
+        # Reset pfp
+        self.profile_pic.configure(image=open_image(USER_ICON, (140, 140)))
 
     def update_info(self):
+        # Set name
+        self.name_label.configure(text=data_manager.get_full_name())
+
         # Set profile picture
         if data_manager.get_profile_pic():
             pic = data_manager.get_profile_pic()
-            pic.configure(size=(120, 120))
+            pic.configure(size=(140, 140))
             self.profile_pic.configure(image=pic)
 
     def get_name(self) -> str:
         return 'ProfileManagementScreen'
+
+    def clear_screen(self) -> None:
+        self.profile_pic.configure(image=open_image(USER_ICON, (120, 120)))
+        self.place_forget()
+
+
+class FundManagementScreen(ctk.CTkFrame):
+    def __init__(self, parent):
+        super().__init__(master=parent)
+
+        self.app_instance = parent
+
+        # Widgets
+        self.base_frame = create_base_screen(self, self.app_instance, 'Manage Funds', False)
+        self.content_frame = self.base_frame.content_frame
+
+        self.selector_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
+        self.selector_frame.pack(expand=True, fill='x', padx=12, pady=(12, 6))
+
+        self.radio_container = ctk.CTkFrame(self.selector_frame, corner_radius=15)
+
+        self.radio_container.rowconfigure(0, weight=1)
+        self.radio_container.columnconfigure((0, 1), weight=1, uniform='G')
+
+        self.radio_container.pack(expand=True, fill='both', side='bottom', ipady=30, padx=12, pady=12)
+
+        self.radio_var = ctk.IntVar(value=0)
+        self.deposit_radio_button = ctk.CTkRadioButton(
+            self.radio_container,
+            text='Deposit',
+            font=SIGNUP_SCREEN_RADIO_BUTTON_FONT,
+            variable=self.radio_var,
+            value=1
+        )
+        self.deposit_radio_button.grid(row=0, column=0)
+
+        self.withdraw_radio_button = ctk.CTkRadioButton(
+            self.radio_container, text='Withdraw',
+            font=SIGNUP_SCREEN_RADIO_BUTTON_FONT,
+            variable=self.radio_var,
+            value=2
+        )
+        self.withdraw_radio_button.grid(row=0, column=1)
+
+        self.balance_var = ctk.IntVar(value=0)
+        self.balance_text = ctk.CTkLabel(self.content_frame, text='', textvariable=self.balance_var,
+                                         font=LOGIN_SCREEN_FIELD_ENTRY_FONT)
+        self.balance_text.pack(expand=True, fill='x', padx=12, pady=(6, 12))
+
+        self.balance_slider = ctk.CTkSlider(self.content_frame, height=40, button_length=1, from_=100, to=1000,
+                                            variable=self.balance_var)
+        self.balance_slider.pack(expand=True, padx=12, pady=(6, 12))
+
+        self.entry = ctk.CTkEntry(self.content_frame, corner_radius=50)
+        self.entry.pack(expand=True)
+
+    def get_name(self) -> str:
+        return 'FundManagementScreen'
+
+    def update_info(self):
+        self.balance_slider.configure(to=int(data_manager.get_balance()))
 
     def clear_screen(self) -> None:
         self.place_forget()
@@ -100,35 +184,8 @@ class FDCalculatorScreen(ctk.CTkFrame):
         self.base_frame = create_base_screen(self, self.app_instance, 'Calculate Interest on FD', False)
         self.content_frame = self.base_frame.content_frame
 
-
-
     def get_name(self) -> str:
         return 'FDCalculatorScreen'
-
-    def clear_screen(self) -> None:
-        self.place_forget()
-
-
-class FundManagementScreen(ctk.CTkFrame):
-    def __init__(self, parent):
-        super().__init__(master=parent)
-
-        self.app_instance = parent
-
-        # Widgets
-        self.base_frame = create_base_screen(self, self.app_instance, 'Manage Funds', False)
-        self.content_frame = self.base_frame.content_frame
-
-        self.action_var = ctk.StringVar(value='Deposit')
-        self.action_selector = ctk.CTkComboBox(self.content_frame, values=['Deposit', 'Withdraw'], variable=self.action_var, state='readonly')
-        self.action_selector.pack(expand=True)
-
-        self.entry = ctk.CTkEntry(self.content_frame, corner_radius=50)
-        self.entry.pack(expand=True)
-
-
-    def get_name(self) -> str:
-        return 'FundManagementScreen'
 
     def clear_screen(self) -> None:
         self.place_forget()
@@ -172,8 +229,7 @@ class TransferMoneyScreen(ctk.CTkFrame):
         self.sender_info_frame.grid(row=0, column=0, sticky='nsew')
 
         self.sender_icon = ctk.CTkLabel(self.sender_info_frame, text='',
-                                        image=ctk.CTkImage(light_image=Image.open(USER_ICON),
-                                                           dark_image=Image.open(USER_ICON), size=(80, 80)))
+                                        image=open_image(USER_ICON, (80, 80)))
         self.sender_icon.pack(expand=True, fill='both')
 
         self.sender_name = ctk.CTkLabel(self.sender_info_frame, text='', font=SIGNUP_SCREEN_RADIO_BUTTON_FONT)
@@ -185,9 +241,7 @@ class TransferMoneyScreen(ctk.CTkFrame):
         self.receiver_info_frame = ctk.CTkFrame(self.info_container)
         self.receiver_info_frame.grid(row=0, column=2, sticky='nsew')
 
-        self.receiver_icon = ctk.CTkLabel(self.receiver_info_frame, text='',
-                                          image=ctk.CTkImage(light_image=Image.open(USER_ICON),
-                                                             dark_image=Image.open(USER_ICON), size=(80, 80)))
+        self.receiver_icon = ctk.CTkLabel(self.receiver_info_frame, text='', image=open_image(USER_ICON, (80, 80)))
         self.receiver_icon.pack(expand=True, fill='both')
 
         self.receiver_name = ctk.CTkLabel(self.receiver_info_frame, text='????', font=SIGNUP_SCREEN_RADIO_BUTTON_FONT)

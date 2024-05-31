@@ -1,12 +1,18 @@
-from util.database import db
 from PIL import Image
-from util.profile_picture import image_to_bytes, bytes_to_ctk_image
+from util.database import db
 from customtkinter import CTkImage
+from util.image_util import image_to_bytes, bytes_to_ctk_image
 
 
 class DataManager:
     def __init__(self):
         self.account = dict()
+
+    def get(self, value: str):
+        try:
+            return self.account[value]
+        except KeyError:
+            return None
 
     def get_profile_pic(self) -> CTkImage | None:
         if self.account['IMAGE']:

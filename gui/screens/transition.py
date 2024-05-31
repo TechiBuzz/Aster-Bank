@@ -1,6 +1,5 @@
 from settings import *
-from PIL import Image
-
+from util.image_util import open_image
 import customtkinter as ctk
 
 
@@ -41,11 +40,7 @@ class TransitionScreen(ctk.CTkFrame):
         ctk.CTkLabel(
             self.central_frame,
             text='',
-            image=ctk.CTkImage(
-                light_image=Image.open(TRANSITION_CHECKMARK_ICON),
-                dark_image=Image.open(TRANSITION_CHECKMARK_ICON),
-                size=(120, 120)
-            )
+            image=open_image(TRANSITION_CHECKMARK_ICON, (120, 120))
         ).grid(column=0, row=1, sticky='n')
 
     def finish_transition(self, from_page, to_page):

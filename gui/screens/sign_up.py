@@ -1,22 +1,23 @@
-from PIL import Image, ImageOps, ImageDraw
-from settings import *
-from random import choice
-from tkinter import filedialog
-from tkcalendar import Calendar
-from util.database import db
-from util.profile_picture import image_to_bytes
-from util.data_manager import data_manager
-from tkinter.messagebox import askokcancel
-from gui.util_widgets.back_button import BackButton
-from gui.screens.transition import TransitionScreen
-from gui.util_widgets.warning_label import WarningLabel
-from gui.util_widgets.obfuscate_entry import ObfuscateEntryWidget
-
+import datetime
 import re
 import string
-import datetime
+from random import choice
+from tkinter import filedialog
+from tkinter.messagebox import askokcancel
+
 import bcrypt
 import customtkinter as ctk
+from PIL import Image
+from tkcalendar import Calendar
+
+from gui.screens.transition import TransitionScreen
+from gui.util_widgets.back_button import BackButton
+from gui.util_widgets.obfuscate_entry import ObfuscateEntryWidget
+from gui.util_widgets.warning_label import WarningLabel
+from settings import *
+from util.data_manager import data_manager
+from util.database import db
+from util.image_util import image_to_bytes, open_image, circular_image
 
 
 class SignUpScreen(ctk.CTkFrame):
@@ -299,10 +300,10 @@ class ProfilePictureFrame(ctk.CTkFrame):
         self.image_display_container = ctk.CTkFrame(self, corner_radius=58)
         self.image_display_container.pack(expand=True, ipadx=10, padx=12, pady=20)
 
-        self.image_display = ctk.CTkLabel(self.image_display_container, text='', image=ctk.CTkImage(Image.open(USER_ICON), Image.open(USER_ICON), (140, 140)))
+        self.image_display = ctk.CTkLabel(self.image_display_container, text='', image=open_image(USER_ICON, (140, 140)))
         self.image_display.pack(expand=True, fill='both', padx=12, pady=20)
 
-        self.choose_image_button = ctk.CTkButton(self, width=200, height=50, corner_radius=100, text='Choose Image', font=SIGNUP_SCREEN_RADIO_BUTTON_FONT, command=self.open_image_dialogue)
+        self.choose_image_button = ctk.CTkButton(self, width=200, height=50, corner_radius=100, text='Choose Image', font=SIGNUP_SCREEN_RADIO_BUTTON_FONT, command=self.choose_image_dialogue)
         self.choose_image_button.pack(expand=True, padx=12, pady=(0, 6))
 
         self.clear_image_button = ctk.CTkButton(self, width=200, height=50, corner_radius=100, text='Clear Image', font=SIGNUP_SCREEN_RADIO_BUTTON_FONT, command=self.clear_image)
@@ -311,35 +312,16 @@ class ProfilePictureFrame(ctk.CTkFrame):
         # Place
         self.pack(expand=True, fill='x', padx=12, pady=12)
 
-    def open_image_dialogue(self):
+    def choose_image_dialogue(self):
         path = filedialog.askopenfile(filetypes=(('Image', ('*.png', '*.jpeg', '*.jpg')),))
         if path:
             path = path.name
-            size = (140, 140)
-
-            # Open the image
-            image = Image.open(path).convert("RGBA")
-            image = ImageOps.exif_transpose(image)
-            image.thumbnail(size)
-
-            # Create a circular mask
-            mask = Image.new('L', size, 0)
-            draw = ImageDraw.Draw(mask)
-            draw.ellipse((0, 0) + size, fill=255)
-
-            # Apply the mask to the image
-            circular_image = ImageOps.fit(image, size, centering=(0.5, 0.5))
-            circular_image.putalpha(mask)
-
-            # Convert the image to a format compatible with CTkImage
-            ctk_img = ctk.CTkImage(light_image=circular_image, dark_image=circular_image, size=size)
 
             # Display the image
-            self.image_display.configure(image=ctk_img)
+            self.image_display.configure(image=circular_image(Image.open(path), (140, 140)))
 
     def clear_image(self):
-        ctk_img = ctk.CTkImage(light_image=Image.open(USER_ICON), dark_image=Image.open(USER_ICON), size=(140, 140))
-        self.image_display.configure(image=ctk_img)
+        self.image_display.configure(image=open_image(USER_ICON, (140, 140)))
 
 
 class DoubleEntryFrame(ctk.CTkFrame):

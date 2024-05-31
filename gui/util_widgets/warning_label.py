@@ -1,5 +1,5 @@
-from PIL import Image
 from settings import *
+from util.image_util import open_image
 
 import customtkinter as ctk
 
@@ -19,7 +19,7 @@ class WarningLabel(ctk.CTkLabel):
 
     def raise_warning(self, code):
         self.configure(
-            image=ctk.CTkImage(Image.open(WARNING_ICON), Image.open(WARNING_ICON)),
+            image=open_image(WARNING_ICON, (27, 27)),
             compound='left'
         )
         self.info_text_var.set(self.warnings[code])
