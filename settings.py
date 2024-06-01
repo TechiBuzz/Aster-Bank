@@ -25,6 +25,9 @@ WARNING_ICON = 'assets\\ui\\util_widgets\\warning_icon.png'
 SHOW_PASSWORD_ICON = 'assets\\ui\\util_widgets\\obfuscate_widget\\show_password.png'
 HIDE_PASSWORD_ICON = 'assets\\ui\\util_widgets\\obfuscate_widget\\hide_password.png'
 
+EDIT_PHOTO_ICON = 'assets\\ui\\profile_screen\\choose_image.png'
+DELETE_PHOTO_ICON = 'assets\\ui\\profile_screen\\delete.png'
+
 TRANSITION_CHECKMARK_ICON = 'assets\\ui\\transition_screen\\check.png'
 
 # FONTS

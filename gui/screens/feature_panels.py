@@ -1,12 +1,10 @@
-from tkinter import filedialog
-
 import customtkinter as ctk
-from PIL import Image
 
 from gui.util_widgets.back_button import BackButton
+from gui.util_widgets.pfp_image import ProfilePicture
 from settings import *
 from util.data_manager import data_manager
-from util.image_util import open_image, circular_image
+from util.image_util import open_image
 
 
 def create_base_screen(parent, app_instance, header_text: str, scroll_frame: bool) -> ctk.CTkFrame:
@@ -44,40 +42,10 @@ class ProfileManagementScreen(ctk.CTkFrame):
         self.base_frame = create_base_screen(self, self.app_instance, 'Manage Profile', True)
         self.content_frame = self.base_frame.content_frame
 
-        self.pfp_frame = ctk.CTkFrame(self.content_frame, fg_color='transparent', corner_radius=58)
-        self.pfp_frame.pack(expand=True, fill='x', padx=12, pady=(12, 6))
+        self.pfp = ProfilePicture(self.content_frame)
 
-        self.profile_pic = ctk.CTkLabel(self.pfp_frame, text='',
-                                        image=open_image(USER_ICON, (140, 140)), fg_color='transparent',
-                                        bg_color='transparent')
-        self.profile_pic.pack(expand=True, padx=12, pady=(0, 6))
-
-        self.name_label = ctk.CTkLabel(self.pfp_frame, text='Test Name', font=MAIN_SCREEN_HEADER_FONT)
-        self.name_label.pack(expand=True, fill='x', padx=12, pady=(6, 6))
-
-        self.choose_image_button = ctk.CTkButton(self.pfp_frame, width=170, height=50, corner_radius=100,
-                                                 text='Choose Image',
-                                                 font=SIGNUP_SCREEN_RADIO_BUTTON_FONT,
-                                                 command=self.choose_image_dialogue)
-        self.choose_image_button.pack(expand=True, padx=12, pady=(6, 6))
-
-        self.clear_image_button = ctk.CTkButton(self.pfp_frame, width=200, height=50, corner_radius=100,
-                                                text='Clear Image',
-                                                font=SIGNUP_SCREEN_RADIO_BUTTON_FONT, command=self.clear_image)
-        self.clear_image_button.pack(expand=True, padx=12, pady=(6, 12))
-
-    def choose_image_dialogue(self):
-        path = filedialog.askopenfile(filetypes=(('Image', ('*.png', '*.jpeg', '*.jpg')),))
-        if path:
-            path = path.name
-            self.profile_pic.configure(image=circular_image(Image.open(path), (140, 140)))
-
-    def clear_image(self):
-        # Reset name
-        self.name_label.configure(text='')
-
-        # Reset pfp
-        self.profile_pic.configure(image=open_image(USER_ICON, (140, 140)))
+        self.name_label = ctk.CTkLabel(self.content_frame, text='Test Name', font=MAIN_SCREEN_HEADER_FONT)
+        self.name_label.pack(expand=True, fill='x', padx=12)
 
     def update_info(self):
         # Set name
@@ -87,13 +55,14 @@ class ProfileManagementScreen(ctk.CTkFrame):
         if data_manager.get_profile_pic():
             pic = data_manager.get_profile_pic()
             pic.configure(size=(140, 140))
-            self.profile_pic.configure(image=pic)
+            self.pfp.image.configure(image=pic)
 
     def get_name(self) -> str:
         return 'ProfileManagementScreen'
 
     def clear_screen(self) -> None:
-        self.profile_pic.configure(image=open_image(USER_ICON, (120, 120)))
+        self.name_label.configure(text='')
+        self.pfp.image.configure(image=open_image(USER_ICON, (140, 140)))
         self.place_forget()
 
 

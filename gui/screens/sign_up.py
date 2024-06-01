@@ -2,7 +2,6 @@ import datetime
 import re
 import string
 from random import choice
-from tkinter import filedialog
 from tkinter.messagebox import askokcancel
 
 import bcrypt
@@ -13,11 +12,12 @@ from tkcalendar import Calendar
 from gui.screens.transition import TransitionScreen
 from gui.util_widgets.back_button import BackButton
 from gui.util_widgets.obfuscate_entry import ObfuscateEntryWidget
+from gui.util_widgets.pfp_image import ProfilePicture
 from gui.util_widgets.warning_label import WarningLabel
 from settings import *
 from util.data_manager import data_manager
 from util.database import db
-from util.image_util import image_to_bytes, open_image, circular_image
+from util.image_util import image_to_bytes, open_image
 
 
 class SignUpScreen(ctk.CTkFrame):
@@ -266,6 +266,9 @@ class SignUpScreen(ctk.CTkFrame):
             self.clear_screen(place_forget=False)
             
     def clear_screen(self, place_forget=True) -> None:
+        # Reset pfp
+        self.profile_picture_frame.pfp.image.configure(image=open_image(USER_ICON, (140, 140)))
+
         # Reset entry fields
         for field in [self.name_fields_frame.left_field, self.name_fields_frame.right_field, self.contact_info_frame.left_field,
                       self.contact_info_frame.right_field, self.password_entry_frame.left_field, self.password_entry_frame.right_field]:
@@ -297,31 +300,12 @@ class ProfilePictureFrame(ctk.CTkFrame):
         self.header_label = ctk.CTkLabel(self, text='Profile Picture', font=SIGNUP_SCREEN_LABEL_FONT)
         self.header_label.pack(expand=True, fill='both', side='top', padx=12, pady=(12, 0))
 
-        self.image_display_container = ctk.CTkFrame(self, corner_radius=58)
-        self.image_display_container.pack(expand=True, ipadx=10, padx=12, pady=20)
-
-        self.image_display = ctk.CTkLabel(self.image_display_container, text='', image=open_image(USER_ICON, (140, 140)))
-        self.image_display.pack(expand=True, fill='both', padx=12, pady=20)
-
-        self.choose_image_button = ctk.CTkButton(self, width=200, height=50, corner_radius=100, text='Choose Image', font=SIGNUP_SCREEN_RADIO_BUTTON_FONT, command=self.choose_image_dialogue)
-        self.choose_image_button.pack(expand=True, padx=12, pady=(0, 6))
-
-        self.clear_image_button = ctk.CTkButton(self, width=200, height=50, corner_radius=100, text='Clear Image', font=SIGNUP_SCREEN_RADIO_BUTTON_FONT, command=self.clear_image)
-        self.clear_image_button.pack(expand=True, padx=12, pady=(6, 18))
+        self.pfp = ProfilePicture(self)
+        self.pfp.configure(fg_color='transparent')
+        self.pfp.image_container.configure(fg_color='#333333')
 
         # Place
         self.pack(expand=True, fill='x', padx=12, pady=12)
-
-    def choose_image_dialogue(self):
-        path = filedialog.askopenfile(filetypes=(('Image', ('*.png', '*.jpeg', '*.jpg')),))
-        if path:
-            path = path.name
-
-            # Display the image
-            self.image_display.configure(image=circular_image(Image.open(path), (140, 140)))
-
-    def clear_image(self):
-        self.image_display.configure(image=open_image(USER_ICON, (140, 140)))
 
 
 class DoubleEntryFrame(ctk.CTkFrame):
