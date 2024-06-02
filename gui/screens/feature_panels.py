@@ -2,6 +2,7 @@ import customtkinter as ctk
 
 from gui.util_widgets.back_button import BackButton
 from gui.util_widgets.pfp_image import ProfilePicture
+from gui.util_widgets.warning_label import WarningLabel
 from settings import *
 from util.data_manager import data_manager
 from util.image_util import open_image
@@ -294,16 +295,19 @@ class TransferMoneyScreen(ctk.CTkFrame):
         self.receiver_name = ctk.CTkLabel(self.receiver_info_frame, text='????', font=SIGNUP_SCREEN_RADIO_BUTTON_FONT)
         self.receiver_name.pack(expand=True, fill='both')
 
+        # self.warning_label = WarningLabel(self.warning_label_container, SIGN_UP_ERRORS)
+        # self.warning_label.pack(expand=True, fill='both', padx=12, pady=12)
+
+        self.entry_container = self.InfoEntryFrame(parent=self.content_frame, left_label_text='Account Number',
+                                                   right_label_text='Amount')
+
         self.transfer_button = ctk.CTkButton(
             master=self.content_frame,
             text='Transfer',
             font=WELCOME_SCREEN_BUTTON_FONT,
             corner_radius=100
         )
-        self.transfer_button.pack(expand=True, fill='both', padx=12, pady=(6, 6))
-
-        self.entry_container = self.InfoEntryFrame(parent=self.content_frame, left_label_text='Account Number',
-                                                   right_label_text='Amount')
+        self.transfer_button.pack(expand=True, fill='both', padx=12, pady=(6, 12))
 
     def get_name(self) -> str:
         return 'TransferMoneyScreen'

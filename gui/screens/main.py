@@ -123,25 +123,26 @@ class FeaturePanelsFrame(ctk.CTkFrame):
         self.rowconfigure((0, 1), weight=1, uniform='BATMAN')
         self.columnconfigure((0, 1, 2), weight=1, uniform='WOLVERINE')
 
-        font = MAIN_SCREEN_PANEL_FONT
+        panel_font = MAIN_SCREEN_PANEL_FONT
         panel_spacing = 22
+        panel_image_size = (64, 64)
 
-        self.atm_panel = ctk.CTkButton(
+        self.fund_management_panel = ctk.CTkButton(
             self,
             text='Funds',
-            font=font,
-            image=None,
+            font=panel_font,
+            image=open_image(MAIN_SCREEN_FUNDS_ICON, panel_image_size),
             compound='top',
             command=lambda: app_instance.show_window('FundManagementScreen'),
             corner_radius=20
         )
-        self.atm_panel.grid(row=0, column=0, padx=(panel_spacing, panel_spacing//2), pady=(panel_spacing, panel_spacing//2), sticky='nsew')
+        self.fund_management_panel.grid(row=0, column=0, padx=(panel_spacing, panel_spacing // 2), pady=(panel_spacing, panel_spacing // 2), sticky='nsew')
 
         self.transfer_panel = ctk.CTkButton(
             self,
             text='Transfer',
-            font=font,
-            image=None,
+            font=panel_font,
+            image=open_image(MAIN_SCREEN_TRANSFER_ICON, panel_image_size),
             compound='top',
             command=lambda: app_instance.show_window('TransferMoneyScreen'),
             corner_radius=20
@@ -151,8 +152,8 @@ class FeaturePanelsFrame(ctk.CTkFrame):
         self.request_panel = ctk.CTkButton(
             self,
             text='Request',
-            font=font,
-            image=None,
+            font=panel_font,
+            image=open_image(MAIN_SCREEN_REQUEST_ICON, panel_image_size),
             compound='top',
             command=lambda: app_instance.show_window('RequestMoneyScreen'),
             corner_radius=20
@@ -162,8 +163,8 @@ class FeaturePanelsFrame(ctk.CTkFrame):
         self.fd_calculator_panel = ctk.CTkButton(
             self,
             text='FD Calculator',
-            font=font,
-            image=None,
+            font=panel_font,
+            image=open_image(MAIN_SCREEN_FD_ICON, panel_image_size),
             compound='top',
             command=lambda: app_instance.show_window('FDCalculatorScreen'),
             corner_radius=20
@@ -173,8 +174,8 @@ class FeaturePanelsFrame(ctk.CTkFrame):
         self.bills_panel = ctk.CTkButton(
             self,
             text='Bill Payment',
-            font=font,
-            image=None,
+            font=panel_font,
+            image=open_image(MAIN_SCREEN_BILLS_ICON, panel_image_size),
             compound='top',
             command=lambda: app_instance.show_window('BillManagementScreen'),
             corner_radius=20
@@ -184,8 +185,8 @@ class FeaturePanelsFrame(ctk.CTkFrame):
         self.transaction_history_panel = (ctk.CTkButton(
             self,
             text='Transactions',
-            font=font,
-            image=None,
+            font=panel_font,
+            image=open_image(MAIN_SCREEN_TNC_HISTORY_ICON, panel_image_size),
             compound='top',
             command=lambda: app_instance.show_window('TransactionHistoryScreen'),
             corner_radius=20

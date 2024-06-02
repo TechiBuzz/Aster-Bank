@@ -110,7 +110,6 @@ class LoginScreen(ctk.CTkFrame):
 
             if login_result:
                 self.successful_login(login_result[0])
-                print(login_result[0])
             else:
                 self.warning_label.raise_warning(3)
 

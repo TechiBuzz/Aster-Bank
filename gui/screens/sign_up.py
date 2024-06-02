@@ -56,8 +56,8 @@ class SignUpScreen(ctk.CTkFrame):
         self.password_entry_frame.right_field.configure(show='*')
 
         self.obfuscate_pass_entry = ObfuscateEntryWidget(parent=self.password_entry_frame.left_field)
-
         self.obfuscate_cnf_pass_entry = ObfuscateEntryWidget(parent=self.password_entry_frame.right_field)
+
         self.warning_label_container = ctk.CTkFrame(self.scroll_frame, corner_radius=15)
         self.warning_label_container.pack(expand=True, fill='x', ipady=12, padx=12, pady=12)
 

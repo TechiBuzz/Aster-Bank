@@ -20,6 +20,13 @@ SMALL_DB_ICON = 'assets\\ui\\login_screen\\database_icon.png'
 MAIN_SCREEN_RUPEE_ICON = 'assets\\ui\\main_screen\\rupee.png'
 MAIN_SCREEN_LOGOUT_ICON = 'assets\\ui\\main_screen\\logout.png'
 
+MAIN_SCREEN_FUNDS_ICON = 'assets\\ui\\main_screen\\manage.png'
+MAIN_SCREEN_TRANSFER_ICON = 'assets\\ui\\main_screen\\transfer.png'
+MAIN_SCREEN_REQUEST_ICON = 'assets\\ui\\main_screen\\request.png'
+MAIN_SCREEN_FD_ICON = 'assets\\ui\\main_screen\\deposit.png'
+MAIN_SCREEN_BILLS_ICON = 'assets\\ui\\main_screen\\bill.png'
+MAIN_SCREEN_TNC_HISTORY_ICON = 'assets\\ui\\main_screen\\history.png'
+
 BACK_ARROW_ICON = 'assets\\ui\\util_widgets\\back_button.png'
 WARNING_ICON = 'assets\\ui\\util_widgets\\warning_icon.png'
 SHOW_PASSWORD_ICON = 'assets\\ui\\util_widgets\\obfuscate_widget\\show_password.png'

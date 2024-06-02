@@ -49,8 +49,6 @@ class DataManager:
 
     def set_account(self, account) -> None:
         self.account = account
-        for k in self.account:
-            print(k, ': ', self.account[k])
 
 
 data_manager = DataManager()
