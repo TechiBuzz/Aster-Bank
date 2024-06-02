@@ -39,30 +39,108 @@ class ProfileManagementScreen(ctk.CTkFrame):
         self.app_instance = parent
 
         # Widgets
-        self.base_frame = create_base_screen(self, self.app_instance, 'Manage Profile', True)
-        self.content_frame = self.base_frame.content_frame
+        self.base_screen = create_base_screen(self, self.app_instance, 'Manage Profile', True)
 
-        self.pfp = ProfilePicture(self.content_frame)
+        self.scroll_frame = ctk.CTkFrame(self.base_screen.content_frame)
+        self.scroll_frame.pack(expand=True, fill='both')
 
-        self.name_label = ctk.CTkLabel(self.content_frame, text='Test Name', font=MAIN_SCREEN_HEADER_FONT)
-        self.name_label.pack(expand=True, fill='x', padx=12)
+        self.pfp = ProfilePicture(self.scroll_frame)
+        self.pfp.configure(corner_radius=15)
+
+        self.details_frame = ctk.CTkFrame(self.scroll_frame, corner_radius=15)
+        self.details_frame.pack(expand=True, fill='x', padx=12, pady=(6, 12))
+
+        self.name_info = self.InfoWidget(self.details_frame, 'Name')
+        self.name_info.pack(expand=True, fill='x', padx=12, pady=(12, 6), ipady=4)
+
+        self.gender_info = self.InfoWidget(self.details_frame, 'Gender')
+        self.gender_info.pack(expand=True, fill='x', padx=12, pady=6, ipady=4)
+
+        self.date_info = self.InfoWidget(self.details_frame, 'Date of Birth')
+        self.date_info.pack(expand=True, fill='x', padx=12, pady=6, ipady=4)
+
+        self.address_info = self.InfoWidget(self.details_frame, 'Address', 'TextBox', True)
+        self.address_info.pack(expand=True, fill='x', padx=12, pady=6, ipady=4)
+
+        self.email_info = self.InfoWidget(self.details_frame, 'Email', 'Entry', True, 'email')
+        self.email_info.pack(expand=True, fill='x', padx=12, pady=6, ipady=4)
+
+        self.phone_info = self.InfoWidget(self.details_frame, 'Phone', 'Entry', True, 'phone')
+        self.phone_info.pack(expand=True, fill='x', padx=12, pady=(6, 12), ipady=4)
+
+    class InfoWidget(ctk.CTkFrame):
+        def __init__(self, parent, text: str, entry_type: str = 'Entry', editable_entry: bool = False, entry_validation: str = None):
+            super().__init__(parent, corner_radius=15)
+
+            self.text = ctk.CTkLabel(self, text=text, font=MAIN_SCREEN_PANEL_FONT, corner_radius=15)
+            self.text.pack(padx=12, pady=12, side='left')
+
+            if entry_type == 'Entry':
+                self.entry_var = ctk.StringVar()
+
+                self.entry = ctk.CTkEntry(self, width=400, height=50, corner_radius=40, font=LOGIN_SCREEN_WARNING_LABEL_FONT,
+                                          textvariable=self.entry_var, state='readonly')
+                self.entry.widgetName = 'entry'
+                self.entry.pack(padx=12, pady=12, side='left')
+            elif entry_type == 'TextBox':
+                self.entry = ctk.CTkTextbox(self, width=400, height=200, corner_radius=18, font=LOGIN_SCREEN_WARNING_LABEL_FONT, state='disabled')
+                self.entry.pack(padx=12, pady=12, side='left')
+
+            if editable_entry:
+                try:
+                    # Validate entry
+                    self.entry_var.trace('w', lambda *args: self.validate_entry(entry_validation))
+                except AttributeError:
+                    pass
+
+                # Edit button
+                self.edit_entry_button = ctk.CTkButton(
+                    self,
+                    text='',
+                    width=40,
+                    height=45,
+                    corner_radius=15,
+                    image=open_image(EDIT_PHOTO_ICON, (24, 24)),
+                    command=self.toggle_entry
+                )
+                self.edit_entry_button.pack(padx=12, pady=12, side='left')
+
+        def toggle_entry(self):
+            if self.entry.widgetName == 'entry':
+                self.entry.configure(state='normal') if self.entry.cget('state') == 'readonly' else self.entry.configure(state='readonly')
+            else:
+                self.entry.configure(state='normal') if self.entry._textbox['state'] == 'disabled' else self.entry.configure(state='disabled')
+
+        def validate_entry(self, validation: str):
+            new_value = self.entry_var.get()
+
+            if validation == 'phone':
+                new_value = ''.join(char for char in self.entry_var.get() if char.isdigit())[:10]
+            elif validation == 'email':
+                new_value = ''.join(
+                    char for char in self.entry_var.get() if (char.isalnum() or char == '@' or char == '.'))[:30]
+
+            self.entry_var.set(new_value)
 
     def update_info(self):
-        # Set name
-        self.name_label.configure(text=data_manager.get_full_name())
-
         # Set profile picture
         if data_manager.get_profile_pic():
             pic = data_manager.get_profile_pic()
             pic.configure(size=(140, 140))
             self.pfp.image.configure(image=pic)
 
+        # Set other details
+        self.name_info.entry_var.set(data_manager.get_full_name())
+        self.gender_info.entry_var.set('Male' if data_manager.get('GENDER') == 'M' else 'Female')
+        self.date_info.entry_var.set(data_manager.get('DATE_OF_BIRTH'))
+        self.email_info.entry_var.set(data_manager.get('EMAIL_ID'))
+        self.phone_info.entry_var.set(data_manager.get('PHONE_NO'))
+
     def get_name(self) -> str:
         return 'ProfileManagementScreen'
 
     def clear_screen(self) -> None:
-        self.name_label.configure(text='')
-        self.pfp.image.configure(image=open_image(USER_ICON, (140, 140)))
+        self.update_info()
         self.place_forget()
 
 

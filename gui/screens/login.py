@@ -48,8 +48,8 @@ class LoginScreen(ctk.CTkFrame):
             'USERNAME': user_data[1],  # password details omitted for safety
             'FIRST_NAME': user_data[3],
             'LAST_NAME': user_data[4],
-            'DATE_OF_BIRTH': user_data[5],
-            'GENDER': user_data[6],
+            'GENDER': user_data[5],
+            'DATE_OF_BIRTH': user_data[6],
             'ADDRESS': user_data[7],
             'EMAIL_ID': user_data[8],
             'PHONE_NO': user_data[9],
@@ -110,6 +110,7 @@ class LoginScreen(ctk.CTkFrame):
 
             if login_result:
                 self.successful_login(login_result[0])
+                print(login_result[0])
             else:
                 self.warning_label.raise_warning(3)
 

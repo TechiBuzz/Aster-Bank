@@ -15,9 +15,10 @@ class DataManager:
             return None
 
     def get_profile_pic(self) -> CTkImage | None:
-        if self.account['IMAGE']:
-            return bytes_to_ctk_image(self.account['IMAGE'])
-        else:
+        try:
+            if self.account['IMAGE'] is not None:
+                return bytes_to_ctk_image(self.account['IMAGE'])
+        except KeyError:
             return None
 
     def set_profile_pic(self, image: Image) -> None:
@@ -48,6 +49,8 @@ class DataManager:
 
     def set_account(self, account) -> None:
         self.account = account
+        for k in self.account:
+            print(k, ': ', self.account[k])
 
 
 data_manager = DataManager()
