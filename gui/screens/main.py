@@ -4,7 +4,7 @@ import customtkinter as ctk
 from tktooltip import ToolTip
 
 from settings import *
-from util.data_manager import data_manager
+from util.account_manager import account_manager
 from util.image_util import open_image
 
 
@@ -22,14 +22,14 @@ class MainScreen(ctk.CTkFrame):
         self.feature_panels_frame = FeaturePanelsFrame(self.central_frame, parent)
 
     def update_info(self):
-        self.user_details_frame.name.configure(text=data_manager.get_full_name())
+        self.user_details_frame.name.configure(text=account_manager.get_full_name())
 
-        pfp = data_manager.get_profile_pic()
+        pfp = account_manager.get_profile_pic()
         if pfp:
             pfp.configure(size=(55, 55))
             self.user_details_frame.user_icon.configure(image=pfp)
 
-        self.balance_details_frame.balance_value.configure(text=data_manager.get_balance())
+        self.balance_details_frame.balance_value.configure(text=account_manager.get_balance())
 
 
 class UserInfoFrame(ctk.CTkFrame):
@@ -83,7 +83,7 @@ class UserInfoFrame(ctk.CTkFrame):
 
         if user_decision:
             app_instance.show_window('LoginScreen')
-            data_manager.set_account(dict())
+            account_manager.set_account(dict())
 
 
 class BalanceInfoFrame(ctk.CTkFrame):

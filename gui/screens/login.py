@@ -1,6 +1,6 @@
 from settings import *
 from util.database import db
-from util.data_manager import data_manager
+from util.account_manager import account_manager
 from util.image_util import open_image
 from gui.screens.transition import TransitionScreen
 from gui.util_widgets.warning_label import WarningLabel
@@ -59,7 +59,7 @@ class LoginScreen(ctk.CTkFrame):
         }
 
         # Update account details
-        data_manager.set_account(account)
+        account_manager.set_account(account)
 
         for screen in ('MainScreen', 'ProfileManagementScreen', 'FundManagementScreen', 'TransferMoneyScreen', 'RequestMoneyScreen',
                        'BillManagementScreen', 'FDCalculatorScreen', 'TransactionHistoryScreen'):

@@ -60,4 +60,4 @@ class ProfilePicture(ctk.CTkFrame):
             path = path.name
 
             # Display the image
-            self.image.configure(image=circular_image(Image.open(path), (140, 140)))
+            self.image.configure(image=circular_image(Image.open(path), size=(140, 140)))

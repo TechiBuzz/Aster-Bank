@@ -15,7 +15,7 @@ from gui.util_widgets.obfuscate_entry import ObfuscateEntryWidget
 from gui.util_widgets.pfp_image import ProfilePicture
 from gui.util_widgets.warning_label import WarningLabel
 from settings import *
-from util.data_manager import data_manager
+from util.account_manager import account_manager
 from util.database import db
 from util.image_util import image_to_bytes, open_image
 
@@ -94,7 +94,7 @@ class SignUpScreen(ctk.CTkFrame):
         db.execute_query(query, values)
 
         # Update data manager
-        data_manager.set_account({
+        account_manager.set_account({
             'ACCOUNT_ID': f'{db.fetch_result('SELECT COUNT(USERNAME) FROM accounts')[0][0] + 10001}',
             'USERNAME': username,
             'FIRST_NAME': first_name,
@@ -249,9 +249,9 @@ class SignUpScreen(ctk.CTkFrame):
                     TransitionScreen(self, 'PostSignUpScreen', 'Signing Up...', 'Signed Up!', 4000)
 
                     post_signup_screen = self.app_instance.gui_instances['PostSignUpScreen']
-                    post_signup_screen.username.configure(text=data_manager.get_username())
+                    post_signup_screen.username.configure(text=account_manager.get_username())
 
-                    pfp = data_manager.get_profile_pic()
+                    pfp = account_manager.get_profile_pic()
                     if pfp:
                         pfp.configure(size=(180, 180))
                         post_signup_screen.profile_pic.configure(image=pfp)

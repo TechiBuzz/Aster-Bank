@@ -4,7 +4,7 @@ from customtkinter import CTkImage
 from util.image_util import image_to_bytes, bytes_to_ctk_image
 
 
-class DataManager:
+class AccountManager:
     def __init__(self):
         self.account = dict()
 
@@ -51,4 +51,4 @@ class DataManager:
         self.account = account
 
 
-data_manager = DataManager()
+account_manager = AccountManager()

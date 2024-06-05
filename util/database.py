@@ -28,13 +28,14 @@ class Database:
                 print(f'Failed to execute query! Error: {e}')
 
     def fetch_result(self, query: str, args: tuple = None) -> tuple | None:
+        result = None
         if self.connection:
             cursor = self.connection.cursor()
             try:
                 cursor.execute(query, args)
-            except mysql.connector.Error:
-                print("Failed to fetch result!")
-            result = cursor.fetchall()
+                result = cursor.fetchall()
+            except mysql.connector.Error as error:
+                print(f'[!] Failed to fetch result! Error: {error}')
 
             cursor.close()
 

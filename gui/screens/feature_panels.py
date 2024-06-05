@@ -4,8 +4,9 @@ from gui.util_widgets.back_button import BackButton
 from gui.util_widgets.pfp_image import ProfilePicture
 from gui.util_widgets.warning_label import WarningLabel
 from settings import *
-from util.data_manager import data_manager
-from util.image_util import open_image
+from util.account_manager import account_manager
+from util.database import db
+from util.image_util import open_image, bytes_to_ctk_image
 
 
 def create_base_screen(parent, app_instance, header_text: str, scroll_frame: bool) -> ctk.CTkFrame:
@@ -51,91 +52,37 @@ class ProfileManagementScreen(ctk.CTkFrame):
         self.details_frame = ctk.CTkFrame(self.scroll_frame, corner_radius=15)
         self.details_frame.pack(expand=True, fill='x', padx=12, pady=(6, 12))
 
-        self.name_info = self.InfoWidget(self.details_frame, 'Name')
+        self.name_info = InfoEntryWidget(self.details_frame, 'Name')
         self.name_info.pack(expand=True, fill='x', padx=12, pady=(12, 6), ipady=4)
 
-        self.gender_info = self.InfoWidget(self.details_frame, 'Gender')
+        self.gender_info = InfoEntryWidget(self.details_frame, 'Gender')
         self.gender_info.pack(expand=True, fill='x', padx=12, pady=6, ipady=4)
 
-        self.date_info = self.InfoWidget(self.details_frame, 'Date of Birth')
+        self.date_info = InfoEntryWidget(self.details_frame, 'Date of Birth')
         self.date_info.pack(expand=True, fill='x', padx=12, pady=6, ipady=4)
 
-        self.address_info = self.InfoWidget(self.details_frame, 'Address', 'TextBox', True)
+        self.address_info = InfoEntryWidget(self.details_frame, 'Address', 'TextBox', True)
         self.address_info.pack(expand=True, fill='x', padx=12, pady=6, ipady=4)
 
-        self.email_info = self.InfoWidget(self.details_frame, 'Email', 'Entry', True, 'email')
+        self.email_info = InfoEntryWidget(self.details_frame, 'Email', 'Entry', True, 'email')
         self.email_info.pack(expand=True, fill='x', padx=12, pady=6, ipady=4)
 
-        self.phone_info = self.InfoWidget(self.details_frame, 'Phone', 'Entry', True, 'phone')
+        self.phone_info = InfoEntryWidget(self.details_frame, 'Phone', 'Entry', True, 'phone')
         self.phone_info.pack(expand=True, fill='x', padx=12, pady=(6, 12), ipady=4)
-
-    class InfoWidget(ctk.CTkFrame):
-        def __init__(self, parent, text: str, entry_type: str = 'Entry', editable_entry: bool = False, entry_validation: str = None):
-            super().__init__(parent, corner_radius=15)
-
-            self.text = ctk.CTkLabel(self, text=text, font=MAIN_SCREEN_PANEL_FONT, corner_radius=15)
-            self.text.pack(padx=12, pady=12, side='left')
-
-            if entry_type == 'Entry':
-                self.entry_var = ctk.StringVar()
-
-                self.entry = ctk.CTkEntry(self, width=400, height=50, corner_radius=40, font=LOGIN_SCREEN_WARNING_LABEL_FONT,
-                                          textvariable=self.entry_var, state='readonly')
-                self.entry.widgetName = 'entry'
-                self.entry.pack(padx=12, pady=12, side='left')
-            elif entry_type == 'TextBox':
-                self.entry = ctk.CTkTextbox(self, width=400, height=200, corner_radius=18, font=LOGIN_SCREEN_WARNING_LABEL_FONT, state='disabled')
-                self.entry.pack(padx=12, pady=12, side='left')
-
-            if editable_entry:
-                try:
-                    # Validate entry
-                    self.entry_var.trace('w', lambda *args: self.validate_entry(entry_validation))
-                except AttributeError:
-                    pass
-
-                # Edit button
-                self.edit_entry_button = ctk.CTkButton(
-                    self,
-                    text='',
-                    width=40,
-                    height=45,
-                    corner_radius=15,
-                    image=open_image(EDIT_PHOTO_ICON, (24, 24)),
-                    command=self.toggle_entry
-                )
-                self.edit_entry_button.pack(padx=12, pady=12, side='left')
-
-        def toggle_entry(self):
-            if self.entry.widgetName == 'entry':
-                self.entry.configure(state='normal') if self.entry.cget('state') == 'readonly' else self.entry.configure(state='readonly')
-            else:
-                self.entry.configure(state='normal') if self.entry._textbox['state'] == 'disabled' else self.entry.configure(state='disabled')
-
-        def validate_entry(self, validation: str):
-            new_value = self.entry_var.get()
-
-            if validation == 'phone':
-                new_value = ''.join(char for char in self.entry_var.get() if char.isdigit())[:10]
-            elif validation == 'email':
-                new_value = ''.join(
-                    char for char in self.entry_var.get() if (char.isalnum() or char == '@' or char == '.'))[:30]
-
-            self.entry_var.set(new_value)
 
     def update_info(self):
         # Set profile picture
-        if data_manager.get_profile_pic():
-            pic = data_manager.get_profile_pic()
+        if account_manager.get_profile_pic():
+            pic = account_manager.get_profile_pic()
             pic.configure(size=(140, 140))
             self.pfp.image.configure(image=pic)
 
         # Set other details
-        self.name_info.entry_var.set(data_manager.get_full_name())
-        self.gender_info.entry_var.set('Male' if data_manager.get('GENDER') == 'M' else 'Female')
-        self.date_info.entry_var.set(data_manager.get('DATE_OF_BIRTH'))
-        self.email_info.entry_var.set(data_manager.get('EMAIL_ID'))
-        self.phone_info.entry_var.set(data_manager.get('PHONE_NO'))
+        self.name_info.entry_var.set(account_manager.get_full_name())
+        self.gender_info.entry_var.set('Male' if account_manager.get('GENDER') == 'M' else 'Female')
+        self.date_info.entry_var.set(account_manager.get('DATE_OF_BIRTH'))
+        self.email_info.entry_var.set(account_manager.get('EMAIL_ID'))
+        self.phone_info.entry_var.set(account_manager.get('PHONE_NO'))
 
     def get_name(self) -> str:
         return 'ProfileManagementScreen'
@@ -199,7 +146,7 @@ class FundManagementScreen(ctk.CTkFrame):
         return 'FundManagementScreen'
 
     def update_info(self):
-        self.balance_slider.configure(to=int(data_manager.get_balance()))
+        self.balance_slider.configure(to=int(account_manager.get_balance()))
 
     def clear_screen(self) -> None:
         self.place_forget()
@@ -263,51 +210,97 @@ class TransferMoneyScreen(ctk.CTkFrame):
         self.app_instance = parent
 
         # Widgets
-        self.base_frame = create_base_screen(self, self.app_instance, 'Transfer Money', False)
+        self.base_frame = create_base_screen(self, self.app_instance, 'Transfer Money', True)
         self.content_frame = self.base_frame.content_frame
 
-        self.info_container = ctk.CTkFrame(self.content_frame, corner_radius=15)
-        self.info_container.pack(expand=True, fill='both', padx=12, pady=(12, 6))
+        self.inner_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
+        self.inner_frame.pack(expand=True, fill='both')
 
-        self.info_container.rowconfigure(0, weight=1)
-        self.info_container.columnconfigure((0, 2), weight=1, uniform='Perhaps')
-        self.info_container.columnconfigure(1, weight=5)
+        # PROFILE DETAILS
+        self.profile_info = ctk.CTkFrame(self.inner_frame, corner_radius=15)
+        self.profile_info.pack(fill='x', padx=12, pady=(12, 6))
 
-        self.sender_info_frame = ctk.CTkFrame(self.info_container)
-        self.sender_info_frame.grid(row=0, column=0, sticky='nsew')
+        self.pfp_image_container = ctk.CTkFrame(self.profile_info, corner_radius=58)
+        self.pfp_image_container.pack(ipadx=10, padx=12, pady=(12, 6))
 
-        self.sender_icon = ctk.CTkLabel(self.sender_info_frame, text='',
-                                        image=open_image(USER_ICON, (80, 80)))
-        self.sender_icon.pack(expand=True, fill='both')
+        self.pfp_image = ctk.CTkLabel(self.pfp_image_container, text='', image=open_image(USER_ICON, (140, 140)))
+        self.pfp_image.pack(expand=True, fill='both', padx=12, pady=20)
 
-        self.sender_name = ctk.CTkLabel(self.sender_info_frame, text='', font=SIGNUP_SCREEN_RADIO_BUTTON_FONT)
-        self.sender_name.pack(expand=True, fill='both')
+        self.profile_name = ctk.CTkLabel(self.profile_info, text='', font=MAIN_SCREEN_PANEL_FONT)
+        self.profile_name.pack(expand=True, fill='x', padx=12, pady=(6, 12))
 
-        self.middle_info_frame = ctk.CTkFrame(self.info_container)
-        self.middle_info_frame.grid(row=0, column=1, sticky='nsew')
+        # INFO TO ENTER
+        self.amount_info = ctk.CTkFrame(self.inner_frame, corner_radius=15)
+        self.amount_info.pack(expand=True, fill='both', padx=12, pady=12)
 
-        self.receiver_info_frame = ctk.CTkFrame(self.info_container)
-        self.receiver_info_frame.grid(row=0, column=2, sticky='nsew')
+        self.send_to_frame = ctk.CTkFrame(self.amount_info, corner_radius=15)
+        self.send_to_frame.pack(fill='x', padx=12, pady=(12, 6))
 
-        self.receiver_icon = ctk.CTkLabel(self.receiver_info_frame, text='', image=open_image(USER_ICON, (80, 80)))
-        self.receiver_icon.pack(expand=True, fill='both')
+        self.send_to_text = ctk.CTkLabel(self.send_to_frame, text='Account :', font=MAIN_SCREEN_PANEL_FONT, corner_radius=15)
+        self.send_to_text.pack(fill='both', padx=12, pady=12, side='left')
 
-        self.receiver_name = ctk.CTkLabel(self.receiver_info_frame, text='????', font=SIGNUP_SCREEN_RADIO_BUTTON_FONT)
-        self.receiver_name.pack(expand=True, fill='both')
+        self.account_num_var = ctk.StringVar()
+        self.account_num_var.trace('w', lambda *args: self.find_account())
+        self.account_num_tracer = ' '
 
-        # self.warning_label = WarningLabel(self.warning_label_container, SIGN_UP_ERRORS)
-        # self.warning_label.pack(expand=True, fill='both', padx=12, pady=12)
+        self.send_to_entry = ctk.CTkEntry(self.send_to_frame, height=70, font=LOGIN_SCREEN_FIELD_ENTRY_FONT, textvariable=self.account_num_var, corner_radius=40)
+        self.send_to_entry.pack(expand=True, fill='x', padx=(0, 12), pady=12, side='left')
+        
+        self.amount_frame = ctk.CTkFrame(self.amount_info, corner_radius=15)
+        self.amount_frame.pack(fill='x', padx=12, pady=6)
 
-        self.entry_container = self.InfoEntryFrame(parent=self.content_frame, left_label_text='Account Number',
-                                                   right_label_text='Amount')
+        self.amount_text = ctk.CTkLabel(self.amount_frame, text='Amount :', font=MAIN_SCREEN_PANEL_FONT, corner_radius=15)
+        self.amount_text.pack(fill='both', padx=12, pady=12, side='left')
+
+        self.amount_var = ctk.StringVar()
+        self.amount_var.trace('w', lambda *args: self.amount_var.set(''.join(char for char in self.amount_var.get() if char.isdigit())[:10]))
+
+        self.amount_entry = ctk.CTkEntry(self.amount_frame, height=70, font=LOGIN_SCREEN_FIELD_ENTRY_FONT, textvariable=self.amount_var, corner_radius=40)
+        self.amount_entry.pack(expand=True, fill='x', padx=(0, 12), pady=12, side='left')
+
+        self.warning_label_container = ctk.CTkFrame(self.amount_info, corner_radius=15)
+        self.warning_label_container.pack(fill='both', padx=12, pady=6, ipady=6)
+
+        self.warning_label = WarningLabel(self.warning_label_container, TRANSFER_MONEY_ERRORS)
+        self.warning_label.pack(expand=True, padx=12, pady=12)
 
         self.transfer_button = ctk.CTkButton(
-            master=self.content_frame,
+            master=self.amount_info,
             text='Transfer',
-            font=WELCOME_SCREEN_BUTTON_FONT,
+            font=MAIN_SCREEN_PANEL_FONT,
+            height=70,
             corner_radius=100
         )
-        self.transfer_button.pack(expand=True, fill='both', padx=12, pady=(6, 12))
+        self.transfer_button.pack(expand=True, fill='x', padx=12, pady=(6, 12))
+
+    def set_profile_details(self):
+        if len(self.account_num_var.get()) == 5 and int(self.account_num_var.get()) >= 10000:  # checks to reduce redundant database queries
+            result = db.fetch_result('SELECT FIRST_NAME, LAST_NAME, IMAGE FROM accounts WHERE ID = %s', (int(self.account_num_var.get()),))
+            if result:
+                self.profile_name.configure(text=f'{result[0][0]} {result[0][1]}')
+
+                img_data = result[0][2]
+                if img_data is not None:
+                    img = bytes_to_ctk_image(img_data)
+                    img.configure(size=(140, 140))
+                    self.pfp_image.configure(image=img)
+
+    def find_account(self):
+        # Clear old timer
+        self.after_cancel(self.account_num_tracer)
+
+        # Validate the data first
+        self.account_num_var.set(''.join(char for char in self.account_num_var.get() if char.isdigit())[:5])
+
+        # If no account found
+        if len(self.account_num_var.get()) == 0:
+            self.profile_name.configure(text='')
+        else:
+            self.profile_name.configure(text='••••••')
+            self.pfp_image.configure(image=open_image(USER_ICON, (140, 140)))
+
+        # Start new timer
+        self.account_num_tracer = self.after(1000, self.set_profile_details)
 
     def get_name(self) -> str:
         return 'TransferMoneyScreen'
@@ -316,45 +309,7 @@ class TransferMoneyScreen(ctk.CTkFrame):
         self.place_forget()
 
     def update_info(self):
-        self.sender_name.configure(text=data_manager.get_full_name())
-
-    class InfoEntryFrame(ctk.CTkFrame):
-        def __init__(self, parent, left_label_text: str, right_label_text: str):
-            super().__init__(parent, corner_radius=15)
-
-            # Layout
-            self.rowconfigure((0, 1), weight=1, uniform='H')
-            self.columnconfigure((0, 1), weight=1, uniform='H')
-
-            # Widgets
-            self.left_label = ctk.CTkLabel(self, text=left_label_text, font=SIGNUP_SCREEN_LABEL_FONT)
-            self.left_label.grid(row=0, column=0, sticky='nsew', padx=12, pady=12)
-
-            self.field_var = ctk.StringVar()
-            self.field = ctk.CTkEntry(self, width=470, height=70, textvariable=self.field_var,
-                                      corner_radius=40,
-                                      font=SIGNUP_SCREEN_FIELD_ENTRY_FONT, justify='center')
-            self.field.grid(row=1, column=0, padx=12, pady=12)
-
-            self.right_label = ctk.CTkLabel(self, text=right_label_text, font=SIGNUP_SCREEN_LABEL_FONT)
-            self.right_label.grid(row=0, column=1, sticky='nsew', padx=12, pady=12)
-
-            self.progress_bar_var = ctk.IntVar()
-            self.progress_bar = ctk.CTkSlider(self, width=470, height=20, variable=self.progress_bar_var)
-            self.progress_bar.grid(row=1, column=1, padx=12, pady=12)
-
-            # Entry Validation
-            self.field_var.trace('w', self.validate_entry_field)
-
-            # Place
-            self.pack(expand=True, fill='both', padx=12, pady=(6, 12))
-
-        def validate_entry_field(self):
-            max_char_length = 5
-            new_value = ''.join(char for char in self.field_var.get() if char.isdigit())[:max_char_length]
-
-            self.field_var.set(new_value)
-
+        self.sender_name.configure(text=account_manager.get_full_name())
 
 class TransactionHistoryScreen(ctk.CTkFrame):
     def __init__(self, parent):
@@ -371,3 +326,58 @@ class TransactionHistoryScreen(ctk.CTkFrame):
 
     def clear_screen(self) -> None:
         self.place_forget()
+
+
+class InfoEntryWidget(ctk.CTkFrame):
+    def __init__(self, parent, text: str, entry_type: str = 'Entry', editable_entry: bool = False, entry_validation: str = None):
+        super().__init__(parent, corner_radius=15)
+
+        self.text = ctk.CTkLabel(self, text=text, font=MAIN_SCREEN_PANEL_FONT, corner_radius=15)
+        self.text.pack(padx=12, pady=12, side='left')
+
+        if entry_type == 'Entry':
+            self.entry_var = ctk.StringVar()
+
+            self.entry = ctk.CTkEntry(self, width=400, height=50, corner_radius=40, font=LOGIN_SCREEN_WARNING_LABEL_FONT,
+                                      textvariable=self.entry_var, state='readonly')
+            self.entry.widgetName = 'entry'
+            self.entry.pack(padx=12, pady=12, side='left')
+        elif entry_type == 'TextBox':
+            self.entry = ctk.CTkTextbox(self, width=400, height=200, corner_radius=18, font=LOGIN_SCREEN_WARNING_LABEL_FONT, state='disabled')
+            self.entry.pack(padx=12, pady=12, side='left')
+
+        if editable_entry:
+            try:
+                # Validate entry
+                self.entry_var.trace('w', lambda *args: self.validate_entry(entry_validation))
+            except AttributeError:
+                pass
+
+            # Edit button
+            self.edit_entry_button = ctk.CTkButton(
+                self,
+                text='',
+                width=40,
+                height=45,
+                corner_radius=15,
+                image=open_image(EDIT_PHOTO_ICON, (24, 24)),
+                command=self.toggle_entry
+            )
+            self.edit_entry_button.pack(padx=12, pady=12, side='left')
+
+    def toggle_entry(self):
+        if self.entry.widgetName == 'entry':
+            self.entry.configure(state='normal') if self.entry.cget('state') == 'readonly' else self.entry.configure(state='readonly')
+        else:
+            self.entry.configure(state='normal') if self.entry._textbox['state'] == 'disabled' else self.entry.configure(state='disabled')
+
+    def validate_entry(self, validation: str):
+        new_value = self.entry_var.get()
+
+        if validation == 'phone':
+            new_value = ''.join(char for char in self.entry_var.get() if char.isdigit())[:10]
+        elif validation == 'email':
+            new_value = ''.join(
+                char for char in self.entry_var.get() if (char.isalnum() or char == '@' or char == '.'))[:30]
+
+        self.entry_var.set(new_value)

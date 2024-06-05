@@ -97,6 +97,13 @@ SIGN_UP_ERRORS = {
     19: '   Unable to connect to database!',
 }
 
+TRANSFER_MONEY_ERRORS = {
+    0: '   Account not found! Please enter a valid account number!',
+    1: '   Please enter a valid amount value!',
+    2: '   Minimum transaction amount is Rs. 100!',
+    3: '   Insufficient balance! Unable to proceed!'
+}
+
 # DATABASE
 DB = {"HOST": "sql6.freesqldatabase.com", "DATABASE": "sql6698638", "PORT": 3306, "USER": "sql6698638", "PASSWORD": "fMqmcIIyBu"}
 # FOR cmd line mysql -h sql6.freesqldatabase.com -u sql6698638 -p
