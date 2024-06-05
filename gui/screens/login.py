@@ -44,7 +44,7 @@ class LoginScreen(ctk.CTkFrame):
 
     def successful_login(self, user_data) -> None:
         account = {
-            'ACCOUNT_ID': user_data[0],
+            'ID': user_data[0],
             'USERNAME': user_data[1],  # password details omitted for safety
             'FIRST_NAME': user_data[3],
             'LAST_NAME': user_data[4],
@@ -126,8 +126,6 @@ class LoginScreen(ctk.CTkFrame):
 
         # Reset warnings
         self.warning_label.clear_warning()
-
-        self.place_forget()
 
 
 class LabelledEntry(ctk.CTkFrame):

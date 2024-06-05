@@ -27,6 +27,11 @@ MAIN_SCREEN_FD_ICON = 'assets\\ui\\main_screen\\deposit.png'
 MAIN_SCREEN_BILLS_ICON = 'assets\\ui\\main_screen\\bill.png'
 MAIN_SCREEN_TNC_HISTORY_ICON = 'assets\\ui\\main_screen\\history.png'
 
+TRANSFER_SCREEN_PAID_ICON = 'assets\\ui\\transaction_history_screen\\paid.png'
+TRANSFER_SCREEN_RECEIVED_ICON = 'assets\\ui\\transaction_history_screen\\received.png'
+TRANSFER_SCREEN_DEPOSIT_ICON = 'assets\\ui\\transaction_history_screen\\deposit.png'
+TRANSFER_SCREEN_WITHDRAW_ICON = 'assets\\ui\\transaction_history_screen\\withdraw.png'
+
 BACK_ARROW_ICON = 'assets\\ui\\util_widgets\\back_button.png'
 WARNING_ICON = 'assets\\ui\\util_widgets\\warning_icon.png'
 SHOW_PASSWORD_ICON = 'assets\\ui\\util_widgets\\obfuscate_widget\\show_password.png'
@@ -61,7 +66,8 @@ SIGNUP_SCREEN_OPERATION_BUTTON_FONT = ('Calibri', 30, 'bold')
 MAIN_SCREEN_HEADER_FONT = ('Calibri', 46, 'bold')
 MAIN_SCREEN_PANEL_FONT = ('Calibri', 40, 'bold')
 
-TRANSFER_MONEY_SCREEN_ENTRY_LABEL_FONT = ('Calibri', 40, 'bold')
+TRANSFER_MONEY_SCREEN_MINI_INFO_HEADER_FONT = ('Calibri', 23, 'bold')
+TRANSFER_MONEY_SCREEN_MINI_INFO_FONT = ('Calibri', 23)
 
 # COLORS
 APP_COLOR_THEME = 'green'  # Available -> ['blue', 'dark-blue', 'green']
@@ -98,10 +104,11 @@ SIGN_UP_ERRORS = {
 }
 
 TRANSFER_MONEY_ERRORS = {
-    0: '   Account not found! Please enter a valid account number!',
-    1: '   Please enter a valid amount value!',
+    0: '   Please fill out the required information!',
+    1: '   Account not found! Please enter a valid account number!',
     2: '   Minimum transaction amount is Rs. 100!',
-    3: '   Insufficient balance! Unable to proceed!'
+    3: '   Insufficient balance! Unable to proceed!',
+    4: '   Cannot transfer to self!'
 }
 
 # DATABASE

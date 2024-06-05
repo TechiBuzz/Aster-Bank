@@ -95,7 +95,7 @@ class SignUpScreen(ctk.CTkFrame):
 
         # Update data manager
         account_manager.set_account({
-            'ACCOUNT_ID': f'{db.fetch_result('SELECT COUNT(USERNAME) FROM accounts')[0][0] + 10001}',
+            'ID': f'{db.fetch_result('SELECT COUNT(USERNAME) FROM accounts')[0][0] + 10001}',
             'USERNAME': username,
             'FIRST_NAME': first_name,
             'LAST_NAME': last_name,
@@ -263,9 +263,9 @@ class SignUpScreen(ctk.CTkFrame):
         user_decision = askokcancel('Clear Info', message='Clear all entry fields? This cannot be undone!')
 
         if user_decision:
-            self.clear_screen(place_forget=False)
+            self.clear_screen()
             
-    def clear_screen(self, place_forget=True) -> None:
+    def clear_screen(self) -> None:
         # Reset pfp
         self.profile_picture_frame.pfp.image.configure(image=open_image(USER_ICON, (140, 140)))
 
@@ -288,10 +288,6 @@ class SignUpScreen(ctk.CTkFrame):
 
         # Reset warnings
         self.warning_label.clear_warning()
-
-        if place_forget:
-            self.place_forget()
-
 
 class ProfilePictureFrame(ctk.CTkFrame):
     def __init__(self, parent):
@@ -531,4 +527,4 @@ class PostSignUpScreen(ctk.CTkFrame):
         ).pack(expand=True, padx=12, pady=12)
 
     def clear_screen(self):
-        self.place_forget()
+        pass

@@ -38,14 +38,14 @@ class AccountManager:
 
     def get_balance(self) -> float | None:
         try:
-            return self.account['BALANCE'] if self.account['BALANCE'] else None
+            return self.account['BALANCE']
         except KeyError:
             return None
 
     def update_balance(self, new_balance) -> None:
         self.account['BALANCE'] = new_balance
         db.execute_query('UPDATE accounts SET BALANCE = %s WHERE ID = %s',
-                         (self.account['BALANCE'], self.account['ACCOUNT_ID']))
+                         (self.account['BALANCE'], self.account['ID']))
 
     def set_account(self, account) -> None:
         self.account = account

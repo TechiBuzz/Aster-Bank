@@ -47,11 +47,15 @@ class TsarBank(ctk.CTk):
 
     def show_window(self, window_to_show: str, window_to_clear=None):
         window_to_show = self.gui_instances[window_to_show]
-        window_to_show.tkraise()
+
         window_to_show.place(relx=0.0, rely=0.0, relwidth=1, relheight=1)
+        window_to_show.tkraise()
 
         if window_to_clear:
-            window_to_clear.clear_screen()
+            try:
+                window_to_clear.clear_screen()
+            except AttributeError:
+                pass
 
 
 def main():

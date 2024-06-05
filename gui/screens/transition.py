@@ -4,7 +4,7 @@ import customtkinter as ctk
 
 
 class TransitionScreen(ctk.CTkFrame):
-    def __init__(self, parent, transition_to_page, text_before_transition, text_after_transition, transition_time):
+    def __init__(self, parent, transition_to_page: str, text_before_transition: str, text_after_transition: str, transition_time: int):
         super().__init__(parent)
 
         # App instance
@@ -32,7 +32,7 @@ class TransitionScreen(ctk.CTkFrame):
         self.after(int(transition_time * 0.64), lambda: self.change_text(text_after_transition))
         self.after(transition_time, lambda: self.finish_transition(parent, transition_to_page))
 
-    def change_text(self, text_after_transition):
+    def change_text(self, text_after_transition: str):
         self.text_var.set(text_after_transition)
         self.progress_bar.grid_forget()
 
@@ -43,6 +43,6 @@ class TransitionScreen(ctk.CTkFrame):
             image=open_image(TRANSITION_CHECKMARK_ICON, (120, 120))
         ).grid(column=0, row=1, sticky='n')
 
-    def finish_transition(self, from_page, to_page):
+    def finish_transition(self, from_page: str, to_page: str):
         self.app_instance.show_window(to_page, from_page)
         self.destroy()
