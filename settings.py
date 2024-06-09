@@ -31,6 +31,7 @@ TRANSFER_SCREEN_PAID_ICON = 'assets\\ui\\transaction_history_screen\\paid.png'
 TRANSFER_SCREEN_RECEIVED_ICON = 'assets\\ui\\transaction_history_screen\\received.png'
 TRANSFER_SCREEN_DEPOSIT_ICON = 'assets\\ui\\transaction_history_screen\\deposit.png'
 TRANSFER_SCREEN_WITHDRAW_ICON = 'assets\\ui\\transaction_history_screen\\withdraw.png'
+TRANSFER_SCREEN_REFRESH_ICON = 'assets\\ui\\transaction_history_screen\\refresh.png'
 
 BACK_ARROW_ICON = 'assets\\ui\\util_widgets\\back_button.png'
 WARNING_ICON = 'assets\\ui\\util_widgets\\warning_icon.png'
@@ -68,9 +69,6 @@ MAIN_SCREEN_PANEL_FONT = ('Calibri', 40, 'bold')
 
 TRANSFER_MONEY_SCREEN_MINI_INFO_HEADER_FONT = ('Calibri', 23, 'bold')
 TRANSFER_MONEY_SCREEN_MINI_INFO_FONT = ('Calibri', 23)
-
-# COLORS
-APP_COLOR_THEME = 'green'  # Available -> ['blue', 'dark-blue', 'green']
 
 # ERRORS
 LOGIN_ERRORS = {

@@ -28,6 +28,8 @@ class MainScreen(ctk.CTkFrame):
         if pfp:
             pfp.configure(size=(55, 55))
             self.user_details_frame.user_icon.configure(image=pfp)
+        else:
+            self.user_details_frame.user_icon.configure(image=open_image(USER_ICON, (55, 55)))
 
         self.balance_details_frame.balance_value.configure(text=account_manager.get_balance())
 
@@ -69,7 +71,7 @@ class UserInfoFrame(ctk.CTkFrame):
             bg_color='transparent',
             corner_radius=100,
             width=0,
-            command=lambda: self.logout(app_instance)
+            command=self.logout
         )
         self.logout_icon.pack(pady=12, side='right')
 
@@ -78,11 +80,11 @@ class UserInfoFrame(ctk.CTkFrame):
         # Place
         self.pack(fill='x', padx=12, pady=(12, 6))
 
-    def logout(self, app_instance):
+    def logout(self):
         user_decision = askyesno('Logout', message='Are you sure you want to log out of this account?')
 
         if user_decision:
-            app_instance.show_window('LoginScreen')
+            self.app_instance.show_window('LoginScreen')
             account_manager.set_account(dict())
 
 

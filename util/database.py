@@ -30,6 +30,7 @@ class Database:
     def fetch_result(self, query: str, args: tuple = None) -> tuple | None:
         result = None
         if self.connection:
+            self.connection.commit()
             cursor = self.connection.cursor()
             try:
                 cursor.execute(query, args)
@@ -42,9 +43,10 @@ class Database:
             return result
 
     def close_connection(self):
-        if self.connection.is_connected():
-            self.connection.close()
-            print("Successfully closed database connection!")
+        if self.connection:
+            if self.connection.is_connected():
+                self.connection.close()
+                print("Successfully closed database connection!")
 
 
 # INSTANTIATE DATABASE

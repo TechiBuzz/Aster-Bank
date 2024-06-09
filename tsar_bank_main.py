@@ -1,4 +1,5 @@
 from settings import *
+from util.database import db
 from gui.screens.welcome import WelcomeScreen
 from gui.screens.main import MainScreen
 from gui.screens.login import LoginScreen
@@ -16,10 +17,7 @@ import customtkinter as ctk
 
 # Theme Of App
 ctk.set_appearance_mode('dark')
-try:
-    ctk.set_default_color_theme(APP_COLOR_THEME)
-except FileNotFoundError:
-    print('Unable to set custom color theme! Defaulting to BLUE')
+ctk.set_default_color_theme('green')
 
 
 class TsarBank(ctk.CTk):
@@ -66,10 +64,13 @@ def main():
 
     app.geometry(f'{WINDOW_WIDTH}x{WINDOW_HEIGHT}')
     app.minsize(1100, 700)
-
     app.iconbitmap(WINDOW_BITMAP_ICON)
 
+    # Start GUI mainloop
     app.mainloop()
+
+    # Close database connection after app is closed
+    db.close_connection()
 
 
 if __name__ == '__main__':

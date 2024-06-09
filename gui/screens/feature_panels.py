@@ -1,3 +1,5 @@
+from tkinter.messagebox import askyesno
+
 import customtkinter as ctk
 
 from gui.util_widgets.back_button import BackButton
@@ -77,6 +79,8 @@ class ProfileManagementScreen(ctk.CTkFrame):
             pic = account_manager.get_profile_pic()
             pic.configure(size=(140, 140))
             self.pfp.image.configure(image=pic)
+        else:
+            self.pfp.image.configure(image=open_image(USER_ICON, (140, 140)))
 
         # Set other details
         self.name_info.entry_var.set(account_manager.get_full_name())
@@ -339,19 +343,24 @@ class TransferMoneyScreen(ctk.CTkFrame):
             self.warning_label.raise_warning(4)
             return
 
-        # Transition screen
-        TransitionScreen(self, 'MainScreen', 'Initiating Transaction...', 'Transfer Success!', 3800)
+        # CONFIRMATION
+        user_decision = askyesno('Transfer', message='Are you sure you want to initiate the transaction?')
 
-        # Deduct amount
-        account_manager.update_balance(account_manager.get_balance() - int(amount))
+        if user_decision:
+            # Transition screen
+            TransitionScreen(self, 'MainScreen', 'Initiating Transaction...', 'Transfer Success!', 3800)
 
-        # Update transactions table
-        db.execute_query(
-            'INSERT INTO transactions (TRANSACTION_TYPE, FROM_ACC_ID, TO_ACC_ID, AMOUNT) VALUES (%s, %s, %s, %s)',
-            ('PAID', account_manager.get('ID'), account_number, amount))
+            # Deduct amount
+            account_manager.update_balance(account_manager.get_balance() - int(amount))
 
-        # Update info in main screen
-        self.app_instance.gui_instances['MainScreen'].update_info()
+            # Update transactions table
+            db.execute_query(
+                'INSERT INTO transactions (TRANSACTION_TYPE, FROM_ACC_ID, TO_ACC_ID, AMOUNT) VALUES (%s, %s, %s, %s)',
+                ('PAYMENT', account_manager.get('ID'), account_number, amount)
+            )
+
+            # Update info in main screen
+            self.app_instance.gui_instances['MainScreen'].balance_details_frame.balance_value.configure(text=account_manager.get_balance())
 
     def get_name(self) -> str:
         return 'TransferMoneyScreen'
@@ -384,27 +393,44 @@ class TransactionHistoryScreen(ctk.CTkFrame):
 
         self.transaction_widgets = []
 
-        TransactionWidget(self.content_frame, (1000, 'PAID', 10001, 600))
-
-        self.refresh_button = ctk.CTkButton(self, command=self.generate_widgets)
+        self.refresh_button = ctk.CTkButton(
+            self,
+            text='',
+            width=0,
+            height=55,
+            corner_radius=40,
+            image=open_image(TRANSFER_SCREEN_REFRESH_ICON, (40, 40)),
+            command=self.refresh_transactions
+        )
         self.refresh_button.place(relx=0.8, rely=0.8, anchor='nw')
+        self.refresh_button_disable_timer_id = ' '
 
-    def generate_widgets(self):
-        print('refreshing...')
+    def refresh_transactions(self):
+        self.after_cancel(self.refresh_button_disable_timer_id)
 
         for widget in self.transaction_widgets:
             widget.destroy()
 
+        account = account_manager.get('ID')
         transactions = db.fetch_result(
-            'SELECT TRANSACTION_ID, TRANSACTION_TYPE, TO_ACC_ID, AMOUNT FROM transactions WHERE FROM_ACC_ID = %s OR TO_ACC_ID = %s',
-            (account_manager.get('ID'), account_manager.get('ID')))
+            'SELECT TRANSACTION_ID, TRANSACTION_TYPE, FROM_ACC_ID, TO_ACC_ID, AMOUNT FROM transactions WHERE FROM_ACC_ID = %s OR TO_ACC_ID = %s',
+            (account, account)
+        )
 
         if transactions:
             for record in transactions:
-                widget = TransactionWidget(self.content_frame, record)
+                if record[1] == 'PAYMENT':
+                    transaction_type = 'RECEIVED' if record[3] == account else 'PAID'
+                else:
+                    transaction_type = record[1]
+
+                widget = TransactionWidget(self.content_frame, record, transaction_type)
                 widget.pack(expand=True, fill='x', padx=12, pady=12)
 
                 self.transaction_widgets.append(widget)
+
+        self.refresh_button.configure(state='disabled')
+        self.refresh_button_disable_timer_id = self.after(5000, lambda: self.refresh_button.configure(state='normal'))
 
     def get_name(self) -> str:
         return 'TransactionHistoryScreen'
@@ -414,54 +440,79 @@ class TransactionHistoryScreen(ctk.CTkFrame):
 
 
 class TransactionWidget(ctk.CTkFrame):
-    def __init__(self, parent, details: tuple):
+    def __init__(self, parent, details: tuple, transaction_type: str):
         super().__init__(parent, corner_radius=15)
 
         transaction_id = details[0]
-        transaction_type = details[1]
-        to_account = details[2]
-        amount = details[3]
+        from_account = details[2]
+        to_account = details[3]
+        amount = details[4]
 
         transaction_types = {
-            'PAID': [TRANSFER_SCREEN_PAID_ICON, 'Paid  To'],
-            'RECEIVED': [TRANSFER_SCREEN_RECEIVED_ICON, 'Received From'],
-            'DEPOSIT': [TRANSFER_SCREEN_DEPOSIT_ICON, 'Deposited'],
-            'WITHDRAW': [TRANSFER_SCREEN_WITHDRAW_ICON, 'Withdrawn']
+            'PAID': (TRANSFER_SCREEN_PAID_ICON, 'Paid  To'),
+            'RECEIVED': (TRANSFER_SCREEN_RECEIVED_ICON, 'Received From'),
+            'DEPOSIT': (TRANSFER_SCREEN_DEPOSIT_ICON, 'Deposit'),
+            'WITHDRAW': (TRANSFER_SCREEN_WITHDRAW_ICON, 'Withdraw')
         }
 
         self.outer_frame = ctk.CTkFrame(self, corner_radius=15)
+
+        self.outer_frame.rowconfigure(0, weight=1)
+        self.outer_frame.columnconfigure(0, weight=1)
+        self.outer_frame.columnconfigure(1, weight=2)
+        self.outer_frame.columnconfigure(2, weight=3)
+
         self.outer_frame.pack(expand=True, fill='both')
 
+        # ICON
         self.payment_type_icon = ctk.CTkLabel(self.outer_frame, text='',
                                               image=open_image(transaction_types[transaction_type][0], size=(64, 64)))
-        self.payment_type_icon.pack(padx=12, pady=12, side='left')
+        # self.payment_type_icon.pack(padx=(32, 20), pady=12, side='left')
+        self.payment_type_icon.grid(row=0, column=0, padx=(32, 20), pady=12, sticky='nsew')
 
+        # MINI DETAILS
         self.mini_info_frame = ctk.CTkFrame(self.outer_frame, corner_radius=15)
-        self.mini_info_frame.pack(padx=12, pady=12, side='left')
+        # self.mini_info_frame.pack(padx=12, pady=12, side='left')
+        self.mini_info_frame.grid(row=0, column=1, padx=12, pady=12, sticky='nsew')
 
-        self.transaction_id_header = ctk.CTkLabel(self.mini_info_frame, text='Transaction ID',
+        self.transaction_id_frame = ctk.CTkFrame(self.mini_info_frame, corner_radius=15)
+        self.transaction_id_frame.pack(expand=True, fill='both', padx=12, pady=(12, 6))
+
+        self.transaction_id_header = ctk.CTkLabel(self.transaction_id_frame, text='Transaction ID',
                                                   font=TRANSFER_MONEY_SCREEN_MINI_INFO_HEADER_FONT, justify='left')
         self.transaction_id_header.pack(expand=True, fill='both', padx=12, pady=(12, 6))
 
-        self.transaction_id = ctk.CTkLabel(self.mini_info_frame, text=str(transaction_id),
+        self.transaction_id = ctk.CTkLabel(self.transaction_id_frame, text=str(transaction_id),
                                            font=TRANSFER_MONEY_SCREEN_MINI_INFO_FONT)
-        self.transaction_id.pack(expand=True, fill='both', padx=12, pady=6)
+        self.transaction_id.pack(expand=True, fill='both', padx=12, pady=(6, 12))
 
-        self.transaction_type_label = ctk.CTkLabel(self.mini_info_frame, text='Transaction',
-                                                   font=TRANSFER_MONEY_SCREEN_MINI_INFO_HEADER_FONT)
-        self.transaction_type_label.pack(expand=True, fill='both', padx=12, pady=6)
+        self.transaction_type_frame = ctk.CTkFrame(self.mini_info_frame, corner_radius=15)
+        self.transaction_type_frame.pack(expand=True, fill='both', padx=12, pady=(6, 12))
 
-        self.transaction_type = ctk.CTkLabel(self.mini_info_frame, text='',
+        self.transaction_type_header = ctk.CTkLabel(self.transaction_type_frame, text='Transaction',
+                                                    font=TRANSFER_MONEY_SCREEN_MINI_INFO_HEADER_FONT)
+        self.transaction_type_header.pack(expand=True, fill='both', padx=12, pady=(12, 6))
+
+        self.transaction_type = ctk.CTkLabel(self.transaction_type_frame, text='',
                                              font=TRANSFER_MONEY_SCREEN_MINI_INFO_FONT)
-        self.transaction_type.pack(expand=True, fill='both', padx=12, pady=6)
+        self.transaction_type.pack(expand=True, fill='both', padx=12, pady=(6, 12))
 
-        transaction_type_text = ''
-        if transaction_type in ('PAID', 'RECEIVED'):
-            acc_name: str = db.fetch_result('SELECT FIRST_NAME, LAST_NAME FROM accounts WHERE ID = %s', (to_account,))[0]
-            transaction_type_text = f'{transaction_types[transaction_type][1]} {acc_name[0]} {acc_name[1]}'
+        # AMOUNT
+        self.amount = ctk.CTkLabel(self.outer_frame, text=amount, font=MAIN_SCREEN_HEADER_FONT)
+        # self.amount.pack(expand=True, fill='both', padx=12, pady=12, side='left')
+        self.amount.grid(row=0, column=2, padx=12, pady=12, sticky='nsew')
+
+        # LOGIC
+        if transaction_type == 'PAID':
+            paid_to_acc: str = db.fetch_result('SELECT FIRST_NAME, LAST_NAME FROM accounts WHERE ID = %s', (to_account,))[0]
+            paid_to_acc = paid_to_acc if paid_to_acc else 'Unknown'
+            self.transaction_type.configure(text=f'{transaction_types[transaction_type][1]} {paid_to_acc[0]} {paid_to_acc[1]}')
+        elif transaction_type == 'RECEIVED':
+            rec_from_acc: str = db.fetch_result('SELECT FIRST_NAME, LAST_NAME FROM accounts WHERE ID = %s', (from_account,))[0]
+            rec_from_acc = rec_from_acc if rec_from_acc else 'Unknown'
+            self.transaction_type.configure(text=f'{transaction_types[transaction_type][1]} {rec_from_acc[0]} {rec_from_acc[1]}')
         elif transaction_type in ('DEPOSIT', 'WITHDRAW'):
-            transaction_type_text = transaction_types[transaction_type][1]
-        self.transaction_type.configure(text=transaction_type_text)
+            self.transaction_type.configure(text=transaction_types[transaction_type][1])
 
 
 class InfoEntryWidget(ctk.CTkFrame):
