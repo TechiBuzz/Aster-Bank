@@ -37,22 +37,22 @@ def create_base_screen(parent, app_instance, header_text: str, scroll_frame: boo
     return screen
 
 
-class ProfileManagementScreen(ctk.CTkFrame):
+class ProfileScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
 
         self.app_instance = parent
 
         # Widgets
-        self.base_screen = create_base_screen(self, self.app_instance, 'Manage Profile', True)
+        self.base_screen = create_base_screen(self, self.app_instance, 'Profile', True)
 
-        self.scroll_frame = ctk.CTkFrame(self.base_screen.content_frame)
-        self.scroll_frame.pack(expand=True, fill='both')
+        self.content_frame = self.base_screen.content_frame
+        self.content_frame.pack(expand=True, fill='both')
 
-        self.pfp = ProfilePicture(self.scroll_frame)
+        self.pfp = ProfilePicture(self.content_frame)
         self.pfp.configure(corner_radius=15)
 
-        self.details_frame = ctk.CTkFrame(self.scroll_frame, corner_radius=15)
+        self.details_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
         self.details_frame.pack(expand=True, fill='x', padx=12, pady=(6, 12))
 
         self.name_info = InfoEntryWidget(self.details_frame, 'Name')
@@ -64,13 +64,13 @@ class ProfileManagementScreen(ctk.CTkFrame):
         self.date_info = InfoEntryWidget(self.details_frame, 'Date of Birth')
         self.date_info.pack(expand=True, fill='x', padx=12, pady=6, ipady=4)
 
-        self.address_info = InfoEntryWidget(self.details_frame, 'Address', 'TextBox', True)
+        self.address_info = InfoEntryWidget(self.details_frame, 'Address')
         self.address_info.pack(expand=True, fill='x', padx=12, pady=6, ipady=4)
 
-        self.email_info = InfoEntryWidget(self.details_frame, 'Email', 'Entry', True, 'email')
+        self.email_info = InfoEntryWidget(self.details_frame, 'Email')
         self.email_info.pack(expand=True, fill='x', padx=12, pady=6, ipady=4)
 
-        self.phone_info = InfoEntryWidget(self.details_frame, 'Phone', 'Entry', True, 'phone')
+        self.phone_info = InfoEntryWidget(self.details_frame, 'Phone')
         self.phone_info.pack(expand=True, fill='x', padx=12, pady=(6, 12), ipady=4)
 
     def update_info(self):
@@ -89,6 +89,8 @@ class ProfileManagementScreen(ctk.CTkFrame):
         self.email_info.entry_var.set(account_manager.get('EMAIL_ID'))
         self.phone_info.entry_var.set(account_manager.get('PHONE_NO'))
 
+        self.content_frame._parent_canvas.yview_moveto(0.0)
+
     def get_name(self) -> str:
         return 'ProfileManagementScreen'
 
@@ -106,51 +108,48 @@ class FundManagementScreen(ctk.CTkFrame):
         self.base_frame = create_base_screen(self, self.app_instance, 'Manage Funds', False)
         self.content_frame = self.base_frame.content_frame
 
-        self.selector_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
-        self.selector_frame.pack(expand=True, fill='x', padx=12, pady=(12, 6))
+        tabview_frame = ctk.CTkTabview(self.content_frame, corner_radius=15)
+        tabview_frame.pack(expand=True, fill='both', padx=20, pady=20)
 
-        self.radio_container = ctk.CTkFrame(self.selector_frame, corner_radius=15)
+        tabview_frame._segmented_button.configure(font=MAIN_SCREEN_PANEL_FONT)
+        for button in tabview_frame._segmented_button._buttons_dict:
+            button.configure(padx=20, pady=20)
 
-        self.radio_container.rowconfigure(0, weight=1)
-        self.radio_container.columnconfigure((0, 1), weight=1, uniform='G')
+        deposit_tab = tabview_frame.add('Deposit')
+        withdraw_tab = tabview_frame.add('Withdraw')
 
-        self.radio_container.pack(expand=True, fill='both', side='bottom', ipady=30, padx=12, pady=12)
-
-        self.radio_var = ctk.IntVar(value=0)
-        self.deposit_radio_button = ctk.CTkRadioButton(
-            self.radio_container,
-            text='Deposit',
-            font=SIGNUP_SCREEN_RADIO_BUTTON_FONT,
-            variable=self.radio_var,
-            value=1
-        )
-        self.deposit_radio_button.grid(row=0, column=0)
-
-        self.withdraw_radio_button = ctk.CTkRadioButton(
-            self.radio_container, text='Withdraw',
-            font=SIGNUP_SCREEN_RADIO_BUTTON_FONT,
-            variable=self.radio_var,
-            value=2
-        )
-        self.withdraw_radio_button.grid(row=0, column=1)
-
-        self.balance_var = ctk.IntVar(value=0)
-        self.balance_text = ctk.CTkLabel(self.content_frame, text='', textvariable=self.balance_var,
-                                         font=LOGIN_SCREEN_FIELD_ENTRY_FONT)
-        self.balance_text.pack(expand=True, fill='x', padx=12, pady=(6, 12))
-
-        self.balance_slider = ctk.CTkSlider(self.content_frame, height=40, button_length=1, from_=100, to=1000,
-                                            variable=self.balance_var)
-        self.balance_slider.pack(expand=True, padx=12, pady=(6, 12))
-
-        self.entry = ctk.CTkEntry(self.content_frame, corner_radius=50)
-        self.entry.pack(expand=True)
+        # self.deposit_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
+        # self.deposit_frame.pack(expand=True, fill='both', padx=20, pady=(20, 10))
+        #
+        # self.deposit_header = ctk.CTkLabel(self.deposit_frame, text='Deposit', font=MAIN_SCREEN_PANEL_FONT,
+        #                                    corner_radius=15)
+        # self.deposit_header.pack(expand=True, fill='x', padx=12, pady=(12, 6))
+        #
+        # self.deposit_entry = ctk.CTkEntry(self.deposit_frame, height=70, font=LOGIN_SCREEN_FIELD_ENTRY_FONT,
+        #                                   corner_radius=40)
+        # self.deposit_entry.pack(expand=True, fill='x', padx=12, pady=6)
+        #
+        # self.deposit_button = ctk.CTkButton(
+        #     master=self.deposit_frame,
+        #     text='Deposit',
+        #     font=MAIN_SCREEN_PANEL_FONT,
+        #     height=70,
+        #     corner_radius=100
+        # )
+        # self.deposit_button.pack(expand=True, fill='x', padx=12, pady=(6, 12))
+        #
+        # self.withdraw_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
+        # self.withdraw_frame.pack(expand=True, fill='both', padx=20, pady=(10, 20))
+        #
+        # self.withdraw_header = ctk.CTkLabel(self.withdraw_frame, text='Witdraw', font=MAIN_SCREEN_PANEL_FONT,
+        #                                     corner_radius=15)
+        # self.withdraw_header.pack(expand=True, fill='x', padx=12, pady=(12, 6))
 
     def get_name(self) -> str:
         return 'FundManagementScreen'
 
     def update_info(self):
-        self.balance_slider.configure(to=int(account_manager.get_balance()))
+        pass
 
     def clear_screen(self) -> None:
         pass
@@ -165,6 +164,8 @@ class BillManagementScreen(ctk.CTkFrame):
         # Widgets
         self.base_frame = create_base_screen(self, self.app_instance, 'Manage Bills', True)
         self.content_frame = self.base_frame.content_frame
+
+        
 
     def get_name(self) -> str:
         return 'BillManagementScreen'
@@ -183,6 +184,8 @@ class FDCalculatorScreen(ctk.CTkFrame):
         self.base_frame = create_base_screen(self, self.app_instance, 'Calculate Interest on FD', False)
         self.content_frame = self.base_frame.content_frame
 
+        
+
     def get_name(self) -> str:
         return 'FDCalculatorScreen'
 
@@ -197,7 +200,7 @@ class RequestMoneyScreen(ctk.CTkFrame):
         self.app_instance = parent
 
         # Widgets
-        self.base_frame = create_base_screen(self, self.app_instance, 'Request Money', False)
+        self.base_frame = create_base_screen(self, self.app_instance, 'Request Money', True)
         self.content_frame = self.base_frame.content_frame
 
     def get_name(self) -> str:
@@ -321,8 +324,6 @@ class TransferMoneyScreen(ctk.CTkFrame):
         account_number = self.account_num_var.get()
         amount = self.amount_var.get()
 
-        # print(account_manager.account)
-
         if len(account_number) == 0 or len(amount) == 0:
             self.warning_label.raise_warning(0)
             return
@@ -360,7 +361,8 @@ class TransferMoneyScreen(ctk.CTkFrame):
             )
 
             # Update info in main screen
-            self.app_instance.gui_instances['MainScreen'].balance_details_frame.balance_value.configure(text=account_manager.get_balance())
+            self.app_instance.gui_instances['MainScreen'].balance_details_frame.balance_value.configure(
+                text=account_manager.get_balance())
 
     def get_name(self) -> str:
         return 'TransferMoneyScreen'
@@ -429,8 +431,9 @@ class TransactionHistoryScreen(ctk.CTkFrame):
 
                 self.transaction_widgets.append(widget)
 
-        self.refresh_button.configure(state='disabled')
-        self.refresh_button_disable_timer_id = self.after(5000, lambda: self.refresh_button.configure(state='normal'))
+        self.refresh_button.place_forget()
+        self.refresh_button_disable_timer_id = self.after(5000, lambda: self.refresh_button.place(relx=0.8, rely=0.8,
+                                                                                                  anchor='nw'))
 
     def get_name(self) -> str:
         return 'TransactionHistoryScreen'
@@ -458,21 +461,17 @@ class TransactionWidget(ctk.CTkFrame):
         self.outer_frame = ctk.CTkFrame(self, corner_radius=15)
 
         self.outer_frame.rowconfigure(0, weight=1)
-        self.outer_frame.columnconfigure(0, weight=1)
-        self.outer_frame.columnconfigure(1, weight=2)
-        self.outer_frame.columnconfigure(2, weight=3)
+        self.outer_frame.columnconfigure((0, 1, 2), weight=1, uniform='yesyes')
 
         self.outer_frame.pack(expand=True, fill='both')
 
         # ICON
         self.payment_type_icon = ctk.CTkLabel(self.outer_frame, text='',
-                                              image=open_image(transaction_types[transaction_type][0], size=(64, 64)))
-        # self.payment_type_icon.pack(padx=(32, 20), pady=12, side='left')
+                                              image=open_image(transaction_types[transaction_type][0], size=(72, 72)))
         self.payment_type_icon.grid(row=0, column=0, padx=(32, 20), pady=12, sticky='nsew')
 
         # MINI DETAILS
         self.mini_info_frame = ctk.CTkFrame(self.outer_frame, corner_radius=15)
-        # self.mini_info_frame.pack(padx=12, pady=12, side='left')
         self.mini_info_frame.grid(row=0, column=1, padx=12, pady=12, sticky='nsew')
 
         self.transaction_id_frame = ctk.CTkFrame(self.mini_info_frame, corner_radius=15)
@@ -498,79 +497,41 @@ class TransactionWidget(ctk.CTkFrame):
         self.transaction_type.pack(expand=True, fill='both', padx=12, pady=(6, 12))
 
         # AMOUNT
-        self.amount = ctk.CTkLabel(self.outer_frame, text=amount, font=MAIN_SCREEN_HEADER_FONT)
-        # self.amount.pack(expand=True, fill='both', padx=12, pady=12, side='left')
+        self.amount = ctk.CTkLabel(self.outer_frame, text='', font=MAIN_SCREEN_HEADER_FONT)
         self.amount.grid(row=0, column=2, padx=12, pady=12, sticky='nsew')
 
         # LOGIC
         if transaction_type == 'PAID':
             paid_to_acc: str = db.fetch_result('SELECT FIRST_NAME, LAST_NAME FROM accounts WHERE ID = %s', (to_account,))[0]
             paid_to_acc = paid_to_acc if paid_to_acc else 'Unknown'
-            self.transaction_type.configure(text=f'{transaction_types[transaction_type][1]} {paid_to_acc[0]} {paid_to_acc[1]}')
+            self.transaction_type.configure(
+                text=f'{transaction_types[transaction_type][1]} {paid_to_acc[0]} {paid_to_acc[1]}')
+            self.amount.configure(text=f'- ₹{amount}', text_color='#e76f51')
         elif transaction_type == 'RECEIVED':
             rec_from_acc: str = db.fetch_result('SELECT FIRST_NAME, LAST_NAME FROM accounts WHERE ID = %s', (from_account,))[0]
             rec_from_acc = rec_from_acc if rec_from_acc else 'Unknown'
-            self.transaction_type.configure(text=f'{transaction_types[transaction_type][1]} {rec_from_acc[0]} {rec_from_acc[1]}')
+            self.transaction_type.configure(
+                text=f'{transaction_types[transaction_type][1]} {rec_from_acc[0]} {rec_from_acc[1]}')
+            self.amount.configure(text=f'+ ₹{amount}', text_color='#2a9d8f')
         elif transaction_type in ('DEPOSIT', 'WITHDRAW'):
             self.transaction_type.configure(text=transaction_types[transaction_type][1])
+            if transaction_type == 'DEPOSIT':
+                self.amount.configure(text=f'+ ₹{amount}', text_color='#2a9d8f')
+            else:
+                self.amount.configure(text=f'- ₹{amount}', text_color='#e76f51')
 
 
 class InfoEntryWidget(ctk.CTkFrame):
-    def __init__(self, parent, text: str, entry_type: str = 'Entry', editable_entry: bool = False,
-                 entry_validation: str = None):
+    def __init__(self, parent, text: str):
         super().__init__(parent, corner_radius=15)
 
         self.text = ctk.CTkLabel(self, text=text, font=MAIN_SCREEN_PANEL_FONT, corner_radius=15)
         self.text.pack(padx=12, pady=12, side='left')
 
-        if entry_type == 'Entry':
-            self.entry_var = ctk.StringVar()
+        self.entry_var = ctk.StringVar()
 
-            self.entry = ctk.CTkEntry(self, width=400, height=50, corner_radius=40,
-                                      font=LOGIN_SCREEN_WARNING_LABEL_FONT,
-                                      textvariable=self.entry_var, state='readonly')
-            self.entry.widgetName = 'entry'
-            self.entry.pack(padx=12, pady=12, side='left')
-        elif entry_type == 'TextBox':
-            self.entry = ctk.CTkTextbox(self, width=400, height=200, corner_radius=18,
-                                        font=LOGIN_SCREEN_WARNING_LABEL_FONT, state='disabled')
-            self.entry.pack(padx=12, pady=12, side='left')
-
-        if editable_entry:
-            try:
-                # Validate entry
-                self.entry_var.trace('w', lambda *args: self.validate_entry(entry_validation))
-            except AttributeError:
-                pass
-
-            # Edit button
-            self.edit_entry_button = ctk.CTkButton(
-                self,
-                text='',
-                width=40,
-                height=45,
-                corner_radius=15,
-                image=open_image(EDIT_PHOTO_ICON, (24, 24)),
-                command=self.toggle_entry
-            )
-            self.edit_entry_button.pack(padx=12, pady=12, side='left')
-
-    def toggle_entry(self):
-        if self.entry.widgetName == 'entry':
-            self.entry.configure(state='normal') if self.entry.cget('state') == 'readonly' else self.entry.configure(
-                state='readonly')
-        else:
-            self.entry.configure(state='normal') if self.entry._textbox[
-                                                        'state'] == 'disabled' else self.entry.configure(
-                state='disabled')
-
-    def validate_entry(self, validation: str):
-        new_value = self.entry_var.get()
-
-        if validation == 'phone':
-            new_value = ''.join(char for char in self.entry_var.get() if char.isdigit())[:10]
-        elif validation == 'email':
-            new_value = ''.join(
-                char for char in self.entry_var.get() if (char.isalnum() or char == '@' or char == '.'))[:30]
-
-        self.entry_var.set(new_value)
+        self.entry = ctk.CTkEntry(self, width=400, height=50, corner_radius=40,
+                                  font=LOGIN_SCREEN_WARNING_LABEL_FONT,
+                                  textvariable=self.entry_var, state='readonly')
+        self.entry.widgetName = 'entry'
+        self.entry.pack(padx=12, pady=12, side='right')

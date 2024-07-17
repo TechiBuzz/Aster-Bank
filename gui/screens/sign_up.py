@@ -81,7 +81,7 @@ class SignUpScreen(ctk.CTkFrame):
 
         # Profile picture
         img_binary = None
-        ctk_pfp: ctk.CTkImage = self.profile_picture_frame.image_display.cget('image')
+        ctk_pfp: ctk.CTkImage = self.profile_picture_frame.pfp.image.cget('image')
         if ctk_pfp:
             img_binary = image_to_bytes(ctk_pfp._light_image)
 
@@ -288,6 +288,7 @@ class SignUpScreen(ctk.CTkFrame):
 
         # Reset warnings
         self.warning_label.clear_warning()
+
 
 class ProfilePictureFrame(ctk.CTkFrame):
     def __init__(self, parent):

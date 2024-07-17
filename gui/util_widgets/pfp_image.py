@@ -19,8 +19,10 @@ class ProfilePicture(ctk.CTkFrame):
         self.image.pack(expand=True, fill='both', padx=12, pady=20)
 
         self.button_frame = ctk.CTkFrame(self, fg_color='transparent')
+
         self.button_frame.rowconfigure(0, weight=1)
         self.button_frame.columnconfigure((0, 1), weight=1, uniform='Truthfully')
+
         self.button_frame.pack(expand=True, fill='x', padx=12, pady=(0, 20))
 
         self.choose_image_button = ctk.CTkButton(

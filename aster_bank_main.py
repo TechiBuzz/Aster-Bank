@@ -5,7 +5,7 @@ from gui.screens.main import MainScreen
 from gui.screens.login import LoginScreen
 from gui.screens.sign_up import SignUpScreen
 from gui.screens.sign_up import PostSignUpScreen
-from gui.screens.feature_panels import ProfileManagementScreen
+from gui.screens.feature_panels import ProfileScreen
 from gui.screens.feature_panels import FundManagementScreen
 from gui.screens.feature_panels import TransferMoneyScreen
 from gui.screens.feature_panels import RequestMoneyScreen
@@ -20,7 +20,7 @@ ctk.set_appearance_mode('dark')
 ctk.set_default_color_theme('green')
 
 
-class TsarBank(ctk.CTk):
+class AsterBank(ctk.CTk):
     def __init__(self):
         super().__init__()
 
@@ -31,7 +31,7 @@ class TsarBank(ctk.CTk):
             'SignUpScreen': SignUpScreen(self),
             'PostSignUpScreen': PostSignUpScreen(self),
             'MainScreen': MainScreen(self),
-            'ProfileManagementScreen': ProfileManagementScreen(self),
+            'ProfileManagementScreen': ProfileScreen(self),
             'FundManagementScreen': FundManagementScreen(self),
             'TransferMoneyScreen': TransferMoneyScreen(self),
             'RequestMoneyScreen': RequestMoneyScreen(self),
@@ -57,7 +57,7 @@ class TsarBank(ctk.CTk):
 
 
 def main():
-    app = TsarBank()
+    app = AsterBank()
 
     # Window Config
     app.title(WINDOW_TITLE)
