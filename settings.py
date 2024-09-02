@@ -11,7 +11,7 @@ WINDOW_HEIGHT = 700
 WINDOW_WIDTH = 1100
 
 # IMAGES
-WINDOW_BITMAP_ICON = 'assets\\icon\\tsar_bank_icon.ico'
+WINDOW_ICON = 'assets\\icon\\tsar_bank_icon.ico'
 
 USER_ICON = 'assets\\ui\\user_icon.png'
 

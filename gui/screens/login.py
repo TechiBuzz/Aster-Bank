@@ -143,7 +143,7 @@ class LabelledEntry(ctk.CTkFrame):
             height=70,
             corner_radius=40,
             font=LOGIN_SCREEN_FIELD_ENTRY_FONT,
-            textvariable=self.entry_var
+            textvariable=self.entry_var,
         )
         self.entry.place(relx=0.43, rely=0.5, relheight=0.7, relwidth=0.5, anchor='w')
 

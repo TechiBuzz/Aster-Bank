@@ -196,9 +196,12 @@ class SignUpScreen(ctk.CTkFrame):
             uppercase = 0
             numbers = 0
             for char in password:
-                if char in string.punctuation: special_chars += 1
-                if char.isupper(): uppercase += 1
-                if char.isdigit(): numbers += 1
+                if char in string.punctuation:
+                    special_chars += 1
+                if char.isupper():
+                    uppercase += 1
+                if char.isdigit():
+                    numbers += 1
 
             if special_chars < 2:
                 self.warning_label.raise_warning(15)

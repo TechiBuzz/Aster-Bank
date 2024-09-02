@@ -16,5 +16,5 @@ class WelcomeScreen(ctk.CTkFrame):
         self.another_frame.pack(expand=True, fill='both', padx=20, pady=20)
 
         ctk.CTkLabel(self.another_frame, text='Welcome to Tsar Bank', font=WELCOME_SCREEN_WELCOME_LABEL_FONT).pack(expand=True, fill='x', padx=12, pady=12)
-        ctk.CTkLabel(self.another_frame, text='', image=open_image(WINDOW_BITMAP_ICON, (300, 300))).pack()
+        ctk.CTkLabel(self.another_frame, text='', image=open_image(WINDOW_ICON, (300, 300))).pack()
         ctk.CTkButton(self.another_frame, text='Lets Go!', font=WELCOME_SCREEN_BUTTON_FONT, width=780, height=80, corner_radius=100, command=lambda: parent.show_window('LoginScreen')).pack(expand=True, padx=12, pady=12)

@@ -503,13 +503,13 @@ class TransactionWidget(ctk.CTkFrame):
         # LOGIC
         if transaction_type == 'PAID':
             paid_to_acc: str = db.fetch_result('SELECT FIRST_NAME, LAST_NAME FROM accounts WHERE ID = %s', (to_account,))[0]
-            paid_to_acc = paid_to_acc if paid_to_acc else 'Unknown'
+            paid_to_acc = paid_to_acc or 'Unknown'
             self.transaction_type.configure(
                 text=f'{transaction_types[transaction_type][1]} {paid_to_acc[0]} {paid_to_acc[1]}')
             self.amount.configure(text=f'- ₹{amount}', text_color='#e76f51')
         elif transaction_type == 'RECEIVED':
             rec_from_acc: str = db.fetch_result('SELECT FIRST_NAME, LAST_NAME FROM accounts WHERE ID = %s', (from_account,))[0]
-            rec_from_acc = rec_from_acc if rec_from_acc else 'Unknown'
+            rec_from_acc = rec_from_acc or 'Unknown'
             self.transaction_type.configure(
                 text=f'{transaction_types[transaction_type][1]} {rec_from_acc[0]} {rec_from_acc[1]}')
             self.amount.configure(text=f'+ ₹{amount}', text_color='#2a9d8f')

@@ -41,7 +41,7 @@ class AsterBank(ctk.CTk):
         }
 
         # TODO -> change back to WelcomeScreen after testing!!!!!!!!!!!!
-        self.show_window('MainScreen')
+        self.show_window('WelcomeScreen')
 
     def show_window(self, window_to_show: str, window_to_clear=None):
         window_to_show = self.gui_instances[window_to_show]
@@ -64,7 +64,7 @@ def main():
 
     app.geometry(f'{WINDOW_WIDTH}x{WINDOW_HEIGHT}')
     app.minsize(1100, 700)
-    app.iconbitmap(WINDOW_BITMAP_ICON)
+    app.iconbitmap(WINDOW_ICON)
 
     # Start GUI mainloop
     app.mainloop()
