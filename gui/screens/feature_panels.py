@@ -86,9 +86,11 @@ class ProfileScreen(ctk.CTkFrame):
         self.name_info.entry_var.set(account_manager.get_full_name())
         self.gender_info.entry_var.set('Male' if account_manager.get('GENDER') == 'M' else 'Female')
         self.date_info.entry_var.set(account_manager.get('DATE_OF_BIRTH'))
+        self.address_info.entry_var.set(account_manager.get('ADDRESS'))
         self.email_info.entry_var.set(account_manager.get('EMAIL_ID'))
         self.phone_info.entry_var.set(account_manager.get('PHONE_NO'))
 
+        # Reset scroll
         self.content_frame._parent_canvas.yview_moveto(0.0)
 
     def get_name(self) -> str:
@@ -404,7 +406,7 @@ class TransactionHistoryScreen(ctk.CTkFrame):
             image=open_image(TRANSFER_SCREEN_REFRESH_ICON, (40, 40)),
             command=self.refresh_transactions
         )
-        self.refresh_button.place(relx=0.8, rely=0.8, anchor='nw')
+        self.refresh_button.place(relx=0.85, rely=0.83, anchor='nw')
         self.refresh_button_disable_timer_id = ' '
 
     def refresh_transactions(self):
@@ -432,7 +434,7 @@ class TransactionHistoryScreen(ctk.CTkFrame):
                 self.transaction_widgets.append(widget)
 
         self.refresh_button.place_forget()
-        self.refresh_button_disable_timer_id = self.after(5000, lambda: self.refresh_button.place(relx=0.8, rely=0.8,
+        self.refresh_button_disable_timer_id = self.after(5000, lambda: self.refresh_button.place(relx=0.85, rely=0.83,
                                                                                                   anchor='nw'))
 
     def get_name(self) -> str:

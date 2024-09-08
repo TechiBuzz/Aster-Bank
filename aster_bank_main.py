@@ -41,7 +41,7 @@ class AsterBank(ctk.CTk):
         }
 
         # TODO -> change back to WelcomeScreen after testing!!!!!!!!!!!!
-        self.show_window('WelcomeScreen')
+        self.show_window('MainScreen')
 
     def show_window(self, window_to_show: str, window_to_clear=None):
         window_to_show = self.gui_instances[window_to_show]
