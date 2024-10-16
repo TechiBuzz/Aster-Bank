@@ -55,8 +55,11 @@ class ProfileScreen(ctk.CTkFrame):
         self.details_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
         self.details_frame.pack(expand=True, fill='x', padx=12, pady=(6, 12))
 
+        self.account_info = InfoEntryWidget(self.details_frame, 'Account Number')
+        self.account_info.pack(expand=True, fill='x', padx=12, pady=(12, 6), ipady=4)
+
         self.name_info = InfoEntryWidget(self.details_frame, 'Name')
-        self.name_info.pack(expand=True, fill='x', padx=12, pady=(12, 6), ipady=4)
+        self.name_info.pack(expand=True, fill='x', padx=12, pady=6, ipady=4)
 
         self.gender_info = InfoEntryWidget(self.details_frame, 'Gender')
         self.gender_info.pack(expand=True, fill='x', padx=12, pady=6, ipady=4)
@@ -83,6 +86,7 @@ class ProfileScreen(ctk.CTkFrame):
             self.pfp.image.configure(image=open_image(USER_ICON, (140, 140)))
 
         # Set other details
+        self.account_info.entry_var.set(account_manager.get('ID'))
         self.name_info.entry_var.set(account_manager.get_full_name())
         self.gender_info.entry_var.set('Male' if account_manager.get('GENDER') == 'M' else 'Female')
         self.date_info.entry_var.set(account_manager.get('DATE_OF_BIRTH'))
@@ -353,8 +357,14 @@ class TransferMoneyScreen(ctk.CTkFrame):
             # Transition screen
             TransitionScreen(self, 'MainScreen', 'Initiating Transaction...', 'Transfer Success!', 3800)
 
-            # Deduct amount
+            # Deduct amount from sender
             account_manager.update_balance(account_manager.get_balance() - int(amount))
+
+            # Add amount to receiver
+            db.execute_query(
+                'UPDATE accounts SET BALANCE = BALANCE + %s WHERE ID = %s',
+                (int(amount), account_number)
+            )
 
             # Update transactions table
             db.execute_query(

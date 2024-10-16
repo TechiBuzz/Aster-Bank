@@ -59,7 +59,5 @@ class ProfilePicture(ctk.CTkFrame):
     def choose_image_dialogue(self):
         path = filedialog.askopenfile(filetypes=(('Image', ('*.png', '*.jpeg', '*.jpg')),))
         if path:
-            path = path.name
-
             # Display the image
-            self.image.configure(image=circular_image(Image.open(path), size=(140, 140)))
+            self.image.configure(image=circular_image(Image.open(path.name), size=(140, 140)))
