@@ -61,8 +61,8 @@ class LoginScreen(ctk.CTkFrame):
         # Update account details
         account_manager.set_account(account)
 
-        for screen in ('MainScreen', 'ProfileManagementScreen', 'FundManagementScreen', 'TransferMoneyScreen', 'RequestMoneyScreen',
-                       'BillManagementScreen', 'FDCalculatorScreen', 'TransactionHistoryScreen'):
+        for screen in ('MainScreen', 'ProfileScreen', 'DepositScreen', 'TransferScreen', 'WithdrawScreen',
+                       'EStatementScreen', 'FDCalculatorScreen', 'TransactionsScreen'):
             try:
                 self.app_instance.gui_instances[screen].update_info()
             except AttributeError:

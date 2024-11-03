@@ -6,18 +6,14 @@ from gui.screens.login import LoginScreen
 from gui.screens.sign_up import SignUpScreen
 from gui.screens.sign_up import PostSignUpScreen
 from gui.screens.feature_panels import ProfileScreen
-from gui.screens.feature_panels import FundManagementScreen
-from gui.screens.feature_panels import TransferMoneyScreen
-from gui.screens.feature_panels import RequestMoneyScreen
-from gui.screens.feature_panels import BillManagementScreen
+from gui.screens.feature_panels import DepositScreen
+from gui.screens.feature_panels import TransferScreen
+from gui.screens.feature_panels import WithdrawScreen
+from gui.screens.feature_panels import EStatementScreen
 from gui.screens.feature_panels import FDCalculatorScreen
-from gui.screens.feature_panels import TransactionHistoryScreen
+from gui.screens.feature_panels import TransactionsScreen
 
 import customtkinter as ctk
-
-# Theme Of App
-ctk.set_appearance_mode('dark')
-ctk.set_default_color_theme('green')
 
 
 class AsterBank(ctk.CTk):
@@ -31,13 +27,13 @@ class AsterBank(ctk.CTk):
             'SignUpScreen': SignUpScreen(self),
             'PostSignUpScreen': PostSignUpScreen(self),
             'MainScreen': MainScreen(self),
-            'ProfileManagementScreen': ProfileScreen(self),
-            'FundManagementScreen': FundManagementScreen(self),
-            'TransferMoneyScreen': TransferMoneyScreen(self),
-            'RequestMoneyScreen': RequestMoneyScreen(self),
-            'BillManagementScreen': BillManagementScreen(self),
+            'ProfileScreen': ProfileScreen(self),
+            'DepositScreen': DepositScreen(self),
+            'WithdrawScreen': WithdrawScreen(self),
+            'TransferScreen': TransferScreen(self),
             'FDCalculatorScreen': FDCalculatorScreen(self),
-            'TransactionHistoryScreen': TransactionHistoryScreen(self)
+            'TransactionsScreen': TransactionsScreen(self),
+            'EStatementScreen': EStatementScreen(self)
         }
 
         # TODO -> change back to WelcomeScreen after testing!!!!!!!!!!!!
@@ -57,6 +53,9 @@ class AsterBank(ctk.CTk):
 
 
 def main():
+    ctk.set_appearance_mode('dark')
+    ctk.set_default_color_theme('green')
+
     app = AsterBank()
 
     # Window Config

@@ -49,7 +49,7 @@ class UserInfoFrame(ctk.CTkFrame):
             bg_color='transparent',
             corner_radius=100,
             width=0,
-            command=lambda: app_instance.show_window('ProfileManagementScreen')
+            command=lambda: app_instance.show_window('ProfileScreen')
         )
         self.user_icon.pack(pady=12, side='left')
 
@@ -129,16 +129,27 @@ class FeaturePanelsFrame(ctk.CTkFrame):
         panel_spacing = 22
         panel_image_size = (64, 64)
 
-        self.fund_management_panel = ctk.CTkButton(
+        self.deposit_panel = ctk.CTkButton(
             self,
-            text='Funds',
+            text='Deposit',
             font=panel_font,
-            image=open_image(MAIN_SCREEN_FUNDS_ICON, panel_image_size),
+            image=open_image(MAIN_SCREEN_DEPOSIT_ICON, panel_image_size),
             compound='top',
-            command=lambda: app_instance.show_window('FundManagementScreen'),
+            command=lambda: app_instance.show_window('DepositScreen'),
             corner_radius=20
         )
-        self.fund_management_panel.grid(row=0, column=0, padx=(panel_spacing, panel_spacing // 2), pady=(panel_spacing, panel_spacing // 2), sticky='nsew')
+        self.deposit_panel.grid(row=0, column=0, padx=(panel_spacing, panel_spacing//2), pady=(panel_spacing, panel_spacing//2), sticky='nsew')
+
+        self.withdraw_panel = ctk.CTkButton(
+            self,
+            text='Withdraw',
+            font=panel_font,
+            image=open_image(MAIN_SCREEN_WITHDRAW_ICON, panel_image_size),
+            compound='top',
+            command=lambda: app_instance.show_window('WithdrawScreen'),
+            corner_radius=20
+        )
+        self.withdraw_panel.grid(row=0, column=1, padx=(panel_spacing // 2, panel_spacing // 2), pady=(panel_spacing, panel_spacing // 2), sticky='nsew')
 
         self.transfer_panel = ctk.CTkButton(
             self,
@@ -146,25 +157,14 @@ class FeaturePanelsFrame(ctk.CTkFrame):
             font=panel_font,
             image=open_image(MAIN_SCREEN_TRANSFER_ICON, panel_image_size),
             compound='top',
-            command=lambda: app_instance.show_window('TransferMoneyScreen'),
+            command=lambda: app_instance.show_window('TransferScreen'),
             corner_radius=20
         )
-        self.transfer_panel.grid(row=0, column=1, padx=(panel_spacing//2, panel_spacing//2), pady=(panel_spacing, panel_spacing//2), sticky='nsew')
-
-        self.request_panel = ctk.CTkButton(
-            self,
-            text='Request',
-            font=panel_font,
-            image=open_image(MAIN_SCREEN_REQUEST_ICON, panel_image_size),
-            compound='top',
-            command=lambda: app_instance.show_window('RequestMoneyScreen'),
-            corner_radius=20
-        )
-        self.request_panel.grid(row=0, column=2, padx=(panel_spacing//2, panel_spacing), pady=(panel_spacing, panel_spacing//2), sticky='nsew')
+        self.transfer_panel.grid(row=0, column=2, padx=(panel_spacing//2, panel_spacing), pady=(panel_spacing, panel_spacing//2), sticky='nsew')
 
         self.fd_calculator_panel = ctk.CTkButton(
             self,
-            text='FD Calculator',
+            text='Fixed Deposit',
             font=panel_font,
             image=open_image(MAIN_SCREEN_FD_ICON, panel_image_size),
             compound='top',
@@ -173,27 +173,27 @@ class FeaturePanelsFrame(ctk.CTkFrame):
         )
         self.fd_calculator_panel.grid(row=1, column=0, padx=(panel_spacing, panel_spacing//2), pady=(panel_spacing//2, panel_spacing), sticky='nsew')
 
-        self.bills_panel = ctk.CTkButton(
-            self,
-            text='Bill Payment',
-            font=panel_font,
-            image=open_image(MAIN_SCREEN_BILLS_ICON, panel_image_size),
-            compound='top',
-            command=lambda: app_instance.show_window('BillManagementScreen'),
-            corner_radius=20
-        )
-        self.bills_panel.grid(row=1, column=1, padx=(panel_spacing//2, panel_spacing//2), pady=(panel_spacing//2, panel_spacing), sticky='nsew')
-
-        self.transaction_history_panel = (ctk.CTkButton(
+        self.transactions_panel = (ctk.CTkButton(
             self,
             text='Transactions',
             font=panel_font,
-            image=open_image(MAIN_SCREEN_TNC_HISTORY_ICON, panel_image_size),
+            image=open_image(MAIN_SCREEN_TRANSACTIONS_ICON, panel_image_size),
             compound='top',
-            command=lambda: app_instance.show_window('TransactionHistoryScreen'),
+            command=lambda: app_instance.show_window('TransactionsScreen'),
             corner_radius=20
         ))
-        self.transaction_history_panel.grid(row=1, column=2, padx=(panel_spacing//2, panel_spacing), pady=(panel_spacing//2, panel_spacing), sticky='nsew')
+        self.transactions_panel.grid(row=1, column=1, padx=(panel_spacing//2, panel_spacing//2), pady=(panel_spacing//2, panel_spacing), sticky='nsew')
+
+        self.e_statement_panel = ctk.CTkButton(
+            self,
+            text='E-Statement',
+            font=panel_font,
+            image=open_image(MAIN_SCREEN_E_STATEMENT_ICON, panel_image_size),
+            compound='top',
+            command=lambda: app_instance.show_window('EStatementScreen'),
+            corner_radius=20
+        )
+        self.e_statement_panel.grid(row=1, column=2, padx=(panel_spacing//2, panel_spacing), pady=(panel_spacing//2, panel_spacing), sticky='nsew')
 
         # Place
         self.pack(expand=True, fill='both', padx=12, pady=(6, 12))

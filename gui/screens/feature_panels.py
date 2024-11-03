@@ -98,13 +98,13 @@ class ProfileScreen(ctk.CTkFrame):
         self.content_frame._parent_canvas.yview_moveto(0.0)
 
     def get_name(self) -> str:
-        return 'ProfileManagementScreen'
+        return 'ProfileScreen'
 
     def clear_screen(self) -> None:
         self.update_info()
 
 
-class FundManagementScreen(ctk.CTkFrame):
+class DepositScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
 
@@ -152,7 +152,7 @@ class FundManagementScreen(ctk.CTkFrame):
         # self.withdraw_header.pack(expand=True, fill='x', padx=12, pady=(12, 6))
 
     def get_name(self) -> str:
-        return 'FundManagementScreen'
+        return 'DepositScreen'
 
     def update_info(self):
         pass
@@ -161,7 +161,7 @@ class FundManagementScreen(ctk.CTkFrame):
         pass
 
 
-class BillManagementScreen(ctk.CTkFrame):
+class EStatementScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
 
@@ -174,7 +174,7 @@ class BillManagementScreen(ctk.CTkFrame):
         
 
     def get_name(self) -> str:
-        return 'BillManagementScreen'
+        return 'EStatementScreen'
 
     def clear_screen(self) -> None:
         pass
@@ -199,7 +199,7 @@ class FDCalculatorScreen(ctk.CTkFrame):
         pass
 
 
-class RequestMoneyScreen(ctk.CTkFrame):
+class WithdrawScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
 
@@ -210,13 +210,13 @@ class RequestMoneyScreen(ctk.CTkFrame):
         self.content_frame = self.base_frame.content_frame
 
     def get_name(self) -> str:
-        return 'RequestMoneyScreen'
+        return 'WithdrawScreen'
 
     def clear_screen(self) -> None:
         pass
 
 
-class TransferMoneyScreen(ctk.CTkFrame):
+class TransferScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
 
@@ -363,7 +363,7 @@ class TransferMoneyScreen(ctk.CTkFrame):
             # Add amount to receiver
             db.execute_query(
                 'UPDATE accounts SET BALANCE = BALANCE + %s WHERE ID = %s',
-                (int(amount), account_number)
+                (int(amount), account_manager.get('ID'))
             )
 
             # Update transactions table
@@ -395,7 +395,7 @@ class TransferMoneyScreen(ctk.CTkFrame):
         self.warning_label.clear_warning()
 
 
-class TransactionHistoryScreen(ctk.CTkFrame):
+class TransactionsScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
 
@@ -448,7 +448,7 @@ class TransactionHistoryScreen(ctk.CTkFrame):
                                                                                                   anchor='nw'))
 
     def get_name(self) -> str:
-        return 'TransactionHistoryScreen'
+        return 'TransactionsScreen'
 
     def clear_screen(self) -> None:
         pass
