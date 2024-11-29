@@ -1,8 +1,13 @@
+from idlelib.pyparse import trans
 from tkinter import filedialog
+from tkinter.constants import BOTTOM
 from tkinter.messagebox import askyesno, askokcancel
 
 import customtkinter as ctk
+from CTkTable import CTkTable
 from PIL.Image import open
+from PIL.ImageOps import expand
+from customtkinter import CTkButton
 
 from gui.util_widgets.back_button import BackButton
 from gui.util_widgets.pfp_image import ProfilePicture
@@ -91,7 +96,8 @@ class ProfileScreen(ctk.CTkFrame):
                 self.app_instance.gui_instances['MainScreen'].update_info()
 
                 image_data = image_to_bytes(open(path.name))
-                db.execute_query('UPDATE accounts SET IMAGE = %s WHERE ID = %s', (image_data, account_manager.get('ID')))
+                db.execute_query('UPDATE accounts SET IMAGE = %s WHERE ID = %s',
+                                 (image_data, account_manager.get('ID')))
         else:
             print("u already got pic my guy")
 
@@ -146,7 +152,6 @@ class DepositScreen(ctk.CTkFrame):
         self.base_frame = create_base_screen(self, self.app_instance, 'Deposit Money', False)
         self.content_frame = self.base_frame.content_frame
 
-
     def get_name(self) -> str:
         return 'DepositScreen'
 
@@ -167,13 +172,55 @@ class EStatementScreen(ctk.CTkFrame):
         self.base_frame = create_base_screen(self, self.app_instance, 'E-Statement', True)
         self.content_frame = self.base_frame.content_frame
 
-        
+        self.transactions_table = CTkTable(self.content_frame, column=6, row=1, font=E_STATEMENT_TABLE_HEADER_FONT)
+
+        self.generate_statement_button = ctk.CTkButton(
+            master=self.content_frame,
+            text='Generate Statement',
+            font=MAIN_SCREEN_PANEL_FONT,
+            height=70,
+            corner_radius=100,
+            command=self.generate_e_statement
+        )
+        self.generate_statement_button.pack(expand=True, fill='x', padx=12, pady=(6, 16), side=BOTTOM)
+
+    def generate_e_statement(self):
+        transactions = db.fetch_result(
+            'SELECT TRANSACTION_ID, TRANSACTION_TYPE, FROM_ACC_ID, TO_ACC_ID, AMOUNT, CURR_BAL_SENDER, CURR_BAL_RECEIVER, TRANSACTION_TIME FROM transactions WHERE FROM_ACC_ID = %s OR TO_ACC_ID = %s',
+            (int(account_manager.get('ID')), int(account_manager.get('ID')))
+        )
+
+        if transactions:
+            transaction_values = [['Transaction ID', 'Date and Time', 'Description', 'Debit', 'Credit', 'Balance']]
+            for record in transactions:
+                #  Checking whether transaction is payment or deposit or withdraw
+                if record[1] == 'PAYMENT':
+                    transaction_type = 'RECEIVED' if record[3] == account_manager.get('ID') else 'PAID'
+
+                    credit_amt = record[4] if transaction_type == 'RECEIVED' else '-'
+                    debit_amt = record[4] if transaction_type == 'PAID' else '-'
+
+                    current_bal = record[5] if transaction_type == 'PAID' else record[6]
+                else:
+                    #  Deposit / Withdraw
+                    transaction_type = record[1]
+
+                    credit_amt = record[4] if transaction_type == 'DEPOSIT' else '-'
+                    debit_amt = record[4] if transaction_type == 'WITHDRAW' else '-'
+
+                table_record = [record[0], record[7], transaction_type, debit_amt, credit_amt, current_bal]
+                transaction_values.append(table_record)
+
+            self.transactions_table.rows = len(transaction_values)
+            self.transactions_table.update_values(transaction_values)
+
+            self.transactions_table.pack(expand=True, fill='both', padx=20, pady=20)
 
     def get_name(self) -> str:
         return 'EStatementScreen'
 
     def clear_screen(self) -> None:
-        pass
+        self.transactions_table.pack_forget()
 
 
 class FDCalculatorScreen(ctk.CTkFrame):
@@ -185,8 +232,6 @@ class FDCalculatorScreen(ctk.CTkFrame):
         # Widgets
         self.base_frame = create_base_screen(self, self.app_instance, 'Calculate Interest on FD', False)
         self.content_frame = self.base_frame.content_frame
-
-        
 
     def get_name(self) -> str:
         return 'FDCalculatorScreen'
@@ -217,8 +262,6 @@ class TransferScreen(ctk.CTkFrame):
         super().__init__(master=parent)
 
         self.app_instance = parent
-
-        self.existing_accounts = db.fetch_result('SELECT ID FROM accounts')
 
         # Widgets
         self.base_frame = create_base_screen(self, self.app_instance, 'Transfer Money', True)
@@ -323,14 +366,14 @@ class TransferScreen(ctk.CTkFrame):
         self.account_num_tracer = self.after(1000, self.set_profile_details)
 
     def transfer_money(self):
-        account_number = self.account_num_var.get()
+        to_account_number = self.account_num_var.get()
         amount = self.amount_var.get()
 
-        if len(account_number) == 0 or len(amount) == 0:
+        if len(to_account_number) == 0 or len(amount) == 0:
             self.warning_label.raise_warning(0)
             return
 
-        if len(account_number) != 5 or ((int(account_number),) not in self.existing_accounts):
+        if len(to_account_number) != 5 or ((int(to_account_number),) not in db.fetch_result('SELECT ID FROM accounts')):
             self.warning_label.raise_warning(1)
             return
 
@@ -342,7 +385,7 @@ class TransferScreen(ctk.CTkFrame):
             self.warning_label.raise_warning(3)
             return
 
-        if int(account_number) == account_manager.get('ID'):
+        if int(to_account_number) == account_manager.get('ID'):
             self.warning_label.raise_warning(4)
             return
 
@@ -359,13 +402,15 @@ class TransferScreen(ctk.CTkFrame):
             # Add amount to receiver
             db.execute_query(
                 'UPDATE accounts SET BALANCE = BALANCE + %s WHERE ID = %s',
-                (int(amount), account_manager.get('ID'))
+                (int(amount), int(to_account_number))
             )
 
             # Update transactions table
+            receiver_balance = db.fetch_result('SELECT BALANCE FROM accounts WHERE ID = %s', (to_account_number,))[0][0]
             db.execute_query(
-                'INSERT INTO transactions (TRANSACTION_TYPE, FROM_ACC_ID, TO_ACC_ID, AMOUNT) VALUES (%s, %s, %s, %s)',
-                ('PAYMENT', account_manager.get('ID'), account_number, amount)
+                'INSERT INTO transactions (TRANSACTION_TYPE, FROM_ACC_ID, TO_ACC_ID, AMOUNT, CURR_BAL_SENDER, CURR_BAL_RECEIVER) VALUES (%s, %s, %s, %s, %s, %s)',
+                ('PAYMENT', account_manager.get('ID'), to_account_number, amount, account_manager.get_balance(),
+                 receiver_balance)
             )
 
             # Update info in main screen
@@ -475,7 +520,7 @@ class TransactionWidget(ctk.CTkFrame):
 
         # ICON
         self.payment_type_icon = ctk.CTkLabel(self.outer_frame, text='',
-                                              image=open_image(transaction_types[transaction_type][0], size=(72, 72)))
+                                              image=open_image(transaction_types[transaction_type][0], size=(80, 80)))
         self.payment_type_icon.grid(row=0, column=0, padx=(32, 20), pady=12, sticky='nsew')
 
         # MINI DETAILS
@@ -510,13 +555,15 @@ class TransactionWidget(ctk.CTkFrame):
 
         # LOGIC
         if transaction_type == 'PAID':
-            paid_to_acc: str = db.fetch_result('SELECT FIRST_NAME, LAST_NAME FROM accounts WHERE ID = %s', (to_account,))[0]
+            paid_to_acc: str = \
+                db.fetch_result('SELECT FIRST_NAME, LAST_NAME FROM accounts WHERE ID = %s', (to_account,))[0]
             paid_to_acc = paid_to_acc or 'Unknown'
             self.transaction_type.configure(
                 text=f'{transaction_types[transaction_type][1]} {paid_to_acc[0]} {paid_to_acc[1]}')
             self.amount.configure(text=f'- ₹{amount}', text_color='#e76f51')
         elif transaction_type == 'RECEIVED':
-            rec_from_acc: str = db.fetch_result('SELECT FIRST_NAME, LAST_NAME FROM accounts WHERE ID = %s', (from_account,))[0]
+            rec_from_acc: str = \
+                db.fetch_result('SELECT FIRST_NAME, LAST_NAME FROM accounts WHERE ID = %s', (from_account,))[0]
             rec_from_acc = rec_from_acc or 'Unknown'
             self.transaction_type.configure(
                 text=f'{transaction_types[transaction_type][1]} {rec_from_acc[0]} {rec_from_acc[1]}')

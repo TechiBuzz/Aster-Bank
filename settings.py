@@ -70,6 +70,8 @@ MAIN_SCREEN_PANEL_FONT = ('Calibri', 40, 'bold')
 TRANSFER_MONEY_SCREEN_MINI_INFO_HEADER_FONT = ('Calibri', 23, 'bold')
 TRANSFER_MONEY_SCREEN_MINI_INFO_FONT = ('Calibri', 23)
 
+E_STATEMENT_TABLE_HEADER_FONT =('Calibri', 20, 'bold')
+
 # ERRORS
 LOGIN_ERRORS = {
     0: '   Username field cannot be empty!',

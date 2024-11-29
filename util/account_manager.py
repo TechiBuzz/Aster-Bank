@@ -1,6 +1,5 @@
 from PIL import Image
 from util.database import db
-from customtkinter import CTkImage
 from util.image_util import image_to_bytes, bytes_to_ctk_image
 
 
