@@ -1,6 +1,8 @@
-from tkinter.messagebox import askyesno
+from tkinter import filedialog
+from tkinter.messagebox import askyesno, askokcancel
 
 import customtkinter as ctk
+from PIL.Image import open
 
 from gui.util_widgets.back_button import BackButton
 from gui.util_widgets.pfp_image import ProfilePicture
@@ -9,7 +11,7 @@ from gui.screens.transition import TransitionScreen
 from settings import *
 from util.account_manager import account_manager
 from util.database import db
-from util.image_util import open_image, bytes_to_ctk_image
+from util.image_util import open_image, bytes_to_ctk_image, circular_image, image_to_bytes, bytes_to_image
 
 
 def create_base_screen(parent, app_instance, header_text: str, scroll_frame: bool) -> ctk.CTkFrame:
@@ -51,6 +53,8 @@ class ProfileScreen(ctk.CTkFrame):
 
         self.pfp = ProfilePicture(self.content_frame)
         self.pfp.configure(corner_radius=15)
+        self.pfp.clear_image_button.configure(command=self.clear_image)
+        self.pfp.choose_image_button.configure(command=self.add_image)
 
         self.details_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
         self.details_frame.pack(expand=True, fill='x', padx=12, pady=(6, 12))
@@ -76,12 +80,40 @@ class ProfileScreen(ctk.CTkFrame):
         self.phone_info = InfoEntryWidget(self.details_frame, 'Phone')
         self.phone_info.pack(expand=True, fill='x', padx=12, pady=(6, 12), ipady=4)
 
+    def add_image(self):
+        if not account_manager.get_profile_pic():
+            path = filedialog.askopenfile(filetypes=(('Image', ('*.png', '*.jpeg', '*.jpg')),))
+            if path:
+                # self.pfp.image.configure(image=circular_image(open(path.name), size=(140, 140)))
+                account_manager.set_profile_pic(open(path.name))
+                self.update_info()
+
+                self.app_instance.gui_instances['MainScreen'].update_info()
+
+                image_data = image_to_bytes(open(path.name))
+                db.execute_query('UPDATE accounts SET IMAGE = %s WHERE ID = %s', (image_data, account_manager.get('ID')))
+        else:
+            print("u already got pic my guy")
+
+    def clear_image(self):
+        if account_manager.get_profile_pic():
+            sure = askokcancel('Remove Picture', 'Are you sure you want to remove the existing picture?')
+            if sure:
+                db.execute_query("UPDATE accounts SET IMAGE = null WHERE ID = %s", (int(account_manager.get('ID')),))
+
+                account_manager.set_profile_pic(None)
+                self.update_info()
+
+                self.app_instance.gui_instances['MainScreen'].update_info()
+
+        else:
+            print("bro u aint got a pic")
+
     def update_info(self):
         # Set profile picture
-        if account_manager.get_profile_pic():
-            pic = account_manager.get_profile_pic()
-            pic.configure(size=(140, 140))
-            self.pfp.image.configure(image=pic)
+        pfp = account_manager.get_profile_pic()
+        if pfp:
+            self.pfp.image.configure(image=circular_image(bytes_to_image(pfp), (140, 140)))
         else:
             self.pfp.image.configure(image=open_image(USER_ICON, (140, 140)))
 
@@ -111,45 +143,9 @@ class DepositScreen(ctk.CTkFrame):
         self.app_instance = parent
 
         # Widgets
-        self.base_frame = create_base_screen(self, self.app_instance, 'Manage Funds', False)
+        self.base_frame = create_base_screen(self, self.app_instance, 'Deposit Money', False)
         self.content_frame = self.base_frame.content_frame
 
-        tabview_frame = ctk.CTkTabview(self.content_frame, corner_radius=15)
-        tabview_frame.pack(expand=True, fill='both', padx=20, pady=20)
-
-        tabview_frame._segmented_button.configure(font=MAIN_SCREEN_PANEL_FONT)
-        for button in tabview_frame._segmented_button._buttons_dict:
-            button.configure(padx=20, pady=20)
-
-        deposit_tab = tabview_frame.add('Deposit')
-        withdraw_tab = tabview_frame.add('Withdraw')
-
-        # self.deposit_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
-        # self.deposit_frame.pack(expand=True, fill='both', padx=20, pady=(20, 10))
-        #
-        # self.deposit_header = ctk.CTkLabel(self.deposit_frame, text='Deposit', font=MAIN_SCREEN_PANEL_FONT,
-        #                                    corner_radius=15)
-        # self.deposit_header.pack(expand=True, fill='x', padx=12, pady=(12, 6))
-        #
-        # self.deposit_entry = ctk.CTkEntry(self.deposit_frame, height=70, font=LOGIN_SCREEN_FIELD_ENTRY_FONT,
-        #                                   corner_radius=40)
-        # self.deposit_entry.pack(expand=True, fill='x', padx=12, pady=6)
-        #
-        # self.deposit_button = ctk.CTkButton(
-        #     master=self.deposit_frame,
-        #     text='Deposit',
-        #     font=MAIN_SCREEN_PANEL_FONT,
-        #     height=70,
-        #     corner_radius=100
-        # )
-        # self.deposit_button.pack(expand=True, fill='x', padx=12, pady=(6, 12))
-        #
-        # self.withdraw_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
-        # self.withdraw_frame.pack(expand=True, fill='both', padx=20, pady=(10, 20))
-        #
-        # self.withdraw_header = ctk.CTkLabel(self.withdraw_frame, text='Witdraw', font=MAIN_SCREEN_PANEL_FONT,
-        #                                     corner_radius=15)
-        # self.withdraw_header.pack(expand=True, fill='x', padx=12, pady=(12, 6))
 
     def get_name(self) -> str:
         return 'DepositScreen'
@@ -168,7 +164,7 @@ class EStatementScreen(ctk.CTkFrame):
         self.app_instance = parent
 
         # Widgets
-        self.base_frame = create_base_screen(self, self.app_instance, 'Manage Bills', True)
+        self.base_frame = create_base_screen(self, self.app_instance, 'E-Statement', True)
         self.content_frame = self.base_frame.content_frame
 
         
@@ -206,7 +202,7 @@ class WithdrawScreen(ctk.CTkFrame):
         self.app_instance = parent
 
         # Widgets
-        self.base_frame = create_base_screen(self, self.app_instance, 'Request Money', True)
+        self.base_frame = create_base_screen(self, self.app_instance, 'Withdraw Money', True)
         self.content_frame = self.base_frame.content_frame
 
     def get_name(self) -> str:

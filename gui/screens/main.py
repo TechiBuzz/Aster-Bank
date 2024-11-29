@@ -5,7 +5,7 @@ from tktooltip import ToolTip
 
 from settings import *
 from util.account_manager import account_manager
-from util.image_util import open_image
+from util.image_util import open_image, circular_image, bytes_to_ctk_image, bytes_to_image
 
 
 class MainScreen(ctk.CTkFrame):
@@ -26,8 +26,7 @@ class MainScreen(ctk.CTkFrame):
 
         pfp = account_manager.get_profile_pic()
         if pfp:
-            pfp.configure(size=(55, 55))
-            self.user_details_frame.user_icon.configure(image=pfp)
+            self.user_details_frame.user_icon.configure(image=circular_image(bytes_to_image(pfp), (55, 55)))
         else:
             self.user_details_frame.user_icon.configure(image=open_image(USER_ICON, (55, 55)))
 

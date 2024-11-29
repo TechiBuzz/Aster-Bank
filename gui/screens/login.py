@@ -39,7 +39,7 @@ class LoginScreen(ctk.CTkFrame):
         REMOVE AFTER TESTING
         '''
 
-        helpful_button = ctk.CTkButton(self.central_frame, text='FILL INFO', command=lambda: [self.username_entry.entry_var.set('AdityaK5988'), self.password_entry.entry_var.set('AD!ty@123')])
+        helpful_button = ctk.CTkButton(self.central_frame, text='FILL INFO', command=lambda: [self.username_entry.entry_var.set('AbuE7026'), self.password_entry.entry_var.set('AMAN@2007!')])
         helpful_button.place(relx=0.1, rely=0.7, relheight=0.1)
 
     def successful_login(self, user_data) -> None:
@@ -68,8 +68,8 @@ class LoginScreen(ctk.CTkFrame):
             except AttributeError:
                 pass
 
-        # Change from transition screen after 4 seconds
-        TransitionScreen(self, 'MainScreen', 'Logging In...', 'Logged In!', 4000)
+        # Change from transition screen after 1 second
+        TransitionScreen(self, 'MainScreen', 'Logging In...', 'Logged In!', 1000)
 
     def login(self) -> None:
         username: str = self.username_entry.entry.get()

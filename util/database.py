@@ -8,7 +8,6 @@ class Database:
             self.connection = mysql.connector.connect(
                 host=DB['HOST'],
                 database=DB['DATABASE'],
-                port=DB['PORT'],
                 user=DB['USER'],
                 password=DB['PASSWORD']
             )

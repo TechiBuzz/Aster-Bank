@@ -14,15 +14,15 @@ class AccountManager:
         except KeyError:
             return None
 
-    def get_profile_pic(self) -> CTkImage | None:
+    def get_profile_pic(self) -> bytes | None:
         try:
             if self.account['IMAGE'] is not None:
-                return bytes_to_ctk_image(self.account['IMAGE'])
+                return self.account['IMAGE']
         except KeyError:
             return None
 
     def set_profile_pic(self, image: Image) -> None:
-        self.account['IMAGE'] = image_to_bytes(image)
+        self.account['IMAGE'] = image_to_bytes(image) if image else None
 
     def get_username(self) -> str | None:
         try:
@@ -49,6 +49,5 @@ class AccountManager:
 
     def set_account(self, account) -> None:
         self.account = account
-
 
 account_manager = AccountManager()

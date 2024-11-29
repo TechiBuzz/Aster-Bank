@@ -17,7 +17,7 @@ from gui.util_widgets.warning_label import WarningLabel
 from settings import *
 from util.account_manager import account_manager
 from util.database import db
-from util.image_util import image_to_bytes, open_image
+from util.image_util import image_to_bytes, open_image, bytes_to_ctk_image
 
 
 class SignUpScreen(ctk.CTkFrame):
@@ -86,7 +86,7 @@ class SignUpScreen(ctk.CTkFrame):
             img_binary = image_to_bytes(ctk_pfp._light_image)
 
         # Update
-        query = 'INSERT INTO accounts (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO, IMAGE) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        query = 'INSERT INTO accounts (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, GENDER, DATE_OF_BIRTH, ADDRESS, EMAIL_ID, PHONE_NO, IMAGE ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         values = (
             username, password, first_name.lower().capitalize(), last_name.lower().capitalize(), gender,
             dob, address, email, phone, img_binary
@@ -256,6 +256,7 @@ class SignUpScreen(ctk.CTkFrame):
 
                     pfp = account_manager.get_profile_pic()
                     if pfp:
+                        pfp = bytes_to_ctk_image(pfp)
                         pfp.configure(size=(180, 180))
                         post_signup_screen.profile_pic.configure(image=pfp)
 

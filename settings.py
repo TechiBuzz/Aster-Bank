@@ -110,5 +110,5 @@ TRANSFER_MONEY_ERRORS = {
 }
 
 # DATABASE
-DB = {"HOST": "sql6.freesqldatabase.com", "DATABASE": "sql6698638", "PORT": 3306, "USER": "sql6698638", "PASSWORD": "fMqmcIIyBu"}
+DB = {"HOST": "localhost", "DATABASE": "csproject", "PORT": 3306, "USER": "root", "PASSWORD": "bombastic@123"}
 # FOR cmd line mysql -h sql6.freesqldatabase.com -u sql6698638 -p
