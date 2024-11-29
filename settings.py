@@ -111,6 +111,16 @@ TRANSFER_MONEY_ERRORS = {
     4: '   Cannot transfer to self!'
 }
 
+WITHDRAW_MONEY_ERRORS = {
+    0: '   Minimum withdrawal amount is Rs.100!',
+    1: '   Insufficient balance! Unable to proceed!'
+}
+
+DEPOSIT_MONEY_ERRORS = {
+    0: '   Minimum deposition amount is Rs.100!',
+    2: '   Account balance cannot exceed 1000000000!'
+}
+
 # DATABASE
 DB = {"HOST": "localhost", "DATABASE": "csproject", "PORT": 3306, "USER": "root", "PASSWORD": "bombastic@123"}
 # FOR cmd line mysql -h sql6.freesqldatabase.com -u sql6698638 -p

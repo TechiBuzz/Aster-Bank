@@ -1,4 +1,4 @@
-from idlelib.pyparse import trans
+from dis import deoptmap
 from tkinter import filedialog
 from tkinter.constants import BOTTOM
 from tkinter.messagebox import askyesno, askokcancel
@@ -6,17 +6,17 @@ from tkinter.messagebox import askyesno, askokcancel
 import customtkinter as ctk
 from CTkTable import CTkTable
 from PIL.Image import open
-from PIL.ImageOps import expand
-from customtkinter import CTkButton
+from customtkinter import CTkSlider
+from pyautogui import dragRel
 
+from gui.screens.transition import TransitionScreen
 from gui.util_widgets.back_button import BackButton
 from gui.util_widgets.pfp_image import ProfilePicture
 from gui.util_widgets.warning_label import WarningLabel
-from gui.screens.transition import TransitionScreen
 from settings import *
 from util.account_manager import account_manager
 from util.database import db
-from util.image_util import open_image, bytes_to_ctk_image, circular_image, image_to_bytes, bytes_to_image
+from util.image_util import open_image, circular_image, image_to_bytes, bytes_to_image
 
 
 def create_base_screen(parent, app_instance, header_text: str, scroll_frame: bool) -> ctk.CTkFrame:
@@ -149,17 +149,107 @@ class DepositScreen(ctk.CTkFrame):
         self.app_instance = parent
 
         # Widgets
-        self.base_frame = create_base_screen(self, self.app_instance, 'Deposit Money', False)
+        self.base_frame = create_base_screen(self, self.app_instance, 'Deposit Money', True)
         self.content_frame = self.base_frame.content_frame
+
+        self.inner_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
+        self.inner_frame.pack(fill='x', padx=12, pady=12)
+
+        self.deposit_icon = ctk.CTkLabel(self.inner_frame, text='',
+                                          image=open_image(MAIN_SCREEN_DEPOSIT_ICON, (170, 170)))
+        self.deposit_icon.pack(fill='x', padx=12, pady=2)
+
+        self.balance_frame = ctk.CTkFrame(self.inner_frame, corner_radius=15)
+        self.balance_frame.pack(fill='x', padx=24, pady=12)
+
+        self.balance_text = ctk.CTkLabel(self.balance_frame, text='Current Balance :', font=MAIN_SCREEN_PANEL_FONT,
+                                         corner_radius=15)
+        self.balance_text.pack(fill='both', padx=12, pady=12, ipady=10, side='left')
+
+        self.amount_frame = ctk.CTkFrame(self.inner_frame, corner_radius=15)
+        self.amount_frame.pack(fill='x', padx=24, pady=12)
+
+        self.amount_text = ctk.CTkLabel(self.amount_frame, text='Amount :', font=MAIN_SCREEN_PANEL_FONT,
+                                        corner_radius=15)
+        self.amount_text.pack(fill='both', padx=12, pady=12, side='left')
+
+        self.amount_var = ctk.StringVar()
+        self.amount_var.trace('w', lambda *args: self.amount_var.set(
+            ''.join(char for char in self.amount_var.get() if char.isdigit())[:10]))
+
+        self.amount_var.trace('w', lambda *args: self.amount_slider.set(
+            int(self.amount_var.get())) if not self.amount_var.get() == '' else 0)
+        self.amount_entry = ctk.CTkEntry(self.amount_frame, height=70, font=LOGIN_SCREEN_FIELD_ENTRY_FONT,
+                                         textvariable=self.amount_var, corner_radius=40)
+        self.amount_entry.pack(expand=True, fill='x', padx=(0, 12), pady=12, side='left')
+
+        self.amount_slider = CTkSlider(
+            self.inner_frame,
+            from_=100,
+            to=100000,
+            number_of_steps=(100000 - 100) // 100,  # Steps of 100
+            height=25,
+            command=self.set_amount
+        )
+        self.amount_slider.set(100)
+        self.amount_slider.pack(fill='x', padx=24, pady=12)
+
+        self.warning_label_container = ctk.CTkFrame(self.inner_frame, corner_radius=15)
+        self.warning_label_container.pack(fill='both', padx=24, pady=12, ipady=6)
+
+        self.warning_label = WarningLabel(self.warning_label_container, DEPOSIT_MONEY_ERRORS)
+        self.warning_label.pack(expand=True, padx=12, pady=12, ipady=6)
+
+        self.withdraw_button = ctk.CTkButton(
+            master=self.inner_frame,
+            text='Deposit',
+            font=MAIN_SCREEN_PANEL_FONT,
+            height=70,
+            corner_radius=100,
+            command=self.deposit_money
+        )
+        self.withdraw_button.pack(fill='x', padx=24, pady=(12, 24))
+
+    def set_amount(self, value):
+        self.amount_var.set(str(int(value)))
+
+    def deposit_money(self):
+
+        decision = askokcancel('Deposit Amount', 'Are you sure you want to proceed?')
+        if not decision: return
+
+        amount = int(self.amount_var.get())
+
+        if amount < 100:
+            self.warning_label.raise_warning(0)
+            return
+        if account_manager.get_balance() + amount > 1000000000:
+            self.warning_label.raise_warning(1)
+            return
+
+        #  Update screens
+        account_manager.update_balance(account_manager.get_balance() + amount)
+        self.app_instance.gui_instances['MainScreen'].update_info()
+
+        TransitionScreen(self, 'MainScreen', 'Initiating Deposit...', 'Successful!', 1000)
+
+        #  Update db
+        db.execute_query(
+            'INSERT INTO transactions (TRANSACTION_TYPE, FROM_ACC_ID, AMOUNT, CURR_BAL_SENDER) VALUES (%s, %s, %s, %s)',
+            ('DEPOSIT', account_manager.get('ID'), amount, account_manager.get_balance())
+        )
+
+    def update_info(self):
+        self.balance_text.configure(text=f'Current Balance : {account_manager.get_balance()}')
 
     def get_name(self) -> str:
         return 'DepositScreen'
 
-    def update_info(self):
-        pass
-
     def clear_screen(self) -> None:
-        pass
+        self.amount_var.set('')
+        self.amount_slider.set(100)
+        self.warning_label.clear_warning()
+        self.balance_text.configure(text=f'Current Balance : {account_manager.get_balance()}')
 
 
 class EStatementScreen(ctk.CTkFrame):
@@ -172,7 +262,13 @@ class EStatementScreen(ctk.CTkFrame):
         self.base_frame = create_base_screen(self, self.app_instance, 'E-Statement', True)
         self.content_frame = self.base_frame.content_frame
 
-        self.transactions_table = CTkTable(self.content_frame, column=6, row=1, font=E_STATEMENT_TABLE_HEADER_FONT)
+        self.transactions_table = CTkTable(
+            self.content_frame,
+            column=6,
+            row=1,
+            pady=12,
+            font=E_STATEMENT_TABLE_HEADER_FONT
+        )
 
         self.generate_statement_button = ctk.CTkButton(
             master=self.content_frame,
@@ -207,11 +303,25 @@ class EStatementScreen(ctk.CTkFrame):
 
                     credit_amt = record[4] if transaction_type == 'DEPOSIT' else '-'
                     debit_amt = record[4] if transaction_type == 'WITHDRAW' else '-'
+                    current_bal = record[5]
 
                 table_record = [record[0], record[7], transaction_type, debit_amt, credit_amt, current_bal]
                 transaction_values.append(table_record)
 
-            self.transactions_table.rows = len(transaction_values)
+            self.transactions_table.rows = len(transaction_values) + 1
+            self.transactions_table.update_values(transaction_values)
+
+            total_debit = 0
+            for debit in self.transactions_table.get_column(3):
+                if str(debit).isdigit():
+                    total_debit += debit
+
+            total_credit = 0
+            for credit in self.transactions_table.get_column(4):
+                if str(credit).isdigit():
+                    total_credit += credit
+
+            transaction_values.append(['TOTAL', '', '', total_debit, total_credit, ''])
             self.transactions_table.update_values(transaction_values)
 
             self.transactions_table.pack(expand=True, fill='both', padx=20, pady=20)
@@ -250,11 +360,107 @@ class WithdrawScreen(ctk.CTkFrame):
         self.base_frame = create_base_screen(self, self.app_instance, 'Withdraw Money', True)
         self.content_frame = self.base_frame.content_frame
 
+        self.inner_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
+        self.inner_frame.pack(fill='x', padx=12, pady=12)
+
+        self.withdraw_icon = ctk.CTkLabel(self.inner_frame, text='', image=open_image(MAIN_SCREEN_WITHDRAW_ICON, (170, 170)))
+        self.withdraw_icon.pack(fill='x', padx=12, pady=2)
+
+        self.balance_frame = ctk.CTkFrame(self.inner_frame, corner_radius=15)
+        self.balance_frame.pack(fill='x', padx=24, pady=12)
+
+        self.balance_text = ctk.CTkLabel(self.balance_frame, text='Current Balance :', font=MAIN_SCREEN_PANEL_FONT, corner_radius=15)
+        self.balance_text.pack(fill='both', padx=12, pady=12, ipady=10, side='left')
+
+        self.amount_frame = ctk.CTkFrame(self.inner_frame, corner_radius=15)
+        self.amount_frame.pack(fill='x', padx=24, pady=12)
+
+        self.amount_text = ctk.CTkLabel(self.amount_frame, text='Amount :', font=MAIN_SCREEN_PANEL_FONT,
+                                        corner_radius=15)
+        self.amount_text.pack(fill='both', padx=12, pady=12, side='left')
+
+        self.amount_var = ctk.StringVar()
+        self.amount_var.trace('w', lambda *args: self.amount_var.set(
+            ''.join(char for char in self.amount_var.get() if char.isdigit())[:10]))
+
+        self.amount_var.trace('w', lambda *args: self.amount_slider.set(int(self.amount_var.get())) if not self.amount_var.get() == '' else 0)
+        self.amount_entry = ctk.CTkEntry(self.amount_frame, height=70, font=LOGIN_SCREEN_FIELD_ENTRY_FONT,
+                                         textvariable=self.amount_var, corner_radius=40)
+        self.amount_entry.pack(expand=True, fill='x', padx=(0, 12), pady=12, side='left')
+
+        self.amount_slider = CTkSlider(
+            self.inner_frame,
+            from_=100,
+            to=account_manager.get_balance() if account_manager.get_balance() else 1000,
+            number_of_steps=account_manager.get_balance() if account_manager.get_balance() else 1000,
+            height=25,
+            command=self.set_amount
+        )
+        self.amount_slider.set(100)
+        self.amount_slider.pack(fill='x', padx=24, pady=12)
+
+        self.warning_label_container = ctk.CTkFrame(self.inner_frame, corner_radius=15)
+        self.warning_label_container.pack(fill='both', padx=24, pady=12, ipady=6)
+
+        self.warning_label = WarningLabel(self.warning_label_container, WITHDRAW_MONEY_ERRORS)
+        self.warning_label.pack(expand=True, padx=12, pady=12, ipady=6)
+
+        self.withdraw_button = ctk.CTkButton(
+            master=self.inner_frame,
+            text='Withdraw',
+            font=MAIN_SCREEN_PANEL_FONT,
+            height=70,
+            corner_radius=100,
+            command=self.withdraw_money
+        )
+        self.withdraw_button.pack(fill='x', padx=24, pady=(12, 24))
+
+    def set_amount(self, value):
+        self.amount_var.set(str(int(value)))
+
+    def withdraw_money(self):
+
+        decision = askokcancel('Withdraw Amount', 'Are you sure you want to proceed?')
+        if not decision: return
+
+        amount = int(self.amount_var.get())
+
+        if amount < 100:
+            self.warning_label.raise_warning(0)
+            return
+        if amount > account_manager.get_balance():
+            self.warning_label.raise_warning(1)
+            return
+
+        #  Update screens
+        account_manager.update_balance(account_manager.get_balance() - amount)
+        self.app_instance.gui_instances['MainScreen'].update_info()
+
+        TransitionScreen(self, 'MainScreen', 'Initiating Withdrawal...', 'Successful!', 1000)
+
+        #  Update db
+        db.execute_query(
+            'INSERT INTO transactions (TRANSACTION_TYPE, FROM_ACC_ID, AMOUNT, CURR_BAL_SENDER) VALUES (%s, %s, %s, %s)',
+            ('WITHDRAW', account_manager.get('ID'), amount, account_manager.get_balance())
+        )
+
+    def update_info(self):
+        self.amount_slider.configure(
+            from_=0,
+            to=account_manager.get_balance() if account_manager.get_balance() else 100000,
+            number_of_steps=account_manager.get_balance() if account_manager.get_balance() else 1000,
+        )
+
+        self.balance_text.configure(text=f'Current Balance : {account_manager.get_balance()}')
+
     def get_name(self) -> str:
         return 'WithdrawScreen'
 
     def clear_screen(self) -> None:
-        pass
+        self.amount_var.set('')
+        self.amount_slider.set(100)
+        self.warning_label.clear_warning()
+        self.balance_text.configure(text=f'Current Balance : {account_manager.get_balance()}')
 
 
 class TransferScreen(ctk.CTkFrame):
@@ -343,9 +549,7 @@ class TransferScreen(ctk.CTkFrame):
 
                 img_data = result[0][2]
                 if img_data is not None:
-                    img = bytes_to_ctk_image(img_data)
-                    img.configure(size=(140, 140))
-                    self.pfp_image.configure(image=img)
+                    self.pfp_image.configure(image=circular_image(bytes_to_image(img_data), (140, 140)))
 
     def find_account(self):
         # Clear old timer

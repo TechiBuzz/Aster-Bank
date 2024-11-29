@@ -5,7 +5,7 @@ from tktooltip import ToolTip
 
 from settings import *
 from util.account_manager import account_manager
-from util.image_util import open_image, circular_image, bytes_to_ctk_image, bytes_to_image
+from util.image_util import open_image, circular_image, bytes_to_image
 
 
 class MainScreen(ctk.CTkFrame):

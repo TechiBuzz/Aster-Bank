@@ -68,7 +68,6 @@ class LoginScreen(ctk.CTkFrame):
             except AttributeError:
                 pass
 
-        # Change from transition screen after 1 second
         TransitionScreen(self, 'MainScreen', 'Logging In...', 'Logged In!', 1000)
 
     def login(self) -> None:

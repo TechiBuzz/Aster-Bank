@@ -1,6 +1,7 @@
 from PIL import Image
+
 from util.database import db
-from util.image_util import image_to_bytes, bytes_to_ctk_image
+from util.image_util import image_to_bytes
 
 
 class AccountManager:
