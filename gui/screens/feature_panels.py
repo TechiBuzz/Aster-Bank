@@ -244,113 +244,6 @@ class DepositScreen(ctk.CTkFrame):
         self.balance_text.configure(text=f'Current Balance : {account_manager.get_balance()}')
 
 
-class EStatementScreen(ctk.CTkFrame):
-    def __init__(self, parent):
-        super().__init__(master=parent)
-
-        self.app_instance = parent
-
-        # Widgets
-        self.base_frame = create_base_screen(self, self.app_instance, 'E-Statement', True)
-        self.content_frame = self.base_frame.content_frame
-
-        self.bank_info_frame = ctk.CTkFrame(self.content_frame)
-
-        self.bank_logo = ctk.CTkLabel(self.bank_info_frame, text='', image=open_image(WINDOW_ICON, (130, 130)))
-        self.bank_logo.pack(side=LEFT)
-
-        self.bank_name = ctk.CTkLabel(self.bank_info_frame, text='Aster Bank', font=WELCOME_SCREEN_WELCOME_LABEL_FONT)
-        self.bank_name.pack(expand=True, fill='y')
-
-        self.transactions_table = CTkTable(
-            self.content_frame,
-            column=6,
-            row=1,
-            pady=12,
-            font=E_STATEMENT_TABLE_HEADER_FONT
-        )
-
-        self.generate_statement_button = ctk.CTkButton(
-            master=self.content_frame,
-            text='Generate E-Statement',
-            font=MAIN_SCREEN_PANEL_FONT,
-            height=70,
-            corner_radius=100,
-            command=self.generate_e_statement
-        )
-        self.generate_statement_button.pack(expand=True, fill='x', padx=12, pady=(6, 16))
-
-    def generate_e_statement(self):
-
-        self.bank_info_frame.pack(expand=True, fill='x', padx=24, pady=24)
-
-        transactions = db.fetch_result(
-            'SELECT TRANSACTION_ID, TRANSACTION_TYPE, FROM_ACC_ID, TO_ACC_ID, AMOUNT, CURR_BAL_SENDER, CURR_BAL_RECEIVER, TRANSACTION_TIME FROM transactions WHERE FROM_ACC_ID = %s OR TO_ACC_ID = %s',
-            (int(account_manager.get('ID')), int(account_manager.get('ID')))
-        )
-
-        if transactions:
-            transaction_values = [['Transaction ID', 'Date', 'Description', 'Debit', 'Credit', 'Balance']]
-            for record in transactions:
-                #  Checking whether transaction is payment or deposit or withdraw
-                if record[1] == 'PAYMENT':
-                    transaction_type = 'RECEIVED' if record[3] == account_manager.get('ID') else 'PAID'
-
-                    credit_amt = record[4] if transaction_type == 'RECEIVED' else '-'
-                    debit_amt = record[4] if transaction_type == 'PAID' else '-'
-
-                    current_bal = record[5] if transaction_type == 'PAID' else record[6]
-                else:
-                    #  Deposit / Withdraw
-                    transaction_type = record[1]
-
-                    credit_amt = record[4] if transaction_type == 'DEPOSIT' else '-'
-                    debit_amt = record[4] if transaction_type == 'WITHDRAW' else '-'
-                    current_bal = record[5]
-
-                table_record = [record[0], record[7], transaction_type, debit_amt, credit_amt, current_bal]
-                transaction_values.append(table_record)
-
-            self.transactions_table.rows = len(transaction_values) + 1
-            self.transactions_table.update_values(transaction_values)
-
-            total_debit = 0
-            for debit in self.transactions_table.get_column(3):
-                if str(debit).isdigit():
-                    total_debit += debit
-
-            total_credit = 0
-            for credit in self.transactions_table.get_column(4):
-                if str(credit).isdigit():
-                    total_credit += credit
-
-            transaction_values.append(['TOTAL', '', '', total_debit, total_credit, ''])
-            self.transactions_table.update_values(transaction_values)
-
-            self.transactions_table.pack(expand=True, fill='both', padx=20, pady=20)
-
-            self.generate_statement_button.pack_forget()
-
-    def clear_screen(self) -> None:
-        self.transactions_table.pack_forget()
-        self.bank_info_frame.pack_forget()
-        self.generate_statement_button.pack(expand=True, fill='x', padx=12, pady=(6, 16))
-
-
-class FDCalculatorScreen(ctk.CTkFrame):
-    def __init__(self, parent):
-        super().__init__(master=parent)
-
-        self.app_instance = parent
-
-        # Widgets
-        self.base_frame = create_base_screen(self, self.app_instance, 'Calculate Interest on FD', False)
-        self.content_frame = self.base_frame.content_frame
-
-    def clear_screen(self) -> None:
-        pass
-
-
 class WithdrawScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
@@ -456,7 +349,7 @@ class WithdrawScreen(ctk.CTkFrame):
 
     def clear_screen(self) -> None:
         self.amount_var.set('')
-        self.amount_slider.set(100)
+        self.amount_slider.set(0)
         self.warning_label.clear_warning()
         self.balance_text.configure(text=f'Current Balance : {account_manager.get_balance()}')
 
@@ -635,6 +528,20 @@ class TransferScreen(ctk.CTkFrame):
         self.warning_label.clear_warning()
 
 
+class FDCalculatorScreen(ctk.CTkFrame):
+    def __init__(self, parent):
+        super().__init__(master=parent)
+
+        self.app_instance = parent
+
+        # Widgets
+        self.base_frame = create_base_screen(self, self.app_instance, 'Calculate Interest on FD', False)
+        self.content_frame = self.base_frame.content_frame
+
+    def clear_screen(self) -> None:
+        pass
+
+
 class TransactionsScreen(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(master=parent)
@@ -689,6 +596,99 @@ class TransactionsScreen(ctk.CTkFrame):
 
     def clear_screen(self) -> None:
         pass
+
+
+class EStatementScreen(ctk.CTkFrame):
+    def __init__(self, parent):
+        super().__init__(master=parent)
+
+        self.app_instance = parent
+
+        # Widgets
+        self.base_frame = create_base_screen(self, self.app_instance, 'E-Statement', True)
+        self.content_frame = self.base_frame.content_frame
+
+        self.bank_info_frame = ctk.CTkFrame(self.content_frame)
+
+        self.bank_logo = ctk.CTkLabel(self.bank_info_frame, text='', image=open_image(WINDOW_ICON, (130, 130)))
+        self.bank_logo.pack(side=LEFT)
+
+        self.bank_name = ctk.CTkLabel(self.bank_info_frame, text='Aster Bank', font=WELCOME_SCREEN_WELCOME_LABEL_FONT)
+        self.bank_name.pack(expand=True, fill='y')
+
+        self.transactions_table = CTkTable(
+            self.content_frame,
+            column=6,
+            row=1,
+            pady=12,
+            font=E_STATEMENT_TABLE_HEADER_FONT
+        )
+
+        self.generate_statement_button = ctk.CTkButton(
+            master=self.content_frame,
+            text='Generate E-Statement',
+            font=MAIN_SCREEN_PANEL_FONT,
+            height=70,
+            corner_radius=100,
+            command=self.generate_e_statement
+        )
+        self.generate_statement_button.pack(expand=True, fill='x', padx=12, pady=(6, 16))
+
+    def generate_e_statement(self):
+
+        self.bank_info_frame.pack(expand=True, fill='x', padx=24, pady=24)
+
+        transactions = db.fetch_result(
+            'SELECT TRANSACTION_ID, TRANSACTION_TYPE, FROM_ACC_ID, TO_ACC_ID, AMOUNT, CURR_BAL_SENDER, CURR_BAL_RECEIVER, TRANSACTION_TIME FROM transactions WHERE FROM_ACC_ID = %s OR TO_ACC_ID = %s',
+            (int(account_manager.get('ID')), int(account_manager.get('ID')))
+        )
+
+        if transactions:
+            transaction_values = [['Transaction ID', 'Date', 'Description', 'Debit', 'Credit', 'Balance']]
+            for record in transactions:
+                #  Checking whether transaction is payment or deposit or withdraw
+                if record[1] == 'PAYMENT':
+                    transaction_type = 'RECEIVED' if record[3] == account_manager.get('ID') else 'PAID'
+
+                    credit_amt = record[4] if transaction_type == 'RECEIVED' else '-'
+                    debit_amt = record[4] if transaction_type == 'PAID' else '-'
+
+                    current_bal = record[5] if transaction_type == 'PAID' else record[6]
+                else:
+                    #  Deposit / Withdraw
+                    transaction_type = record[1]
+
+                    credit_amt = record[4] if transaction_type == 'DEPOSIT' else '-'
+                    debit_amt = record[4] if transaction_type == 'WITHDRAW' else '-'
+                    current_bal = record[5]
+
+                table_record = [record[0], record[7], transaction_type, debit_amt, credit_amt, current_bal]
+                transaction_values.append(table_record)
+
+            self.transactions_table.rows = len(transaction_values) + 1
+            self.transactions_table.update_values(transaction_values)
+
+            total_debit = 0
+            for debit in self.transactions_table.get_column(3):
+                if str(debit).isdigit():
+                    total_debit += debit
+
+            total_credit = 0
+            for credit in self.transactions_table.get_column(4):
+                if str(credit).isdigit():
+                    total_credit += credit
+
+            transaction_values.append(['TOTAL', '', '', total_debit, total_credit, ''])
+            self.transactions_table.update_values(transaction_values)
+
+            self.transactions_table.pack(expand=True, fill='both', padx=20, pady=20)
+
+            self.generate_statement_button.pack_forget()
+
+    def clear_screen(self) -> None:
+        self.transactions_table.pack_forget()
+        self.bank_info_frame.pack_forget()
+        self.generate_statement_button.pack(expand=True, fill='x', padx=12, pady=(6, 16))
 
 
 class TransactionWidget(ctk.CTkFrame):
