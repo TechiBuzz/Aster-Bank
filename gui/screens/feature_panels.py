@@ -1,13 +1,11 @@
-from dis import deoptmap
 from tkinter import filedialog
-from tkinter.constants import BOTTOM
+from tkinter.constants import BOTTOM, LEFT
 from tkinter.messagebox import askyesno, askokcancel
 
 import customtkinter as ctk
 from CTkTable import CTkTable
 from PIL.Image import open
 from customtkinter import CTkSlider
-from pyautogui import dragRel
 
 from gui.screens.transition import TransitionScreen
 from gui.util_widgets.back_button import BackButton
@@ -135,9 +133,6 @@ class ProfileScreen(ctk.CTkFrame):
         # Reset scroll
         self.content_frame._parent_canvas.yview_moveto(0.0)
 
-    def get_name(self) -> str:
-        return 'ProfileScreen'
-
     def clear_screen(self) -> None:
         self.update_info()
 
@@ -242,9 +237,6 @@ class DepositScreen(ctk.CTkFrame):
     def update_info(self):
         self.balance_text.configure(text=f'Current Balance : {account_manager.get_balance()}')
 
-    def get_name(self) -> str:
-        return 'DepositScreen'
-
     def clear_screen(self) -> None:
         self.amount_var.set('')
         self.amount_slider.set(100)
@@ -262,6 +254,14 @@ class EStatementScreen(ctk.CTkFrame):
         self.base_frame = create_base_screen(self, self.app_instance, 'E-Statement', True)
         self.content_frame = self.base_frame.content_frame
 
+        self.bank_info_frame = ctk.CTkFrame(self.content_frame)
+
+        self.bank_logo = ctk.CTkLabel(self.bank_info_frame, text='', image=open_image(WINDOW_ICON, (130, 130)))
+        self.bank_logo.pack(side=LEFT)
+
+        self.bank_name = ctk.CTkLabel(self.bank_info_frame, text='Aster Bank', font=WELCOME_SCREEN_WELCOME_LABEL_FONT)
+        self.bank_name.pack(expand=True, fill='y')
+
         self.transactions_table = CTkTable(
             self.content_frame,
             column=6,
@@ -272,22 +272,25 @@ class EStatementScreen(ctk.CTkFrame):
 
         self.generate_statement_button = ctk.CTkButton(
             master=self.content_frame,
-            text='Generate Statement',
+            text='Generate E-Statement',
             font=MAIN_SCREEN_PANEL_FONT,
             height=70,
             corner_radius=100,
             command=self.generate_e_statement
         )
-        self.generate_statement_button.pack(expand=True, fill='x', padx=12, pady=(6, 16), side=BOTTOM)
+        self.generate_statement_button.pack(expand=True, fill='x', padx=12, pady=(6, 16))
 
     def generate_e_statement(self):
+
+        self.bank_info_frame.pack(expand=True, fill='x', padx=24, pady=24)
+
         transactions = db.fetch_result(
             'SELECT TRANSACTION_ID, TRANSACTION_TYPE, FROM_ACC_ID, TO_ACC_ID, AMOUNT, CURR_BAL_SENDER, CURR_BAL_RECEIVER, TRANSACTION_TIME FROM transactions WHERE FROM_ACC_ID = %s OR TO_ACC_ID = %s',
             (int(account_manager.get('ID')), int(account_manager.get('ID')))
         )
 
         if transactions:
-            transaction_values = [['Transaction ID', 'Date and Time', 'Description', 'Debit', 'Credit', 'Balance']]
+            transaction_values = [['Transaction ID', 'Date', 'Description', 'Debit', 'Credit', 'Balance']]
             for record in transactions:
                 #  Checking whether transaction is payment or deposit or withdraw
                 if record[1] == 'PAYMENT':
@@ -326,11 +329,12 @@ class EStatementScreen(ctk.CTkFrame):
 
             self.transactions_table.pack(expand=True, fill='both', padx=20, pady=20)
 
-    def get_name(self) -> str:
-        return 'EStatementScreen'
+            self.generate_statement_button.pack_forget()
 
     def clear_screen(self) -> None:
         self.transactions_table.pack_forget()
+        self.bank_info_frame.pack_forget()
+        self.generate_statement_button.pack(expand=True, fill='x', padx=12, pady=(6, 16))
 
 
 class FDCalculatorScreen(ctk.CTkFrame):
@@ -342,9 +346,6 @@ class FDCalculatorScreen(ctk.CTkFrame):
         # Widgets
         self.base_frame = create_base_screen(self, self.app_instance, 'Calculate Interest on FD', False)
         self.content_frame = self.base_frame.content_frame
-
-    def get_name(self) -> str:
-        return 'FDCalculatorScreen'
 
     def clear_screen(self) -> None:
         pass
@@ -452,9 +453,6 @@ class WithdrawScreen(ctk.CTkFrame):
         )
 
         self.balance_text.configure(text=f'Current Balance : {account_manager.get_balance()}')
-
-    def get_name(self) -> str:
-        return 'WithdrawScreen'
 
     def clear_screen(self) -> None:
         self.amount_var.set('')
@@ -621,9 +619,6 @@ class TransferScreen(ctk.CTkFrame):
             self.app_instance.gui_instances['MainScreen'].balance_details_frame.balance_value.configure(
                 text=account_manager.get_balance())
 
-    def get_name(self) -> str:
-        return 'TransferMoneyScreen'
-
     def clear_screen(self) -> None:
         # clear profile details
         self.pfp_image.configure(image=open_image(USER_ICON, (140, 140)))
@@ -684,16 +679,13 @@ class TransactionsScreen(ctk.CTkFrame):
                     transaction_type = record[1]
 
                 widget = TransactionWidget(self.content_frame, record, transaction_type)
-                widget.pack(expand=True, fill='x', padx=12, pady=12)
+                widget.pack(expand=True, fill='x', padx=12, pady=12, side=BOTTOM)
 
                 self.transaction_widgets.append(widget)
 
         self.refresh_button.place_forget()
         self.refresh_button_disable_timer_id = self.after(5000, lambda: self.refresh_button.place(relx=0.85, rely=0.83,
                                                                                                   anchor='nw'))
-
-    def get_name(self) -> str:
-        return 'TransactionsScreen'
 
     def clear_screen(self) -> None:
         pass
