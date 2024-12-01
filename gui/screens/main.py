@@ -1,6 +1,7 @@
 from tkinter.messagebox import askyesno
 
 import customtkinter as ctk
+from customtkinter import ThemeManager
 from tktooltip import ToolTip
 
 from settings import *
@@ -44,7 +45,7 @@ class UserInfoFrame(ctk.CTkFrame):
             text='',
             image=open_image(USER_ICON, (55, 55)),
             fg_color='transparent',
-            hover_color='#2B2B2B',
+            hover_color='#1E3A46',
             bg_color='transparent',
             corner_radius=100,
             width=0,
@@ -66,7 +67,7 @@ class UserInfoFrame(ctk.CTkFrame):
             text='',
             image=open_image(MAIN_SCREEN_LOGOUT_ICON, (55, 55)),
             fg_color='transparent',
-            hover_color='#2B2B2B',
+            hover_color='#1E3A46',
             bg_color='transparent',
             corner_radius=100,
             width=0,

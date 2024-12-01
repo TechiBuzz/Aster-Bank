@@ -54,7 +54,7 @@ class AsterBank(ctk.CTk):
 
 def main():
     ctk.set_appearance_mode('dark')
-    ctk.set_default_color_theme('green')
+    ctk.set_default_color_theme('assets/theme/breeze.json')
 
     app = AsterBank()
 
