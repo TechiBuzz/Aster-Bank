@@ -151,7 +151,7 @@ class DepositScreen(ctk.CTkFrame):
         self.inner_frame.pack(fill='x', padx=12, pady=12)
 
         self.deposit_icon = ctk.CTkLabel(self.inner_frame, text='',
-                                          image=open_image(MAIN_SCREEN_DEPOSIT_ICON, (170, 170)))
+                                         image=open_image(MAIN_SCREEN_DEPOSIT_ICON, (170, 170)))
         self.deposit_icon.pack(fill='x', padx=12, pady=2)
 
         self.balance_frame = ctk.CTkFrame(self.inner_frame, corner_radius=15)
@@ -257,13 +257,15 @@ class WithdrawScreen(ctk.CTkFrame):
         self.inner_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
         self.inner_frame.pack(fill='x', padx=12, pady=12)
 
-        self.withdraw_icon = ctk.CTkLabel(self.inner_frame, text='', image=open_image(MAIN_SCREEN_WITHDRAW_ICON, (170, 170)))
+        self.withdraw_icon = ctk.CTkLabel(self.inner_frame, text='',
+                                          image=open_image(MAIN_SCREEN_WITHDRAW_ICON, (170, 170)))
         self.withdraw_icon.pack(fill='x', padx=12, pady=2)
 
         self.balance_frame = ctk.CTkFrame(self.inner_frame, corner_radius=15)
         self.balance_frame.pack(fill='x', padx=24, pady=12)
 
-        self.balance_text = ctk.CTkLabel(self.balance_frame, text='Current Balance :', font=MAIN_SCREEN_PANEL_FONT, corner_radius=15)
+        self.balance_text = ctk.CTkLabel(self.balance_frame, text='Current Balance :', font=MAIN_SCREEN_PANEL_FONT,
+                                         corner_radius=15)
         self.balance_text.pack(fill='both', padx=12, pady=12, ipady=10, side='left')
 
         self.amount_frame = ctk.CTkFrame(self.inner_frame, corner_radius=15)
@@ -277,7 +279,8 @@ class WithdrawScreen(ctk.CTkFrame):
         self.amount_var.trace('w', lambda *args: self.amount_var.set(
             ''.join(char for char in self.amount_var.get() if char.isdigit())[:10]))
 
-        self.amount_var.trace('w', lambda *args: self.amount_slider.set(int(self.amount_var.get())) if not self.amount_var.get() == '' else 0)
+        self.amount_var.trace('w', lambda *args: self.amount_slider.set(
+            int(self.amount_var.get())) if not self.amount_var.get() == '' else 0)
         self.amount_entry = ctk.CTkEntry(self.amount_frame, height=70, font=LOGIN_SCREEN_FIELD_ENTRY_FONT,
                                          textvariable=self.amount_var, corner_radius=40)
         self.amount_entry.pack(expand=True, fill='x', padx=(0, 12), pady=12, side='left')
@@ -535,11 +538,54 @@ class FDCalculatorScreen(ctk.CTkFrame):
         self.app_instance = parent
 
         # Widgets
-        self.base_frame = create_base_screen(self, self.app_instance, 'Calculate Interest on FD', False)
+        self.base_frame = create_base_screen(self, self.app_instance, 'Calculate Interest on FD', True)
         self.content_frame = self.base_frame.content_frame
 
+        self.inner_frame = ctk.CTkFrame(self.content_frame, corner_radius=15)
+        self.inner_frame.pack(expand=True, fill='both')
+
+        self.fd_icon = ctk.CTkLabel(self.inner_frame, text='',
+                                          image=open_image(MAIN_SCREEN_FD_ICON, (170, 170)))
+        self.fd_icon.pack(fill='x', padx=12, pady=2)
+
+        self.interest_frame = ctk.CTkFrame(self.inner_frame, corner_radius=15)
+        self.interest_frame.pack(fill='x', padx=24, pady=12)
+
+        self.interest_text = ctk.CTkLabel(self.interest_frame, text=f'Interest :', font=MAIN_SCREEN_PANEL_FONT,
+                                 corner_radius=15)
+        self.interest_text.pack(fill='both', padx=12, pady=12, side='left')
+
+        self.amount_frame = DisplaySliderWidget(self.inner_frame, 'Principal', 5000, 500000, (500000 - 5000) // 5000)
+
+        self.rate_frame = DisplaySliderWidget(self.inner_frame, 'Rate', 1, 25, 25)
+
+        self.time_frame = DisplaySliderWidget(self.inner_frame, 'Time (in years)', 1, 10, 10)
+
+        self.calculate_interest_button = ctk.CTkButton(
+            master=self.inner_frame,
+            text='Calculate',
+            font=MAIN_SCREEN_PANEL_FONT,
+            height=70,
+            corner_radius=100,
+            command=self.calculate_interest
+        )
+        self.calculate_interest_button.pack(fill='x', padx=24, pady=(12, 24))
+
+    def calculate_interest(self):
+        principal = self.amount_frame.var.get()
+        rate = self.rate_frame.var.get()
+        time = self.time_frame.var.get()
+
+        interest = (principal * rate * time) // 100
+
+        self.interest_text.configure(text=f'Interest : {interest}')
+
     def clear_screen(self) -> None:
-        pass
+        self.interest_text.configure(text='Interest :')
+
+        self.amount_frame.slider.set(1000)
+        self.rate_frame.slider.set(1)
+        self.time_frame.slider.set(1)
 
 
 class TransactionsScreen(ctk.CTkFrame):
@@ -786,3 +832,33 @@ class InfoEntryWidget(ctk.CTkFrame):
                                   textvariable=self.entry_var, state='readonly')
         self.entry.widgetName = 'entry'
         self.entry.pack(padx=12, pady=12, side='right')
+
+
+class DisplaySliderWidget(ctk.CTkFrame):
+    def __init__(self, parent, text, slider_from, slider_to, slider_steps):
+        super().__init__(parent, corner_radius=15)
+
+        self.text_frame = ctk.CTkFrame(parent, corner_radius=15)
+        self.text_frame.pack(fill='x', padx=24, pady=12)
+
+        self.text = ctk.CTkLabel(self.text_frame, text=f'{text} :', font=MAIN_SCREEN_PANEL_FONT,
+                                 corner_radius=15)
+        self.text.pack(fill='both', padx=12, pady=12, side='left')
+
+        self.var = ctk.IntVar(value=1000)
+        self.var.trace('w',
+                       lambda *args: self.text.configure(text=f'{text} : {self.var.get()}'))
+
+        self.slider = ctk.CTkSlider(
+            self,
+            from_=slider_from,
+            to=slider_to,
+            number_of_steps=slider_steps,
+            height=25,
+            variable=self.var
+        )
+        self.slider.set(slider_from)
+        self.slider.pack(fill='x', padx=24, pady=12)
+
+        # Pack
+        self.pack(fill='x', padx=24, pady=12)

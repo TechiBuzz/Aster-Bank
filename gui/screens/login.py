@@ -1,13 +1,13 @@
-from settings import *
-from util.database import db
-from util.account_manager import account_manager
-from util.image_util import open_image
-from gui.screens.transition import TransitionScreen
-from gui.util_widgets.warning_label import WarningLabel
-from gui.util_widgets.obfuscate_entry import ObfuscateEntryWidget
-
 import bcrypt
 import customtkinter as ctk
+
+from gui.screens.transition import TransitionScreen
+from gui.util_widgets.obfuscate_entry import ObfuscateEntryWidget
+from gui.util_widgets.warning_label import WarningLabel
+from settings import *
+from util.account_manager import account_manager
+from util.database import db
+from util.image_util import open_image
 
 
 class LoginScreen(ctk.CTkFrame):
@@ -34,13 +34,6 @@ class LoginScreen(ctk.CTkFrame):
         self.login_buttons = LoginButtonsFrame(self.central_frame)
 
         self.db_connection_frame = DBConnectionFrame(self)
-
-        '''
-        REMOVE AFTER TESTING
-        '''
-
-        helpful_button = ctk.CTkButton(self.central_frame, text='FILL INFO', command=lambda: [self.username_entry.entry_var.set('AbuE7026'), self.password_entry.entry_var.set('AMAN@2007!')])
-        helpful_button.place(relx=0.1, rely=0.7, relheight=0.1)
 
     def successful_login(self, user_data) -> None:
         account = {
